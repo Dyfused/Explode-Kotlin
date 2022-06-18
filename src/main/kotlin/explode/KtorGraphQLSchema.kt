@@ -6,14 +6,17 @@ import explode.schema.*
 import graphql.GraphQL
 
 private val config = SchemaGeneratorConfig(
-	supportedPackages = listOf("explode.schema")
+	supportedPackages = listOf("explode.schema"),
+	hooks = CustomSchemaGeneratorHooks
 )
 private val queries = listOf(
-	TopLevelObject(HelloQueryService()),
-	TopLevelObject(UserQueryService())
+	TopLevelObject(HelloQueryService),
+	TopLevelObject(UserQueryService),
+	TopLevelObject(GameDataQueryService),
+	TopLevelObject(DownloadQueryService)
 )
 private val mutations = listOf(
-	TopLevelObject(UserLoginMutationService())
+	TopLevelObject(UserMutationService)
 )
 val graphQLSchema = toSchema(config, queries, mutations)
 

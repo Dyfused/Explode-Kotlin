@@ -30,6 +30,7 @@ val kotlinCoroutineVersion: String by project
 
 dependencies {
     implementation("com.expediagroup", "graphql-kotlin-server", "6.0.0-alpha.4")
+    implementation("com.graphql-java", "graphql-java-extended-scalars", "18.1")
     implementation("io.ktor", "ktor-server-core", ktorVersion)
     implementation("io.ktor", "ktor-server-netty", ktorVersion)
     implementation("ch.qos.logback", "logback-classic", logbackVersion)

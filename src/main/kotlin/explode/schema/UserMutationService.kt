@@ -5,25 +5,24 @@ package explode.schema
 import com.expediagroup.graphql.server.operations.Mutation
 import explode.schema.model.AccessData
 import explode.schema.model.UserModel
+import kotlin.random.Random
 
-class UserLoginMutationService : Mutation {
+object UserMutationService : Mutation {
 
-	companion object {
-		internal val FakeUserModel = UserModel(
-			"testId",
-			"FakeUsername",
-			listOf(),
-			listOf(),
-			listOf(),
-			0,
-			0,
-			0,
-			"20790510T000000",
-			"trash-potato-server",
-			0,
-			AccessData(false)
-		)
-	}
+	val FakeUserModel = UserModel(
+		"testId",
+		"FakeUsername-${Random.nextInt()}",
+		listOf(),
+		listOf(),
+		listOf(),
+		0,
+		-9999,
+		9999,
+		"20790510T000000",
+		"trash-potato-server-but-online",
+		0,
+		AccessData(false)
+	)
 
 	// TODO: Implementation
 	suspend fun loginUser(username: String?, password: String?): UserModel {

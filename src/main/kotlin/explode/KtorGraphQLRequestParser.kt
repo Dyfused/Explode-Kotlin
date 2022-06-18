@@ -12,6 +12,7 @@ class KtorGraphQLRequestParser(
 
 	override suspend fun parseRequest(request: ApplicationRequest): GraphQLServerRequest? = try {
 		val rawRequest = request.call.receiveText()
+		if(DebugMode) println("\n\n"+rawRequest+"\n\n")
 		mapper.readValue(rawRequest, GraphQLServerRequest::class.java)
 	} catch(e: IOException) {
 		throw IOException("Unable to parse GraphQL payload.")

@@ -1,9 +1,12 @@
+@file:Suppress("UNUSED_PARAMETER")
+
 package explode.schema
 
 import com.expediagroup.graphql.server.operations.Query
 import java.time.Instant
+import java.util.*
 
-class HelloQueryService: Query {
+object HelloQueryService : Query {
 
-	fun hello() = "${Instant.now()}!"
+	fun hello(uuid: UUID?) = "${Instant.now()}!"
 }

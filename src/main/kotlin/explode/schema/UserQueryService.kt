@@ -5,11 +5,11 @@ package explode.schema
 import com.expediagroup.graphql.server.operations.Query
 import explode.schema.model.UserModel
 
-class UserQueryService: Query {
+object UserQueryService : Query {
 
 	// TODO: Implementation
 	suspend fun userByUsername(username: String?): UserModel {
-		return UserLoginMutationService.FakeUserModel
+		return UserMutationService.FakeUserModel
 	}
 
 }
