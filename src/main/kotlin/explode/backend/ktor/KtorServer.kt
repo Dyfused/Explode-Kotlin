@@ -1,4 +1,4 @@
-package explode
+package explode.backend.ktor
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.*

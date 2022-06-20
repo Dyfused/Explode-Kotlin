@@ -4,27 +4,43 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Added more Services&#10;&#10;1. Assessment &amp; AssessmentRank&#10;2. Store(FetchSet)">
-      <changelist_data name="Taskeren" email="r0yalist@outlook.com" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/CustomSchemaGeneratorHooks.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/DownloadQueryService.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/FakeConstForTest.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/GameDataQueryService.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/AssessmentModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/AssessmentRecordModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/ChartModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/ChartStoreConst.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/SimpleModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Added Blow framework">
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/CustomSchemaGeneratorHooks.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowMutationService.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowQueryService.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ClassifiedModels.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/InputModels.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/PlayRecordModels.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/FakeBlowProvider.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowProvider.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLRequestParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLRequestParser.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLSchema.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLSchema.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/HelloQueryService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/HelloQueryService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserLoginMutationService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserMutationService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserQueryService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserQueryService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logback.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/CustomSchemaGeneratorHooks.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLContextFactory.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLContextFactory.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLRequestParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLRequestParser.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLSchema.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLSchema.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLServer.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorServer.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/DownloadQueryService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/FakeConstForTest.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/GameDataQueryService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/HelloQueryService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserMutationService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserQueryService.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/AssessmentModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/AssessmentRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentRecordModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/ChartStoreConst.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/SimpleModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/GameSettingModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,9 +59,10 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Kotlin Data Class" />
+        <option value="Kotlin Interface" />
+        <option value="Kotlin File" />
         <option value="Kotlin Class" />
         <option value="Kotlin Object" />
-        <option value="Kotlin File" />
       </list>
     </option>
   </component>
@@ -73,11 +90,19 @@
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\explode\src\main\kotlin\explode\blow\graphql" />
+      <recent name="D:\explode\src\main\kotlin\explode\graphql\ktor" />
+      <recent name="D:\explode\src\main\kotlin\explode\graphql" />
+    </key>
     <key name="MoveKotlinTopLevelDeclarationsDialog.RECENTS_KEY">
+      <recent name="explode.blow.provider" />
+      <recent name="explode.graphql.schema" />
       <recent name="explode.schema.model" />
     </key>
   </component>
@@ -147,7 +172,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655380795062</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Added more Services&#10;&#10;1. Assessment &amp; AssessmentRank&#10;2. Store(FetchSet)">
+      <created>1655521739803</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1655521739803</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -166,7 +198,8 @@
     <MESSAGE value="Initial commit&#10;&#10;1. set up the frame with Ktor and kotlin-graphql&#10;2. create UserLogin queries and mutations" />
     <MESSAGE value="Add license" />
     <MESSAGE value="Added more Services&#10;&#10;1. Assessment &amp; AssessmentRank&#10;2. Store(FetchSet)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added more Services&#10;&#10;1. Assessment &amp; AssessmentRank&#10;2. Store(FetchSet)" />
+    <MESSAGE value="Added Blow framework" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added Blow framework" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

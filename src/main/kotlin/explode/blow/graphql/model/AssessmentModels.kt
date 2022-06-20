@@ -1,4 +1,10 @@
-package explode.schema.model
+package explode.blow.graphql.model
+
+data class AssessmentGroupModel(
+	val _id: String,
+	val name: String,
+	val assessment: List<AssessmentModel>
+)
 
 data class AssessmentModel(
 	val _id: String,
@@ -8,13 +14,7 @@ data class AssessmentModel(
 	val goldenPassAcc: Double,
 	val exMiss: Double,
 	val chart: List<AssessmentChartModel>,
-	val assessmentRecord: List<AssessmentRecordModel>
-)
-
-data class AssessmentGroupModel(
-	val _id: String,
-	val name: String,
-	val assessment: List<AssessmentModel>
+	val assessmentRecord: List<AssessmentRecordsModel>
 )
 
 data class AssessmentChartModel(
@@ -22,7 +22,7 @@ data class AssessmentChartModel(
 	val set: SetModel
 )
 
-data class AssessmentRecordModel(
+data class AssessmentRecordsModel(
 	val achievementRate: Double, // 完成率
 	val isBest: Boolean,
 	val playRecord: List<AssessmentPlayRecordModel>

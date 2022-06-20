@@ -1,9 +1,6 @@
 @file:Suppress("UNUSED_PARAMETER")
 
-package explode.schema.model
-
-import explode.schema.FakeSet
-import java.time.LocalDate
+package explode.blow.graphql.model
 
 data class ChartModel(
 	val _id: String,
@@ -14,12 +11,6 @@ data class ChartModel(
 data class NoterModel(
 	val username: String
 )
-
-class ReviewerModel {
-	suspend fun reviewRequest(limit: Int?, skip: Int?, status: Int?, searchStr: String?): List<ReviewRequestModel> {
-		return listOf(ReviewRequestModel(FakeSet, false))
-	}
-}
 
 data class ReviewRequestModel(
 	val set: SetModel,
@@ -40,17 +31,15 @@ data class SetModel(
 	val OverridePriceStr: String // DON'T FIX: Capital 'O' is defined in the game not Explode's fault.
 )
 
-class OwnSetWrapperModel(
-	val gotSet: List<SetModel>
-) {
-	// TODO: Implement
-	suspend fun assessmentRankSelf(assessmentGroupId: String?, medalLevel: Int?): AssessmentRecordWithRankModel {
-		return AssessmentRecordWithRankModel(
-			PlayerModel("10001", "FakeUsername", 100000, 1000),
-			1,
-			1.0,
-			10,
-			LocalDate.now()
-		)
-	}
-}
+data class DetailedChartModel(
+	val charter: UserModel,
+	val chartName: String,
+	val gcPrice: Int,
+	val music: MusicModel,
+	val difficultyBase: Int,
+	val difficultyValue: Int
+)
+
+data class MusicModel(
+	val musicianName: String
+)

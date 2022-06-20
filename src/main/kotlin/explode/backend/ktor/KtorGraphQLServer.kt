@@ -1,4 +1,4 @@
-package explode
+package explode.backend.ktor
 
 import com.expediagroup.graphql.dataloader.KotlinDataLoaderRegistryFactory
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler

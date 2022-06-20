@@ -1,4 +1,4 @@
-package explode
+package explode.backend.ktor
 
 import com.expediagroup.graphql.generator.extensions.print
 import io.ktor.http.*

@@ -12,7 +12,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.7.0"
     id("application")
 //    id("com.expediagroup.graphql")
 }
@@ -22,6 +22,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 val ktorVersion: String by project
@@ -35,6 +36,8 @@ dependencies {
     implementation("io.ktor", "ktor-server-netty", ktorVersion)
     implementation("ch.qos.logback", "logback-classic", logbackVersion)
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", kotlinCoroutineVersion)
+    implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.7.0")
+    implementation("com.github.taskeren", "tconfig", "1.0")
     testImplementation(kotlin("test"))
     testImplementation("com.squareup.okhttp3:okhttp:4.10.0")
 }

@@ -1,4 +1,4 @@
-package explode.schema.model
+package explode.blow.graphql.model
 
 data class UserModel(
 	val _id: String,

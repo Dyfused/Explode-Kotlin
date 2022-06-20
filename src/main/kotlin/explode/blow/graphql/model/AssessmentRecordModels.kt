@@ -1,13 +1,13 @@
-package explode.schema.model
+package explode.blow.graphql.model
 
-import java.time.LocalDate
+import java.time.OffsetDateTime
 
 data class AssessmentRecordWithRankModel(
 	val player: PlayerModel,
 	val rank: Int,
 	val achievementRate: Double,
 	val result: Int,
-	val createTime: LocalDate
+	val createTime: OffsetDateTime
 )
 
 data class PlayerModel(
