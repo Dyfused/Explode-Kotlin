@@ -5,27 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/RandomUtil.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/kotlin/TestOther.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/KFileSerializer.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/utils/RenaReader.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowMutationService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowMutationService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowQueryService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowQueryService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentRecordModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ClassifiedModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ClassifiedModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/PlayRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/PlayRecordModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/FakeBlowProvider.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/TestDynamite.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/TestDynamite.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/logback.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/TestOther.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/TestOther.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +34,34 @@
         <task path="$PROJECT_DIR$">
           <activation />
         </task>
-        <projects_view />
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="shadow" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
       </state>
     </system>
   </component>
@@ -56,8 +71,8 @@
         <option value="Kotlin Data Class" />
         <option value="Kotlin Interface" />
         <option value="Kotlin File" />
-        <option value="Kotlin Class" />
         <option value="Kotlin Object" />
+        <option value="Kotlin Class" />
       </list>
     </option>
   </component>
@@ -81,14 +96,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "jdk.selected.JAVA_MODULE": "11",
+    "settings.editor.selected.configurable": "vcs.Git"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\explode\src\main\kotlin\explode\blow\graphql" />
@@ -101,53 +117,7 @@
       <recent name="explode.schema.model" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.TestOther.testNewChartSet">
-    <configuration name="TestOther.test" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;TestOther.test&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="TestOther.testCipher" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;TestOther.testCipher&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Kotlin.Start Ktor">
     <configuration name="TestOther.testNewChartSet" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -171,25 +141,44 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="TestOther.testReg" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="explode [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;TestOther.testReg&quot;" />
+            <option value="build" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="explode [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="shadowJar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
@@ -203,19 +192,17 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Gradle.TestOther.test" />
-      <item itemvalue="Gradle.TestOther.testCipher" />
+      <item itemvalue="Gradle.explode [shadowJar]" />
       <item itemvalue="Gradle.TestOther.testNewChartSet" />
-      <item itemvalue="Gradle.TestOther.testReg" />
+      <item itemvalue="Gradle.explode [build]" />
       <item itemvalue="Kotlin.Start Ktor" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.TestOther.testNewChartSet" />
         <item itemvalue="Kotlin.Start Ktor" />
-        <item itemvalue="Gradle.TestOther.testCipher" />
-        <item itemvalue="Gradle.TestOther.testReg" />
-        <item itemvalue="Gradle.TestOther.test" />
+        <item itemvalue="Gradle.explode [shadowJar]" />
+        <item itemvalue="Gradle.explode [build]" />
+        <item itemvalue="Gradle.TestOther.testNewChartSet" />
       </list>
     </recent_temporary>
   </component>
@@ -256,7 +243,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655742967230</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode">
+      <created>1655818584186</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1655818584186</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

@@ -1,12 +1,15 @@
 package explode.blow.provider.mongo
 
+import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.UpdateOptions
 import explode.blow.graphql.model.*
 import explode.blow.provider.IBlowProvider
 import explode.blow.provider.mongo.RandomUtil.randomId
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -60,7 +63,7 @@ class MongoProvider(connectionString: String? = null) : IBlowProvider {
 	private val loginC = db.getCollection<UserIdAndPassword>("UserLogin")
 
 	@Serializable
-	data class UserIdAndPassword(val userId: String, val password: String)
+	data class UserIdAndPassword(@SerialName("_id") val userId: String, val password: String)
 
 	private val UserModel.password get() = loginC.findOne(UserIdAndPassword::userId eq _id)!!.password
 
@@ -92,9 +95,9 @@ class MongoProvider(connectionString: String? = null) : IBlowProvider {
 		chartSetC.updateOne(this, UpdateOptions().upsert(true))
 	}
 
-	fun createNewChart(charter: UserModel, chartName: String, gcPrice: Int, musicianName: String, difficultyBase: Int, difficultyValue: Int): DetailedChartModel {
+	fun createNewChart(charter: UserModel, chartName: String, gcPrice: Int, musicianName: String, difficultyBase: Int, difficultyValue: Int, specifiedId: String = randomId()): DetailedChartModel {
 		return DetailedChartModel(
-			randomId(),
+			specifiedId,
 			charter,
 			chartName,
 			gcPrice,
@@ -106,9 +109,9 @@ class MongoProvider(connectionString: String? = null) : IBlowProvider {
 		}
 	}
 
-	fun createNewSet(intro: String, price: Int, noterUsername: String, title: String, composer: String, charts: List<DetailedChartModel>): SetModel {
+	fun createNewSet(intro: String, price: Int, noterUsername: String, title: String, composer: String, charts: List<DetailedChartModel>, specifiedId: String = randomId()): SetModel {
 		return SetModel(
-			randomId(),
+			specifiedId,
 			intro,
 			price,
 			NoterModel(noterUsername),
@@ -134,7 +137,7 @@ class MongoProvider(connectionString: String? = null) : IBlowProvider {
 		showRanked: Boolean,
 		showUnranked: Boolean,
 	): List<SetModel> {
-		logger.info("$limit, $skip, $searchedName, $showHidden, $showOfficial, $showRanked, $showUnranked")
+		// logger.info("$limit, $skip, $searchedName, $showHidden, $showOfficial, $showRanked, $showUnranked")
 		return if(searchedName.isNotEmpty()) {
 			chartSetC.find(SetModel::musicTitle eq searchedName).limit(limit).skip(skip).toList()
 		} else if(showHidden) {
@@ -149,6 +152,18 @@ class MongoProvider(connectionString: String? = null) : IBlowProvider {
 			listOf()
 		}
 	}
+
+	// File System
+
+	@Serializable
+	data class IdToFile(val _id: String, @Serializable(with = KFileSerializer::class) val file: File)
+
+	private val fdb: MongoDatabase = mongo.getDatabase("Explode_File")
+
+	val chartFiles = fdb.getCollection<IdToFile>("ChartFile")
+	val coverFiles = fdb.getCollection<IdToFile>("CoverFile")
+	val musicFiles = fdb.getCollection<IdToFile>("MusicFile")
+	val previewFiles = fdb.getCollection<IdToFile>("PreviewFile")
 
 	// IBlowProvider methods
 
