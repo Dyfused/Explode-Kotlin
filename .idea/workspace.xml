@@ -4,43 +4,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Added Blow framework">
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/CustomSchemaGeneratorHooks.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowMutationService.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowQueryService.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ClassifiedModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/InputModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/PlayRecordModels.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/FakeBlowProvider.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowProvider.kt" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode">
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/RandomUtil.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/kotlin/TestOther.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/CustomSchemaGeneratorHooks.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLContextFactory.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLContextFactory.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLRequestParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLRequestParser.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLSchema.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLSchema.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorGraphQLServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLServer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/KtorServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorServer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/DownloadQueryService.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/FakeConstForTest.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/GameDataQueryService.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/HelloQueryService.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserMutationService.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/UserQueryService.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/AssessmentModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/AssessmentRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentRecordModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/ChartStoreConst.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/SimpleModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/GameSettingModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/schema/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowMutationService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowMutationService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowQueryService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowQueryService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentRecordModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ClassifiedModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ClassifiedModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/PlayRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/PlayRecordModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/FakeBlowProvider.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/kotlin/TestDynamite.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/kotlin/TestDynamite.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +39,16 @@
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view />
+      </state>
+    </system>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -106,8 +101,8 @@
       <recent name="explode.schema.model" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.Start Ktor">
-    <configuration name="TestDynamite.testLogin" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Gradle.TestOther.testNewChartSet">
+    <configuration name="TestOther.test" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -120,7 +115,76 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;TestDynamite.testLogin&quot;" />
+            <option value="&quot;TestOther.test&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="TestOther.testCipher" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;TestOther.testCipher&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="TestOther.testNewChartSet" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;TestOther.testNewChartSet&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="TestOther.testReg" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;TestOther.testReg&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -139,13 +203,19 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Gradle.TestDynamite.testLogin" />
+      <item itemvalue="Gradle.TestOther.test" />
+      <item itemvalue="Gradle.TestOther.testCipher" />
+      <item itemvalue="Gradle.TestOther.testNewChartSet" />
+      <item itemvalue="Gradle.TestOther.testReg" />
       <item itemvalue="Kotlin.Start Ktor" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.TestOther.testNewChartSet" />
         <item itemvalue="Kotlin.Start Ktor" />
-        <item itemvalue="Gradle.TestDynamite.testLogin" />
+        <item itemvalue="Gradle.TestOther.testCipher" />
+        <item itemvalue="Gradle.TestOther.testReg" />
+        <item itemvalue="Gradle.TestOther.test" />
       </list>
     </recent_temporary>
   </component>
@@ -179,7 +249,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655521739803</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added Blow framework">
+      <created>1655742967230</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1655742967230</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -199,7 +276,8 @@
     <MESSAGE value="Add license" />
     <MESSAGE value="Added more Services&#10;&#10;1. Assessment &amp; AssessmentRank&#10;2. Store(FetchSet)" />
     <MESSAGE value="Added Blow framework" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added Blow framework" />
+    <MESSAGE value="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode" />
+    <option name="LAST_COMMIT_MESSAGE" value="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

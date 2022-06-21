@@ -8,11 +8,12 @@ interface BlowQueryService {
 
 	suspend fun hello(env: DataFetchingEnvironment): String
 
-	suspend fun gameSetting(): GameSettingModel
+	suspend fun gameSetting(env: DataFetchingEnvironment): GameSettingModel
 
 	suspend fun reviewer(env: DataFetchingEnvironment): ReviewerModel
 
 	suspend fun set(
+		env: DataFetchingEnvironment,
 		playCountOrder: Int? = null,
 		publishTimeOrder: Int? = null,
 		limit: NNInt? = null,
@@ -29,20 +30,21 @@ interface BlowQueryService {
 
 	suspend fun charts(env: DataFetchingEnvironment, limit: Int?, skip: Int?, ranked: Int?): List<DetailedChartModel>
 
-	suspend fun assessmentGroup(limit: Int?, skip: Int?): List<AssessmentGroupModel>
+	suspend fun assessmentGroup(env: DataFetchingEnvironment, limit: Int?, skip: Int?): List<AssessmentGroupModel>
 
 	suspend fun assessmentRank(
+		env: DataFetchingEnvironment,
 		assessmentGroupId: String?,
 		medalLevel: Int?,
 		skip: NNInt?,
 		limit: NNInt?
 	): List<AssessmentRecordWithRankModel>
 
-	suspend fun setById(_id: String?): SetModel
+	suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel
 
-	suspend fun userByUsername(username: String?): UserModel
+	suspend fun userByUsername(env: DataFetchingEnvironment, username: String?): UserModel?
 
-	suspend fun playRank(chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank>
+	suspend fun playRank(env: DataFetchingEnvironment, chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank>
 
-	suspend fun refreshSet(setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set>
+	suspend fun refreshSet(env: DataFetchingEnvironment, setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set>
 }

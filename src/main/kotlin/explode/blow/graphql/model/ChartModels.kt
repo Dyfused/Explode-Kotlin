@@ -2,21 +2,27 @@
 
 package explode.blow.graphql.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ChartModel(
 	val _id: String,
 	val difficultyClass: Int,
 	val difficultyValue: Int?
 )
 
+@Serializable
 data class NoterModel(
 	val username: String
 )
 
+@Serializable
 data class ReviewRequestModel(
 	val set: SetModel,
 	val isUnranked: Boolean
 )
 
+@Serializable
 data class SetModel(
 	val _id: String,
 	val introduction: String,
@@ -28,10 +34,13 @@ data class SetModel(
 	val chart: List<ChartModel>,
 	val isGot: Boolean,
 	val isRanked: Boolean,
+	val isOfficial: Boolean,
 	val OverridePriceStr: String // DON'T FIX: Capital 'O' is defined in the game not Explode's fault.
 )
 
+@Serializable
 data class DetailedChartModel(
+	val _id: String,
 	val charter: UserModel,
 	val chartName: String,
 	val gcPrice: Int,
@@ -40,6 +49,7 @@ data class DetailedChartModel(
 	val difficultyValue: Int
 )
 
+@Serializable
 data class MusicModel(
 	val musicianName: String
 )

@@ -13,15 +13,16 @@ class BlowQueryServiceImpl(private val p: IBlowProvider) : BlowQueryService {
 		return "You've been waiting, \"${env.soudayo}\"."
 	}
 
-	override suspend fun gameSetting(): GameSettingModel {
-		return p.getGameSetting()
+	override suspend fun gameSetting(env: DataFetchingEnvironment, ): GameSettingModel {
+		return p.getGameSetting(env.soudayo)
 	}
 
 	override suspend fun reviewer(env: DataFetchingEnvironment): ReviewerModel {
-		return p.getReviewer(env.soudayo!!)
+		return p.getReviewer(env.soudayo)
 	}
 
 	override suspend fun set(
+		env: DataFetchingEnvironment,
 		playCountOrder: Int?,
 		publishTimeOrder: Int?,
 		limit: NNInt?,
@@ -36,6 +37,7 @@ class BlowQueryServiceImpl(private val p: IBlowProvider) : BlowQueryService {
 		if(isOfficial == null) return listOf()
 
 		return p.getSets(
+			env.soudayo,
 			limit!!.value,
 			skip!!.value,
 			musicTitle!!,
@@ -49,28 +51,30 @@ class BlowQueryServiceImpl(private val p: IBlowProvider) : BlowQueryService {
 	}
 
 	override suspend fun self(env: DataFetchingEnvironment): SelfModel {
-		return p.getSelf(env.soudayo!!)
+		return p.getSelf(env.soudayo)
 	}
 
 	override suspend fun ownOrGotChart(env: DataFetchingEnvironment): List<DetailedChartModel> {
-		return p.getOwnedOrGotCharts(env.soudayo!!)
+		return p.getOwnedOrGotCharts(env.soudayo)
 	}
 
 	override suspend fun charts(env: DataFetchingEnvironment, limit: Int?, skip: Int?, ranked: Int?): List<DetailedChartModel> {
-		return p.getOwnedCharts(env.soudayo!!, limit!!, skip!!, ranked == 1)
+		return p.getOwnedCharts(env.soudayo, limit!!, skip!!, ranked == 1)
 	}
 
-	override suspend fun assessmentGroup(limit: Int?, skip: Int?): List<AssessmentGroupModel> {
-		return p.getAssessmentGroups(limit!!, skip!!)
+	override suspend fun assessmentGroup(env: DataFetchingEnvironment, limit: Int?, skip: Int?): List<AssessmentGroupModel> {
+		return p.getAssessmentGroups(env.soudayo, limit!!, skip!!)
 	}
 
 	override suspend fun assessmentRank(
+		env: DataFetchingEnvironment,
 		assessmentGroupId: String?,
 		medalLevel: Int?,
 		skip: NNInt?,
 		limit: NNInt?
 	): List<AssessmentRecordWithRankModel> {
 		return p.getAssessmentRank(
+			env.soudayo,
 			assessmentGroupId!!,
 			medalLevel!!,
 			limit!!.value,
@@ -78,20 +82,20 @@ class BlowQueryServiceImpl(private val p: IBlowProvider) : BlowQueryService {
 		)
 	}
 
-	override suspend fun setById(_id: String?): SetModel {
-		return p.getSet(_id!!)
+	override suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel {
+		return p.getSet(env.soudayo, _id!!)
 	}
 
-	override suspend fun userByUsername(username: String?): UserModel {
-		return p.getUser(username!!)
+	override suspend fun userByUsername(env: DataFetchingEnvironment, username: String?): UserModel? {
+		return p.getUser(env.soudayo, username!!)
 	}
 
-	override suspend fun playRank(chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank> {
-		return p.getPlayRank(chartId!!, limit!!.value, skip!!.value)
+	override suspend fun playRank(env: DataFetchingEnvironment, chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank> {
+		return p.getPlayRank(env.soudayo, chartId!!, limit!!.value, skip!!.value)
 	}
 
-	override suspend fun refreshSet(setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set> {
-		return setVersion.map { p.getSet(it.setId) }.map {
+	override suspend fun refreshSet(env: DataFetchingEnvironment, setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set> {
+		return setVersion.map { p.getSet(env.soudayo, it.setId) }.map {
 			ClassifiedModels.Set(it._id, it.isRanked, it.introduction, it.noter.username, it.musicTitle)
 		}
 	}

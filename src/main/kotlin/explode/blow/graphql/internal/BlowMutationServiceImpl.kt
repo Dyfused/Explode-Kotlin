@@ -8,20 +8,20 @@ import graphql.schema.DataFetchingEnvironment
 
 class BlowMutationServiceImpl(private val p: IBlowProvider) : BlowMutationService {
 
-	override suspend fun loginUser(username: String?, password: String?): UserModel {
+	override suspend fun loginUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel {
 		return p.loginUser(username!!, password!!)
 	}
 
-	override suspend fun registerUser(username: String?, password: String?): UserModel {
+	override suspend fun registerUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel {
 		return p.registerUser(username!!, password!!)
 	}
 
 	override suspend fun purchaseChart(env: DataFetchingEnvironment, chartId: String?): UserModel {
-		return p.getUser(env.soudayo!!)
+		return p.getUser(env.soudayo, "")!! // TODO
 	}
 
 	override suspend fun exchangeSet(env: DataFetchingEnvironment, setId: String?): ExchangeSetModel {
-		return p.buySet(env.soudayo!!, setId!!)
+		return p.buySet(env.soudayo, setId!!)
 	}
 
 	override suspend fun submitBeforeAssessment(
@@ -29,7 +29,7 @@ class BlowMutationServiceImpl(private val p: IBlowProvider) : BlowMutationServic
 		assessmentGroupId: String?,
 		medalLevel: Int?
 	): BeforePlaySubmitModel {
-		return p.submitBeforeAssessment(env.soudayo!!, assessmentGroupId!!, medalLevel!!)
+		return p.submitBeforeAssessment(env.soudayo, assessmentGroupId!!, medalLevel!!)
 	}
 
 	override suspend fun submitAfterAssessment(
@@ -37,7 +37,7 @@ class BlowMutationServiceImpl(private val p: IBlowProvider) : BlowMutationServic
 		playRecords: List<PlayRecordInput?>?,
 		randomId: String?
 	): AfterAssessmentModel {
-		return p.submitAfterAssessment(env.soudayo!!, playRecords!!.filterNotNull(), randomId!!)
+		return p.submitAfterAssessment(env.soudayo, playRecords!!.filterNotNull(), randomId!!)
 	}
 
 	override suspend fun submitBeforePlay(
@@ -46,7 +46,7 @@ class BlowMutationServiceImpl(private val p: IBlowProvider) : BlowMutationServic
 		PPCost: Int?,
 		eventArgs: String?
 	): BeforePlaySubmitModel {
-		return p.submitBeforePlay(env.soudayo!!, chartId!!, PPCost!!, eventArgs!!)
+		return p.submitBeforePlay(env.soudayo, chartId!!, PPCost!!, eventArgs!!)
 	}
 
 	override suspend fun submitAfterPlay(
@@ -54,6 +54,6 @@ class BlowMutationServiceImpl(private val p: IBlowProvider) : BlowMutationServic
 		randomId: String?,
 		playRecord: PlayRecordInput?
 	): AfterPlaySubmitModel {
-		return p.submitAfterPlay(env.soudayo!!, playRecord!!, randomId!!)
+		return p.submitAfterPlay(env.soudayo, playRecord!!, randomId!!)
 	}
 }

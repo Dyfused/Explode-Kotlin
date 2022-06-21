@@ -8,7 +8,7 @@ interface IBlowProvider {
 
 	fun getReviewer(soudayo: String): ReviewerModel
 
-	fun getReviewRequests(limit: Int, skip: Int, status: Int, searchStr: String): List<ReviewRequestModel>
+	fun getReviewRequests(soudayo: String, limit: Int, skip: Int, status: Int, searchStr: String): List<ReviewRequestModel>
 
 	fun getGotSets(soudayo: String): List<SetModel>
 
@@ -16,17 +16,18 @@ interface IBlowProvider {
 
 	fun getOwnedCharts(soudayo: String, limit: Int, skip: Int, isRanked: Boolean): List<DetailedChartModel>
 
-	fun getGameSetting(): GameSettingModel
+	fun getGameSetting(soudayo: String, ): GameSettingModel
 
-	fun getUser(username: String): UserModel
+	fun getUser(soudayo: String, username: String): UserModel?
 
 	fun loginUser(username: String, password: String): UserModel
 
 	fun registerUser(username: String, password: String): UserModel
 
-	fun getSet(id: String): SetModel
+	fun getSet(soudayo: String, id: String): SetModel
 
 	fun getSets(
+		soudayo: String,
 		limit: Int,
 		skip: Int,
 		searchedName: String,
@@ -40,15 +41,15 @@ interface IBlowProvider {
 
 	fun buySet(soudayo: String, id: String): ExchangeSetModel
 
-	fun getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel>
+	fun getAssessmentGroups(soudayo: String, limit: Int, skip: Int): List<AssessmentGroupModel>
 
-	fun getAssessmentRank(assessmentGroupId: String, medalLevel: Int, limit: Int, skip: Int): List<AssessmentRecordWithRankModel>
+	fun getAssessmentRank(soudayo: String, assessmentGroupId: String, medalLevel: Int, limit: Int, skip: Int): List<AssessmentRecordWithRankModel>
 
-	fun getAssessmentRankSelf(soudayo: String, assessmentGroupId: String, medalLevel: Int): AssessmentRecordWithRankModel
+	fun getAssessmentRankSelf(soudayo: String, assessmentGroupId: String, medalLevel: Int): AssessmentRecordWithRankModel?
 
-	fun getPlayRankSelf(chartId: String): PlayRecordWithRank?
+	fun getPlayRankSelf(soudayo: String, chartId: String): PlayRecordWithRank?
 
-	fun getPlayRank(chartId: String, limit: Int, skip: Int): List<PlayRecordWithRank>
+	fun getPlayRank(soudayo: String, chartId: String, limit: Int, skip: Int): List<PlayRecordWithRank>
 
 	fun submitBeforeAssessment(soudayo: String, assessmentId: String, medal: Int): BeforePlaySubmitModel
 

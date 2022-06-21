@@ -18,4 +18,13 @@ class TestDynamite {
 		loginQuery.execute().let(::println)
 	}
 
+	@Test
+	fun testRegister() {
+		val registerQuery = SingleQuery("mutation reg(\$un:String!, \$pw: String!) { r: registerUser(username: \$un, password: \$pw) { _id, username, token } }")
+		registerQuery.variables["un"] = "1"
+		registerQuery.variables["pw"] = "1"
+
+		registerQuery.execute().let(::print)
+	}
+
 }

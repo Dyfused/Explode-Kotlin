@@ -1,7 +1,10 @@
 package explode.blow.graphql.model
 
-import java.time.LocalDate
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+import java.time.OffsetDateTime
 
+@Serializable
 data class PlayRecordWithRank(
 	val player: PlayerModel,
 	val mod: PlayMod,
@@ -10,9 +13,11 @@ data class PlayRecordWithRank(
 	val perfect: Int,
 	val good: Int,
 	val miss: Int,
-	val createTime: LocalDate
+	@Contextual
+	val createTime: OffsetDateTime
 )
 
+@Serializable
 data class PlayMod(
 	val narrow: Int,
 	val speed: Int,
@@ -20,27 +25,33 @@ data class PlayMod(
 	val isMirror: Boolean
 )
 
+@Serializable
 data class BeforePlaySubmitModel(
-	val PPTime: String,
+	@Contextual
+	val PPTime: OffsetDateTime,
 	val playingRecord: PlayingRecordModel
 )
 
+@Serializable
 data class PlayingRecordModel(
 	val randomId: String
 )
 
+@Serializable
 data class AfterPlaySubmitModel(
 	val ranking: RankingModel,
 	val RThisMonth: Int,
-	val coin: Int,
-	val diamond: Int
+	val coin: Int?,
+	val diamond: Int?
 )
 
+@Serializable
 data class RankingModel(
 	val isPlayRankUpdated: Boolean,
 	val playRank: RankModel
 )
 
+@Serializable
 data class RankModel(
 	val rank: Int
 )

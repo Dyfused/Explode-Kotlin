@@ -6,9 +6,9 @@ import graphql.schema.DataFetchingEnvironment
 
 interface BlowMutationService : Mutation {
 
-	suspend fun loginUser(username: String?, password: String?): UserModel
+	suspend fun loginUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel
 
-	suspend fun registerUser(username: String?, password: String?): UserModel
+	suspend fun registerUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel
 
 	suspend fun purchaseChart(env: DataFetchingEnvironment, chartId: String?): UserModel
 
