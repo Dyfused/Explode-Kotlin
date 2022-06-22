@@ -35,7 +35,8 @@ data class SetModel(
 	val isGot: Boolean,
 	val isRanked: Boolean,
 	val isOfficial: Boolean,
-	val OverridePriceStr: String // DON'T FIX: Capital 'O' is defined in the game not Explode's fault.
+	val OverridePriceStr: String, // DON'T FIX: Capital 'O' is defined in the game not Explode's fault.
+	val D: Double? = null
 )
 
 @Serializable

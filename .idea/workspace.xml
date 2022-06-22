@@ -4,17 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="RenaIndex reader and Dispatch server implementation&#10;&#10;1. Implemented the dispatch server&#10;2. Setup Rena_Index_List reader">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowFullProvider.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowResourceProvider.kt" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Implement playing records storage and ranking">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowDataProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/InputModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/InputModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -42,11 +36,6 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="explode" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
               </path>
             </expand>
             <select />
@@ -107,7 +96,7 @@
       <recent name="explode.schema.model" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.explode [shadowJar]">
+  <component name="RunManager" selected="Kotlin.Start Ktor">
     <configuration name="TestOther.testNewChartSet" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -173,6 +162,15 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="Rena" type="JetRunConfigurationType">
+      <option name="MAIN_CLASS_NAME" value="explode.AppKt" />
+      <module name="explode.main" />
+      <option name="PROGRAM_PARAMETERS" value="format &quot;D:\DynamiteDispatch\rena_index_list.txt&quot;" />
+      <shortenClasspath name="NONE" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Start Ktor" type="JetRunConfigurationType" temporary="true">
       <option name="MAIN_CLASS_NAME" value="explode.AppKt" />
       <module name="explode.main" />
@@ -185,12 +183,13 @@
       <item itemvalue="Gradle.explode [shadowJar]" />
       <item itemvalue="Gradle.TestOther.testNewChartSet" />
       <item itemvalue="Gradle.explode [build]" />
+      <item itemvalue="Kotlin.Rena" />
       <item itemvalue="Kotlin.Start Ktor" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.explode [shadowJar]" />
         <item itemvalue="Kotlin.Start Ktor" />
+        <item itemvalue="Gradle.explode [shadowJar]" />
         <item itemvalue="Gradle.explode [build]" />
         <item itemvalue="Gradle.TestOther.testNewChartSet" />
       </list>
@@ -247,7 +246,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655829677710</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Added dispatch interface">
+      <created>1655896216946</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1655896216946</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -269,7 +275,9 @@
     <MESSAGE value="Added Blow framework" />
     <MESSAGE value="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode" />
     <MESSAGE value="RenaIndex reader and Dispatch server implementation&#10;&#10;1. Implemented the dispatch server&#10;2. Setup Rena_Index_List reader" />
-    <option name="LAST_COMMIT_MESSAGE" value="RenaIndex reader and Dispatch server implementation&#10;&#10;1. Implemented the dispatch server&#10;2. Setup Rena_Index_List reader" />
+    <MESSAGE value="Added dispatch interface" />
+    <MESSAGE value="Implement playing records storage and ranking" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implement playing records storage and ranking" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

@@ -19,6 +19,7 @@ data class UserModel(
 	val PPTime: OffsetDateTime,
 	val token: String,
 	val RThisMonth: Int?,
+	val highestGoldenMedal: Int?,
 	val access: AccessData
 )
 

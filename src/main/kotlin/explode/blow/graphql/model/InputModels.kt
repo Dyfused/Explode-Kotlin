@@ -15,3 +15,5 @@ data class PlayModInput(
 	val isBleed: Boolean?,
 	val isMirror: Boolean?
 )
+
+val PlayModInput.normal get() = PlayMod(narrow!!.toInt(), speed!!.toInt(), isBleed!!, isMirror!!)
