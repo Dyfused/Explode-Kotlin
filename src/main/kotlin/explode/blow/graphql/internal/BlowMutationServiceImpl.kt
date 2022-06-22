@@ -3,10 +3,10 @@ package explode.blow.graphql.internal
 import explode.blow.graphql.BlowMutationService
 import explode.blow.graphql.BlowService.soudayo
 import explode.blow.graphql.model.*
-import explode.blow.provider.IBlowProvider
+import explode.blow.provider.IBlowDataProvider
 import graphql.schema.DataFetchingEnvironment
 
-class BlowMutationServiceImpl(private val p: IBlowProvider) : BlowMutationService {
+class BlowMutationServiceImpl(private val p: IBlowDataProvider) : BlowMutationService {
 
 	override suspend fun loginUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel {
 		return p.loginUser(username!!, password!!)

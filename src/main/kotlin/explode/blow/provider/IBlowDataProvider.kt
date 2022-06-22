@@ -2,7 +2,7 @@ package explode.blow.provider
 
 import explode.blow.graphql.model.*
 
-interface IBlowProvider {
+interface IBlowDataProvider {
 
 	fun getSelf(soudayo: String): SelfModel
 

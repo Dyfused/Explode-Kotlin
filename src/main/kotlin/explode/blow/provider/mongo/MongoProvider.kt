@@ -3,7 +3,7 @@ package explode.blow.provider.mongo
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.UpdateOptions
 import explode.blow.graphql.model.*
-import explode.blow.provider.IBlowProvider
+import explode.blow.provider.IBlowFullProvider
 import explode.blow.provider.mongo.RandomUtil.randomId
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,7 +13,7 @@ import java.io.File
 import java.time.OffsetDateTime
 import java.util.*
 
-class MongoProvider(connectionString: String? = null) : IBlowProvider {
+class MongoProvider(connectionString: String? = null) : IBlowFullProvider {
 
 	private val logger = LoggerFactory.getLogger("MongoProvider")
 	private val mongo = (if(connectionString == null) KMongo.createClient() else KMongo.createClient(connectionString))
@@ -326,5 +326,29 @@ class MongoProvider(connectionString: String? = null) : IBlowProvider {
 		if(randomId != "0") error("F")
 		val u = getUserByTokenOrThrow(soudayo)
 		return AfterPlaySubmitModel(RankingModel(false, RankModel(1)), u.RThisMonth ?: 0, u.coin, u.diamond)
+	}
+
+	override fun getChartFile(chartId: String?): File? {
+		return chartFiles.findOne(IdToFile::_id eq chartId)?.file
+	}
+
+	override fun getMusicFile(setId: String?): File? {
+		return musicFiles.findOne(IdToFile::_id eq setId)?.file
+	}
+
+	override fun getPreviewFile(setId: String?): File? {
+		return previewFiles.findOne(IdToFile::_id eq setId)?.file
+	}
+
+	override fun getSetCoverFile(setId: String?): File? {
+		return coverFiles.findOne(IdToFile::_id eq setId)?.file
+	}
+
+	override fun getStorePreviewFile(setId: String?): File? {
+		return null // TODO
+	}
+
+	override fun getUserAvatarFile(userId: String?): File? {
+		return null // TODO
 	}
 }

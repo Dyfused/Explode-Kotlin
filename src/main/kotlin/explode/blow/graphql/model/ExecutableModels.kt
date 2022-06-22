@@ -2,7 +2,7 @@ package explode.blow.graphql.model
 
 import com.expediagroup.graphql.server.operations.Query
 import explode.blow.graphql.BlowService.soudayo
-import explode.blow.provider.IBlowProvider
+import explode.blow.provider.IBlowDataProvider
 import graphql.schema.DataFetchingEnvironment
 
 open class ReviewerModel : Query {
@@ -19,7 +19,7 @@ open class SelfModel : Query {
 	open suspend fun playRankSelf(env: DataFetchingEnvironment, chartId: String?): PlayRecordWithRank? = error("Need Implementation")
 }
 
-class ProviderSelfModel(private val p: IBlowProvider) : SelfModel() {
+class ProviderSelfModel(private val p: IBlowDataProvider) : SelfModel() {
 	override suspend fun gotSet(env: DataFetchingEnvironment): List<SetModel> {
 		return p.getGotSets(env.soudayo)
 	}
@@ -37,7 +37,7 @@ class ProviderSelfModel(private val p: IBlowProvider) : SelfModel() {
 	}
 }
 
-class ProviderReviewerModel(private val p: IBlowProvider) : ReviewerModel() {
+class ProviderReviewerModel(private val p: IBlowDataProvider) : ReviewerModel() {
 	override suspend fun reviewRequest(
 		env: DataFetchingEnvironment,
 		limit: Int?,

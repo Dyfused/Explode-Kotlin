@@ -4,10 +4,10 @@ import explode.backend.ktor.NNInt
 import explode.blow.graphql.BlowQueryService
 import explode.blow.graphql.BlowService.soudayo
 import explode.blow.graphql.model.*
-import explode.blow.provider.IBlowProvider
+import explode.blow.provider.IBlowDataProvider
 import graphql.schema.DataFetchingEnvironment
 
-class BlowQueryServiceImpl(private val p: IBlowProvider) : BlowQueryService {
+class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService {
 
 	override suspend fun hello(env: DataFetchingEnvironment): String {
 		return "You've been waiting, \"${env.soudayo}\"."

@@ -3,7 +3,7 @@ package explode.blow.graphql
 import com.expediagroup.graphql.generator.TopLevelObject
 import explode.blow.graphql.internal.BlowMutationServiceImpl
 import explode.blow.graphql.internal.BlowQueryServiceImpl
-import explode.blow.provider.IBlowProvider
+import explode.blow.provider.IBlowDataProvider
 import graphql.schema.DataFetchingEnvironment
 
 object BlowService {
@@ -21,7 +21,7 @@ object BlowService {
 			else -> token
 		}
 
-	internal val IBlowProvider.query: TopLevelObject get() = TopLevelObject(BlowQueryServiceImpl(this))
-	internal val IBlowProvider.mutation: TopLevelObject get() = TopLevelObject(BlowMutationServiceImpl(this))
+	internal val IBlowDataProvider.query: TopLevelObject get() = TopLevelObject(BlowQueryServiceImpl(this))
+	internal val IBlowDataProvider.mutation: TopLevelObject get() = TopLevelObject(BlowMutationServiceImpl(this))
 
 }

@@ -1,7 +1,9 @@
 package explode
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.LoggerContext
 import com.mongodb.client.model.UpdateOptions
-import explode.blow.provider.IBlowProvider
+import explode.blow.provider.IBlowFullProvider
 import explode.blow.provider.mongo.MongoProvider
 import explode.blow.provider.mongo.MongoProvider.*
 import explode.utils.RenaReader
@@ -16,6 +18,8 @@ private val mainLogger = LoggerFactory.getLogger("Explode")
 
 fun main(args: Array<String>) {
 
+	disableMongoLogging()
+
 	mainLogger.info("Explode ($GameVersion)")
 
 	val operation = args.getOrNull(0)
@@ -25,11 +29,15 @@ fun main(args: Array<String>) {
 	}
 
 	when(operation) {
-		null -> startKtorServer(args)
+		"backend", null -> startKtorServer(args)
 		"rena" -> formatByRenaIndexList(args.getOrNull(1) ?: return println("Invalid RenaIndexList path"))
 	}
 
 	mainLogger.info("Exploded.")
+}
+
+private fun disableMongoLogging() {
+	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("org.mongodb.driver").level = Level.WARN
 }
 
 private fun startKtorServer(args: Array<String>) {
@@ -105,4 +113,4 @@ const val GameVersion = 81
 /**
  * This field is used to construct the Schema.
  */
-val blow: IBlowProvider get() = MongoProvider()
+val blow: IBlowFullProvider get() = MongoProvider()
