@@ -11,6 +11,10 @@ fun Application.graphQLModule() {
 	install(Routing)
 
 	routing {
+		get {
+			call.respondText("You're finally here. Brother Slayer. Spawn Killer.")
+		}
+
 		post("graphql") {
 			KtorServer().handle(call)
 		}
@@ -27,32 +31,56 @@ fun Application.graphQLModule() {
 			get("/music/encoded/{setId}") {
 				val id = this.call.parameters["setId"]
 				val f = blow.getMusicFile(id)
-				if(f != null) { call.respondFile(f) } else { call.respondText("Invalid setId: $id") }
+				if(f != null) {
+					call.respondFile(f)
+				} else {
+					call.respond(HttpStatusCode.NotFound, "")
+				}
 			}
 			get("/cover/encoded/{setId}") {
 				val id = this.call.parameters["setId"]
 				val f = blow.getSetCoverFile(id)
-				if(f != null) { call.respondFile(f) } else { call.respondText("Invalid setId: $id") }
+				if(f != null) {
+					call.respondFile(f)
+				} else {
+					call.respond(HttpStatusCode.NotFound, "")
+				}
 			}
 			get("/preview/encoded/{setId}") {
 				val id = this.call.parameters["setId"]
 				val f = blow.getPreviewFile(id)
-				if(f != null) { call.respondFile(f) } else { call.respondText("Invalid setId: $id") }
+				if(f != null) {
+					call.respondFile(f)
+				} else {
+					call.respond(HttpStatusCode.NotFound, "")
+				}
 			}
 			get("/chart/encoded/{chartId}") {
 				val id = this.call.parameters["chartId"]
 				val f = blow.getChartFile(id)
-				if(f != null) { call.respondFile(f) } else { call.respondText("Invalid chartId: $id") }
+				if(f != null) {
+					call.respondFile(f)
+				} else {
+					call.respond(HttpStatusCode.NotFound, "")
+				}
 			}
 			get("/avatar/256x256_jpg/{userId}") {
 				val uid = call.parameters["userId"]
 				val f = blow.getUserAvatarFile(uid)
-				if(f != null) { call.respondFile(f) } else { call.respondText("Invalid userId: $uid") }
+				if(f != null) {
+					call.respondFile(f)
+				} else {
+					call.respond(HttpStatusCode.NotFound, "")
+				}
 			}
 			get("/cover/480x270_jpg/{setId}") {
 				val id = this.call.parameters["chartId"]
 				val f = blow.getStorePreviewFile(id)
-				if(f != null) { call.respondFile(f) } else { call.respondText("Invalid chartId: $id") }
+				if(f != null) {
+					call.respondFile(f)
+				} else {
+					call.respond(HttpStatusCode.NotFound, "")
+				}
 			}
 		}
 	}

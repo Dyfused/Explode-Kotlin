@@ -22,6 +22,8 @@ fun main(args: Array<String>) {
 
 	mainLogger.info("Explode ($GameVersion)")
 
+	blow = MongoProvider()
+
 	val operation = args.getOrNull(0)
 
 	Json {
@@ -93,7 +95,7 @@ private fun formatByRenaIndexList(renaPath: String) {
 
 		p.musicFiles.updateOne(IdToFile(setId, soundFile), UpdateOptions().upsert(true))
 		p.coverFiles.updateOne(IdToFile(setId, coverFile), UpdateOptions().upsert(true))
-		p.previewFiles.updateOne(IdToFile(setId, previewFile), UpdateOptions().upsert(true))
+		p.avatarFiles.updateOne(IdToFile(setId, previewFile), UpdateOptions().upsert(true))
 
 		val set = p.createNewSet(introduction, 0, noterName, setName, composerName, dcs, specifiedId = setId)
 
@@ -113,4 +115,4 @@ const val GameVersion = 81
 /**
  * This field is used to construct the Schema.
  */
-val blow: IBlowFullProvider get() = MongoProvider()
+lateinit var blow: IBlowFullProvider

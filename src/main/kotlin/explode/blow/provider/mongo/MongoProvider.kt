@@ -3,7 +3,7 @@
 package explode.blow.provider.mongo
 
 import com.mongodb.client.MongoDatabase
-import com.mongodb.client.model.UpdateOptions
+import com.mongodb.client.model.*
 import explode.blow.graphql.model.*
 import explode.blow.provider.IBlowFullProvider
 import explode.blow.provider.mongo.RandomUtil.randomId
@@ -272,6 +272,8 @@ class MongoProvider(connectionString: String? = null) : IBlowFullProvider {
 	val coverFiles = fdb.getCollection<IdToFile>("CoverFile")
 	val musicFiles = fdb.getCollection<IdToFile>("MusicFile")
 	val previewFiles = fdb.getCollection<IdToFile>("PreviewFile")
+	val avatarFiles = fdb.getCollection<IdToFile>("AvatarFile")
+	val storePreviewFiles = fdb.getCollection<IdToFile>("StorePreviewFile")
 
 	// IBlowProvider methods
 
@@ -399,26 +401,45 @@ class MongoProvider(connectionString: String? = null) : IBlowFullProvider {
 		return null
 	}
 
+	@Serializable
+	private data class PlayRecordDataRanked(
+		val _id: String,
+		val playerId: String,
+		val playedChartId: String,
+		val score: Int,
+		val perfect: Int,
+		val good: Int,
+		val miss: Int,
+		val playMod: PlayMod,
+		@Contextual
+		val time: OffsetDateTime,
+		val ranking: Int
+	)
+
+	private val aggregateRanking =
+		Aggregates.setWindowFields(null, PlayRecordDataRanked::score eq -1, WindowedComputations.rank("ranking"))
+
 	override fun getPlayRankSelf(soudayo: String, chartId: String): PlayRecordWithRank? {
 		val u = getUserByTokenOrThrow(soudayo)
-		val list = playRecordC.find(PlayRecordData::playedChartId eq chartId).toList().sortedBy { it.score }
-			.sortedBy { it.time }
-		val selfRecord = list.firstOrNull { it.playerId == u._id }
-		return if(selfRecord == null) {
-			null
-		} else {
-			val (_, _, _, score, perfect, good, miss, mod, time) = selfRecord
-			PlayRecordWithRank(u.asPlayer, mod, list.indexOf(selfRecord) + 1, score, perfect, good, miss, time)
-		}
+		val playerId = u._id
+		return playRecordC.aggregate<PlayRecordDataRanked>(
+			match(PlayRecordDataRanked::playedChartId eq chartId),
+			aggregateRanking,
+			match(PlayRecordDataRanked::playerId eq playerId)
+		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
+			PlayRecordWithRank(u.asPlayer, mod, ranking, score, perfect, good, miss, time)
+		}.firstOrNull()
 	}
 
 	override fun getPlayRank(soudayo: String, chartId: String, limit: Int, skip: Int): List<PlayRecordWithRank> {
-		val list = playRecordC.find(PlayRecordData::playedChartId eq chartId).limit(limit).skip(skip).toList()
-			.sortedBy { it.score }
-		return List(list.size) {
-			val (_, playerId, _, score, perfect, good, miss, playMod, time) = list[it]
-			PlayRecordWithRank(getPlayer(playerId)!!, playMod, it + 1, score, perfect, good, miss, time)
-		}
+		return playRecordC.aggregate<PlayRecordDataRanked>(
+			match(PlayRecordDataRanked::playedChartId eq chartId),
+			aggregateRanking,
+			skip(skip),
+			limit(limit)
+		).map { (_, playerId, _, score, perfect, good, miss, mod, time, ranking) ->
+			PlayRecordWithRank(getPlayer(playerId)!!, mod, ranking, score, perfect, good, miss, time)
+		}.toList()
 	}
 
 	override fun submitBeforeAssessment(soudayo: String, assessmentId: String, medal: Int): BeforePlaySubmitModel {
@@ -487,10 +508,10 @@ class MongoProvider(connectionString: String? = null) : IBlowFullProvider {
 	}
 
 	override fun getStorePreviewFile(setId: String?): File? {
-		return null // TODO
+		return storePreviewFiles.findOne(IdToFile::_id eq setId)?.file
 	}
 
 	override fun getUserAvatarFile(userId: String?): File? {
-		return null // TODO
+		return avatarFiles.findOne(IdToFile::_id eq userId)?.file
 	}
 }
