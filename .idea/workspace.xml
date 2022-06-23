@@ -7,9 +7,6 @@
     <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Implement playing records storage and ranking">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/InputModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/InputModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -253,7 +250,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655896216946</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Implement playing records storage and ranking">
+      <created>1655914956373</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1655914956373</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
