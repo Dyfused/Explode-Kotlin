@@ -3,6 +3,7 @@ package explode
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import com.mongodb.client.model.UpdateOptions
+import explode.backend.console.ExplodeConsole
 import explode.blow.provider.IBlowFullProvider
 import explode.blow.provider.mongo.MongoProvider
 import explode.blow.provider.mongo.MongoProvider.*
@@ -19,6 +20,7 @@ private val mainLogger = LoggerFactory.getLogger("Explode")
 fun main(args: Array<String>) {
 
 	disableMongoLogging()
+	disableKtorLogging()
 
 	mainLogger.info("Explode ($GameVersion)")
 
@@ -30,6 +32,8 @@ fun main(args: Array<String>) {
 		ignoreUnknownKeys = true
 	}
 
+	ExplodeConsole.loop()
+
 	when(operation) {
 		"backend", null -> startKtorServer(args)
 		"rena" -> formatByRenaIndexList(args.getOrNull(1) ?: return println("Invalid RenaIndexList path"))
@@ -40,6 +44,10 @@ fun main(args: Array<String>) {
 
 private fun disableMongoLogging() {
 	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("org.mongodb.driver").level = Level.WARN
+}
+
+private fun disableKtorLogging() {
+	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("Application").level = Level.WARN
 }
 
 private fun startKtorServer(args: Array<String>) {
