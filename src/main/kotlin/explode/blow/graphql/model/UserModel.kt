@@ -8,18 +8,18 @@ import java.time.OffsetDateTime
 @Serializable
 data class UserModel(
 	val _id: String,
-	val username: String,
-	val ownChart: List<String>,
-	val coworkChart: List<String>,
-	val ownSet: List<String>,
-	val follower: Int?,
-	val coin: Int?,
-	val diamond: Int?,
+	var username: String,
+	val ownChart: MutableSet<String>,
+	val coworkChart: MutableSet<String>,
+	val ownSet: MutableSet<String>,
+	var follower: Int?,
+	var coin: Int?,
+	var diamond: Int?,
 	@Contextual
-	val PPTime: OffsetDateTime,
+	var PPTime: OffsetDateTime,
 	val token: String,
-	val RThisMonth: Int?,
-	val highestGoldenMedal: Int?,
+	var RThisMonth: Int?,
+	var highestGoldenMedal: Int?,
 	val access: AccessData
 )
 
