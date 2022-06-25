@@ -3,24 +3,20 @@
 package explode.blow.provider.mongo
 
 import com.mongodb.client.MongoCollection
-import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.*
 import explode.blow.graphql.model.*
-import explode.blow.provider.IBlowAccessor
-import explode.blow.provider.IBlowFullProvider
+import explode.blow.provider.*
 import explode.blow.provider.mongo.RandomUtil.randomId
-import explode.utils.Exploding
 import kotlinx.serialization.*
 import org.bson.types.Binary
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
-import java.io.File
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.math.pow
 import kotlin.math.round
 
-class MongoProvider(connectionString: String? = null) : IBlowAccessor {
+class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowResourceProvider {
 
 	private val logger = LoggerFactory.getLogger("MongoProvider")
 	private val mongo = (if(connectionString == null) KMongo.createClient() else KMongo.createClient(connectionString))
@@ -34,6 +30,11 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor {
 	private inline fun <reified T: Any> T.upsert(coll: MongoCollection<T>): T = apply {
 		coll.updateOne(this, UpdateOptions().upsert(true))
 	}
+
+	/**
+	 * Official User is used to be the default value of charts whose noter is not currently available.
+	 */
+	val officialUser: UserModel get() = getUserByName("official") ?: createUser("official", "official_is_unbreakable")
 
 	override fun getUser(userId: String): UserModel? {
 		return userC.findOne(UserModel::_id eq userId)
@@ -71,9 +72,9 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor {
 		return UserModel(
 			UUID.randomUUID().toString(),
 			username,
-			mutableSetOf(),
-			mutableSetOf(),
-			mutableSetOf(),
+			mutableListOf(),
+			mutableListOf(),
+			mutableListOf(),
 			0,
 			1000,
 			0,
@@ -131,7 +132,6 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor {
 		musicianName: String,
 		difficultyClass: Int,
 		difficultyValue: Int,
-		chartFile: File?,
 		gcPrice: Int,
 		D: Double?
 	): DetailedChartModel {
@@ -278,32 +278,65 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor {
 
 	// File System
 
-	@Serializable
-	data class IdToFile(val _id: String, @Serializable(with = KFileSerializer::class) val file: File)
-
-	private val fdb: MongoDatabase = mongo.getDatabase("Explode_File")
-
-	val chartFiles = fdb.getCollection<IdToFile>("ChartFile")
-	val coverFiles = fdb.getCollection<IdToFile>("CoverFile")
-	val musicFiles = fdb.getCollection<IdToFile>("MusicFile")
-	val previewFiles = fdb.getCollection<IdToFile>("PreviewFile")
-	val avatarFiles = fdb.getCollection<IdToFile>("AvatarFile")
-	val storePreviewFiles = fdb.getCollection<IdToFile>("StorePreviewFile")
-
-	@Exploding
-	val binaryC = fdb.getCollection<IdToBytes>()
+	val binaryC = db.getCollection<IdToBytes>("BinaryData")
 
 	@Serializable
 	data class IdToBytes(val _id: String, @Contextual val data: Binary)
 
-	@Exploding("ID Collision")
-	override fun uploadData(id: String, data: ByteArray) {
+	fun uploadData(id: String, data: ByteArray) {
 		IdToBytes(id, Binary(data)).upsert(binaryC)
 	}
 
-	@Exploding("ID Collision")
-	override fun downloadData(id: String): ByteArray? {
+	fun downloadData(id: String): ByteArray? {
 		return binaryC.findOne(IdToBytes::_id eq id)?.data?.data
+	}
+
+	override fun getChartResource(chartId: String?): ByteArray? {
+		return downloadData("CHART_$chartId")
+	}
+
+	override fun getMusicResource(setId: String?): ByteArray? {
+		return downloadData("MUSIC_$setId")
+	}
+
+	override fun getPreviewResource(setId: String?): ByteArray? {
+		return downloadData("PREVIEW_$setId")
+	}
+
+	override fun getSetCoverResource(setId: String?): ByteArray? {
+		return downloadData("COVER_$setId")
+	}
+
+	override fun getStorePreviewResource(setId: String?): ByteArray? {
+		return downloadData("STORE_$setId")
+	}
+
+	override fun getUserAvatarResource(userId: String?): ByteArray? {
+		return downloadData("AVATAR_$userId")
+	}
+
+	override fun addChartResource(chartId: String, data: ByteArray) {
+		uploadData("CHART_$chartId", data)
+	}
+
+	override fun addMusicResource(setId: String, data: ByteArray) {
+		uploadData("MUSIC_$setId", data)
+	}
+
+	override fun addPreviewResource(setId: String, data: ByteArray) {
+		uploadData("PREVIEW_$setId", data)
+	}
+
+	override fun addSetCoverResource(setId: String, data: ByteArray) {
+		uploadData("COVER_$setId", data)
+	}
+
+	override fun addStorePreviewResource(setId: String, data: ByteArray) {
+		uploadData("STORE_$setId", data)
+	}
+
+	override fun addUserAvatarResource(userId: String, data: ByteArray) {
+		uploadData("AVATAR_$userId", data)
 	}
 
 	// IBlowProvider methods
@@ -323,7 +356,9 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor {
 		val ranking: Int
 	)
 
-	inner class ProviderImpl : IBlowFullProvider {
+	val provider: IBlowDataProvider by lazy { ProviderImpl() }
+
+	inner class ProviderImpl internal constructor(): IBlowDataProvider {
 		private fun getUserByTokenOrThrow(token: String) =
 			getUserByToken(token) ?: error("Cannot find the User of the Token.")
 
@@ -523,30 +558,6 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor {
 				u.coin,
 				u.diamond
 			)
-		}
-
-		override fun getChartFile(chartId: String?): File? {
-			return chartFiles.findOne(IdToFile::_id eq chartId)?.file
-		}
-
-		override fun getMusicFile(setId: String?): File? {
-			return musicFiles.findOne(IdToFile::_id eq setId)?.file
-		}
-
-		override fun getPreviewFile(setId: String?): File? {
-			return previewFiles.findOne(IdToFile::_id eq setId)?.file
-		}
-
-		override fun getSetCoverFile(setId: String?): File? {
-			return coverFiles.findOne(IdToFile::_id eq setId)?.file
-		}
-
-		override fun getStorePreviewFile(setId: String?): File? {
-			return storePreviewFiles.findOne(IdToFile::_id eq setId)?.file
-		}
-
-		override fun getUserAvatarFile(userId: String?): File? {
-			return avatarFiles.findOne(IdToFile::_id eq userId)?.file
 		}
 	}
 }

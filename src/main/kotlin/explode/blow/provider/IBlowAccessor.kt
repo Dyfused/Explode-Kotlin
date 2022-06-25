@@ -1,7 +1,6 @@
 package explode.blow.provider
 
 import explode.blow.graphql.model.*
-import java.io.File
 
 interface IBlowAccessor {
 
@@ -75,7 +74,6 @@ interface IBlowAccessor {
 	 *
 	 * @param difficultyClass The difficulty class, from 1 to 6 referring from CASUAL to TERA.
 	 * @param difficultyValue The numeric value of difficulty.
-	 * @param chartFile The chart content file(.xml) used to store in the Database.
 	 */
 	fun createChart(
 		chartName: String,
@@ -83,7 +81,6 @@ interface IBlowAccessor {
 		musicianName: String,
 		difficultyClass: Int,
 		difficultyValue: Int,
-		chartFile: File? = null,
 		gcPrice: Int = 0,
 		D: Double? = null
 	): DetailedChartModel
@@ -134,7 +131,6 @@ interface IBlowAccessor {
 		fun addChart(
 			difficultyClass: Int,
 			difficultyValue: Int,
-			chartFile: File? = null,
 			D: Double? = null
 		): DetailedChartModel {
 			// Unranked charts should have no D value
@@ -148,13 +144,14 @@ interface IBlowAccessor {
 			return accessor.createChart(
 				"${setTitle}_${difficultyClass}",
 				noterUser, composerName,
-				difficultyClass, difficultyValue, chartFile,
+				difficultyClass, difficultyValue,
 				0,
 				D = d
 			).apply(chart::add)
 		}
 
 		fun buildSet(): SetModel {
+			if(chart.isEmpty()) error("Must include charts")
 			return accessor.createSet(
 				setTitle,
 				composerName, noterUser.username,
@@ -164,8 +161,4 @@ interface IBlowAccessor {
 			)
 		}
 	}
-
-	fun uploadData(id: String, data: ByteArray)
-
-	fun downloadData(id: String): ByteArray?
 }

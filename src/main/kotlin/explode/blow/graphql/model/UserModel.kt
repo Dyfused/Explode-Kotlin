@@ -9,9 +9,9 @@ import java.time.OffsetDateTime
 data class UserModel(
 	val _id: String,
 	var username: String,
-	val ownChart: MutableSet<String>,
-	val coworkChart: MutableSet<String>,
-	val ownSet: MutableSet<String>,
+	val ownChart: MutableList<String>,
+	val coworkChart: MutableList<String>,
+	val ownSet: MutableList<String>,
 	var follower: Int?,
 	var coin: Int?,
 	var diamond: Int?,

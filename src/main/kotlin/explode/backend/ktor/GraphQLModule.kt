@@ -1,7 +1,7 @@
 package explode.backend.ktor
 
 import com.expediagroup.graphql.generator.extensions.print
-import explode.blow
+import explode.blowResource
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -30,54 +30,54 @@ fun Application.graphQLModule() {
 		route("download") {
 			get("/music/encoded/{setId}") {
 				val id = this.call.parameters["setId"]
-				val f = blow.getMusicFile(id)
+				val f = blowResource.getMusicResource(id)
 				if(f != null) {
-					call.respondFile(f)
+					call.respondBytes(f)
 				} else {
 					call.respond(HttpStatusCode.NotFound, "")
 				}
 			}
 			get("/cover/encoded/{setId}") {
 				val id = this.call.parameters["setId"]
-				val f = blow.getSetCoverFile(id)
+				val f = blowResource.getSetCoverResource(id)
 				if(f != null) {
-					call.respondFile(f)
+					call.respondBytes(f)
 				} else {
 					call.respond(HttpStatusCode.NotFound, "")
 				}
 			}
 			get("/preview/encoded/{setId}") {
 				val id = this.call.parameters["setId"]
-				val f = blow.getPreviewFile(id)
+				val f = blowResource.getPreviewResource(id)
 				if(f != null) {
-					call.respondFile(f)
+					call.respondBytes(f)
 				} else {
 					call.respond(HttpStatusCode.NotFound, "")
 				}
 			}
 			get("/chart/encoded/{chartId}") {
 				val id = this.call.parameters["chartId"]
-				val f = blow.getChartFile(id)
+				val f = blowResource.getChartResource(id)
 				if(f != null) {
-					call.respondFile(f)
+					call.respondBytes(f)
 				} else {
 					call.respond(HttpStatusCode.NotFound, "")
 				}
 			}
 			get("/avatar/256x256_jpg/{userId}") {
 				val uid = call.parameters["userId"]
-				val f = blow.getUserAvatarFile(uid)
+				val f = blowResource.getUserAvatarResource(uid)
 				if(f != null) {
-					call.respondFile(f)
+					call.respondBytes(f)
 				} else {
 					call.respond(HttpStatusCode.NotFound, "")
 				}
 			}
 			get("/cover/480x270_jpg/{setId}") {
 				val id = this.call.parameters["chartId"]
-				val f = blow.getStorePreviewFile(id)
+				val f = blowResource.getStorePreviewResource(id)
 				if(f != null) {
-					call.respondFile(f)
+					call.respondBytes(f)
 				} else {
 					call.respond(HttpStatusCode.NotFound, "")
 				}

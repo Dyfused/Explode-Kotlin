@@ -37,6 +37,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.2")
     implementation("io.ktor", "ktor-server-core", ktorVersion)
     implementation("io.ktor", "ktor-server-netty", ktorVersion)
+    implementation("io.ktor", "ktor-server-cors", ktorVersion)
     implementation("ch.qos.logback", "logback-classic", logbackVersion)
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", kotlinCoroutineVersion)
     implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.7.0")

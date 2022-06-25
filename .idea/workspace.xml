@@ -4,14 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Rearrange MongoProvider">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowAccessor.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/utils/Exploding.kt" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Move data storage to database&#10;&#10;1. began to create Bomb, the Online Manager.&#10;2. TODO: separate Dispatch server from Explode.">
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/KtorHelper.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/bomb/Bomb.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/static/css/app.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/static/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/static/js/bomb.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/static/js/jquery-3.6.0.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/static/jsconfig.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowAccessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowAccessor.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowFullProvider.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowResourceProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowResourceProvider.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,11 +60,11 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Kotlin Data Class" />
-        <option value="Kotlin File" />
         <option value="Kotlin Class" />
         <option value="Kotlin Object" />
-        <option value="Kotlin Interface" />
         <option value="Kotlin Annotation" />
+        <option value="Kotlin File" />
+        <option value="Kotlin Interface" />
       </list>
     </option>
   </component>
@@ -82,15 +92,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;jdk.selected.JAVA_MODULE&quot;: &quot;11&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;vcs.Git&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "jdk.selected.JAVA_MODULE": "11",
+    "settings.editor.selected.configurable": "inlay.hints"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\explode\src\main\kotlin\explode\blow\graphql" />
@@ -103,7 +113,7 @@
       <recent name="explode.schema.model" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.TestOther.testUpload">
+  <component name="RunManager" selected="Kotlin.Rena">
     <configuration name="TestOther.testNewChartSet" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -195,7 +205,7 @@
     <configuration name="Rena" type="JetRunConfigurationType">
       <option name="MAIN_CLASS_NAME" value="explode.AppKt" />
       <module name="explode.main" />
-      <option name="PROGRAM_PARAMETERS" value="format &quot;D:\DynamiteDispatch\rena_index_list.txt&quot;" />
+      <option name="PROGRAM_PARAMETERS" value="rena &quot;D:\DynamiteDispatch\rena_index_list.txt&quot;" />
       <shortenClasspath name="NONE" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -219,8 +229,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.TestOther.testUpload" />
         <item itemvalue="Kotlin.Start Ktor" />
+        <item itemvalue="Gradle.TestOther.testUpload" />
         <item itemvalue="Gradle.explode [shadowJar]" />
         <item itemvalue="Gradle.explode [build]" />
         <item itemvalue="Gradle.TestOther.testNewChartSet" />
@@ -313,7 +323,14 @@
       <option name="project" value="LOCAL" />
       <updated>1655990235438</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Rearrange MongoProvider">
+      <created>1656129525145</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1656129525146</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -341,7 +358,8 @@
     <MESSAGE value="Impl Avatar and StorePreview download&#10;&#10;1. Implemented Avatar and StorePreview download&#10;2. Rewrote the ranking algorithm" />
     <MESSAGE value="New Explode Console" />
     <MESSAGE value="Rearrange MongoProvider" />
-    <option name="LAST_COMMIT_MESSAGE" value="Rearrange MongoProvider" />
+    <MESSAGE value="Move data storage to database&#10;&#10;1. began to create Bomb, the Online Manager.&#10;2. TODO: separate Dispatch server from Explode." />
+    <option name="LAST_COMMIT_MESSAGE" value="Move data storage to database&#10;&#10;1. began to create Bomb, the Online Manager.&#10;2. TODO: separate Dispatch server from Explode." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
