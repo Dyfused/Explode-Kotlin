@@ -4,61 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Move data storage to database&#10;&#10;1. began to create Bomb, the Online Manager.&#10;2. TODO: separate Dispatch server from Explode.">
-      <change afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/BlowCustomType.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowCustomTypeImpl.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/static/css/app.css" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="[BREAKING] Rearranged the whole project into submodules&#10;&#10;1. Split Models and DataProviders(including the Mongo impl) to &quot;dataprovider&quot; module.&#10;2. Put the remaining GraphQL implements into &quot;graphql-server&quot; module.&#10;3. Self and Reviewer classes are corrected to GraphQL Type than Data Provider.&#10;4. Updated the Bomb project, but should be moved into another module.">
+      <change afterPath="$PROJECT_DIR$/composer-client/build.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/App.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/StoreView.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/StoreDataProvider.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rena/src/main/java/taskeren/explode/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/KtorHelper.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/bomb/Bomb.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/bomb/Bomb.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/CustomSchemaGeneratorHooks.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/CustomSchemaGeneratorHooks.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/GraphQLModule.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLContextFactory.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLContextFactory.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLRequestParser.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLRequestParser.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLSchema.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLSchema.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorGraphQLServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLServer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/backend/ktor/KtorServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorServer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowMutationService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/BlowMutationService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowQueryService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/BlowQueryService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/BlowService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/BlowUtils.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowMutationServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowMutationServiceImpl.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/internal/BlowQueryServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowQueryServiceImpl.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/AssessmentModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/AssessmentRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/AssessmentRecordModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/ChartModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ClassifiedModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/ClassifiedModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/ExecutableModels.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/GameSettingModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/GameSettingModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/InputModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/InputModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/PlayRecordModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/PlayRecordModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/graphql/model/UserModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/UserModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowAccessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowAccessor.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowDataProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowDataProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/IBlowResourceProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowResourceProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/KFileSerializer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/KFileSerializer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/blow/provider/mongo/RandomUtil.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/RandomUtil.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/utils/Exploding.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/explode/utils/RenaReader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/RenaReader.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/application.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/graphql-playground.html" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/graphql-playground.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/static/css/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/static/js/bomb.js" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/static/js/bomb.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/static/js/jquery-3.6.0.js" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/static/js/jquery-3.6.0.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/static/jsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/static/jsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/TestDynamite.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/TestOther.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/dynamite/GraphQLExecute.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/kotlin/dynamite/SingleQuery.kt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,48 +41,15 @@
         <task path="$PROJECT_DIR$/graphql-server">
           <activation />
         </task>
+        <task path="$PROJECT_DIR$/tornado-client">
+          <activation />
+        </task>
         <projects_view>
           <tree_state>
             <expand>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="explode" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="dataprovider" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="dataprovider" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="dataprovider" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="graphql-server" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="graphql-server" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="graphql-server" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -139,11 +62,11 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Kotlin Data Class" />
-        <option value="Kotlin Class" />
-        <option value="Kotlin Object" />
         <option value="Kotlin Annotation" />
         <option value="Kotlin Interface" />
+        <option value="Kotlin Class" />
         <option value="Kotlin File" />
+        <option value="Kotlin Object" />
       </list>
     </option>
   </component>
@@ -180,7 +103,7 @@
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "inlay.hints"
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -197,31 +120,8 @@
       <recent name="explode.schema.model" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.explode:graphql-server [build]">
-    <configuration name="TestOther.testUpload" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;TestOther.testUpload&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="explode [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Kotlin.Composable Explode">
+    <configuration name="explode [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -232,7 +132,7 @@
         </option>
         <option name="taskNames">
           <list>
-            <option value="shadowJar" />
+            <option value="build" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -284,6 +184,35 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="explode:tornado-client [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/tornado-client" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
+    <configuration name="Composable Explode" type="JetRunConfigurationType" temporary="true">
+      <option name="MAIN_CLASS_NAME" value="explode.compose.AppKt" />
+      <module name="explode.composer-client.main" />
+      <shortenClasspath name="NONE" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Rena" type="JetRunConfigurationType">
       <option name="MAIN_CLASS_NAME" value="explode.AppKt" />
       <module name="explode.graphql-server.main" />
@@ -293,29 +222,21 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Start Ktor" type="JetRunConfigurationType" temporary="true">
-      <option name="MAIN_CLASS_NAME" value="explode.AppKt" />
-      <module name="explode.graphql-server.main" />
-      <shortenClasspath name="NONE" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <list>
       <item itemvalue="Gradle.explode:dataprovider [build]" />
       <item itemvalue="Gradle.explode:graphql-server [build]" />
-      <item itemvalue="Gradle.TestOther.testUpload" />
-      <item itemvalue="Gradle.explode [shadowJar]" />
+      <item itemvalue="Gradle.explode:tornado-client [build]" />
+      <item itemvalue="Gradle.explode [build]" />
       <item itemvalue="Kotlin.Rena" />
-      <item itemvalue="Kotlin.Start Ktor" />
+      <item itemvalue="Kotlin.Composable Explode" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Kotlin.Composable Explode" />
+        <item itemvalue="Gradle.explode:tornado-client [build]" />
         <item itemvalue="Gradle.explode:graphql-server [build]" />
         <item itemvalue="Gradle.explode:dataprovider [build]" />
-        <item itemvalue="Kotlin.Start Ktor" />
-        <item itemvalue="Gradle.TestOther.testUpload" />
-        <item itemvalue="Gradle.explode [shadowJar]" />
+        <item itemvalue="Gradle.explode [build]" />
       </list>
     </recent_temporary>
   </component>
@@ -419,7 +340,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656165171532</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="[BREAKING] Rearranged the whole project into submodules&#10;&#10;1. Split Models and DataProviders(including the Mongo impl) to &quot;dataprovider&quot; module.&#10;2. Put the remaining GraphQL implements into &quot;graphql-server&quot; module.&#10;3. Self and Reviewer classes are corrected to GraphQL Type than Data Provider.&#10;4. Updated the Bomb project, but should be moved into another module.">
+      <created>1656328982236</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1656328982237</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -448,7 +376,8 @@
     <MESSAGE value="New Explode Console" />
     <MESSAGE value="Rearrange MongoProvider" />
     <MESSAGE value="Move data storage to database&#10;&#10;1. began to create Bomb, the Online Manager.&#10;2. TODO: separate Dispatch server from Explode." />
-    <option name="LAST_COMMIT_MESSAGE" value="Move data storage to database&#10;&#10;1. began to create Bomb, the Online Manager.&#10;2. TODO: separate Dispatch server from Explode." />
+    <MESSAGE value="[BREAKING] Rearranged the whole project into submodules&#10;&#10;1. Split Models and DataProviders(including the Mongo impl) to &quot;dataprovider&quot; module.&#10;2. Put the remaining GraphQL implements into &quot;graphql-server&quot; module.&#10;3. Self and Reviewer classes are corrected to GraphQL Type than Data Provider.&#10;4. Updated the Bomb project, but should be moved into another module." />
+    <option name="LAST_COMMIT_MESSAGE" value="[BREAKING] Rearranged the whole project into submodules&#10;&#10;1. Split Models and DataProviders(including the Mongo impl) to &quot;dataprovider&quot; module.&#10;2. Put the remaining GraphQL implements into &quot;graphql-server&quot; module.&#10;3. Self and Reviewer classes are corrected to GraphQL Type than Data Provider.&#10;4. Updated the Bomb project, but should be moved into another module." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

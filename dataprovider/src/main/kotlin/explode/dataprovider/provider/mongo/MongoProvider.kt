@@ -208,6 +208,25 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowReso
 		}
 	}
 
+	fun getSetList(
+		limit: Int,
+		skip: Int,
+		searchedName: String? = null,
+		isHidden: Boolean? = null,
+		isOfficial: Boolean? = null,
+		isRanked: Boolean? = null,
+		isNeedReview: Boolean? = null
+	): List<SetModel> {
+		val filter = buildList {
+			if(searchedName != null) add(SetModel::musicTitle eq searchedName)
+			if(isHidden != null) if(isHidden) add(SetModel::coinPrice eq -1) else add(SetModel::coinPrice ne -1)
+			if(isOfficial != null) add(SetModel::isOfficial eq isOfficial)
+			if(isRanked != null) add(SetModel::isRanked eq isRanked)
+			if(isNeedReview != null) add(SetModel::needReview eq isNeedReview)
+		}.let(::and)
+		return chartSetC.find(filter).limit(limit).skip(skip).toList()
+	}
+
 	// Play Record
 
 	@Serializable
