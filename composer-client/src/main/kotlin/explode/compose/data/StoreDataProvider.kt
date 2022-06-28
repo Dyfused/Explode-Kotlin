@@ -4,7 +4,7 @@ import explode.dataprovider.provider.mongo.MongoProvider
 
 object StoreDataProvider {
 
-	private val p = MongoProvider()
+	internal val p = MongoProvider()
 
 	fun getChartSets() = p.getSetList(10, 0, isRanked = true)
 
