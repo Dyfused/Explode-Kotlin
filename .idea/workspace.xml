@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
+    <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="[BREAKING] Rearranged the whole project into submodules&#10;&#10;1. Split Models and DataProviders(including the Mongo impl) to &quot;dataprovider&quot; module.&#10;2. Put the remaining GraphQL implements into &quot;graphql-server&quot; module.&#10;3. Self and Reviewer classes are corrected to GraphQL Type than Data Provider.&#10;4. Updated the Bomb project, but should be moved into another module.">
-      <change afterPath="$PROJECT_DIR$/composer-client/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/App.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/StoreView.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/StoreDataProvider.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rena/src/main/java/taskeren/explode/Main.java" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Implemented StoreView and EditingView">
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/CreatingChartPage.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/EditChartPage.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/ExplodeViewModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/ChartDetailHolder.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/Difficulty.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/theme/ExplodeColor.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer-client/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/App.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/StoreView.kt" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/StoreView.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/StoreDataProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/StoreDataProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/ChartModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/model/ChartModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowAccessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowAccessor.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle.kts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,9 +70,10 @@
         <option value="Kotlin Data Class" />
         <option value="Kotlin Annotation" />
         <option value="Kotlin Interface" />
-        <option value="Kotlin Class" />
-        <option value="Kotlin File" />
         <option value="Kotlin Object" />
+        <option value="Kotlin File" />
+        <option value="Kotlin Class" />
+        <option value="Kotlin Enum" />
       </list>
     </option>
   </component>
@@ -79,8 +86,8 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.litote.kmongo/kmongo-property/4.6.1/9f1c49ad27b0a75cc194e5df53beb27c418e5102/kmongo-property-4.6.1-sources.jar!/org/litote/kmongo/Aggregates.kt" root0="SKIP_INSPECTION" />
     <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.mongodb/mongodb-driver-core/4.6.0/ada95bef8943a58950786f6f0e5ea1b788546e/mongodb-driver-core-4.6.0-sources.jar!/com/mongodb/client/model/Aggregates.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.litote.kmongo/kmongo-property/4.6.1/9f1c49ad27b0a75cc194e5df53beb27c418e5102/kmongo-property-4.6.1-sources.jar!/org/litote/kmongo/Aggregates.kt" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -94,18 +101,14 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "jdk.selected.JAVA_MODULE": "11",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.keymap"
-  }
-}]]></component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
+    <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\explode\graphql-server\src\main\resources" />
@@ -347,7 +350,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656328982237</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Added new client subproject.">
+      <created>1656354595176</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1656354595176</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -360,6 +370,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
@@ -377,7 +388,9 @@
     <MESSAGE value="Rearrange MongoProvider" />
     <MESSAGE value="Move data storage to database&#10;&#10;1. began to create Bomb, the Online Manager.&#10;2. TODO: separate Dispatch server from Explode." />
     <MESSAGE value="[BREAKING] Rearranged the whole project into submodules&#10;&#10;1. Split Models and DataProviders(including the Mongo impl) to &quot;dataprovider&quot; module.&#10;2. Put the remaining GraphQL implements into &quot;graphql-server&quot; module.&#10;3. Self and Reviewer classes are corrected to GraphQL Type than Data Provider.&#10;4. Updated the Bomb project, but should be moved into another module." />
-    <option name="LAST_COMMIT_MESSAGE" value="[BREAKING] Rearranged the whole project into submodules&#10;&#10;1. Split Models and DataProviders(including the Mongo impl) to &quot;dataprovider&quot; module.&#10;2. Put the remaining GraphQL implements into &quot;graphql-server&quot; module.&#10;3. Self and Reviewer classes are corrected to GraphQL Type than Data Provider.&#10;4. Updated the Bomb project, but should be moved into another module." />
+    <MESSAGE value="Added new client subproject." />
+    <MESSAGE value="Implemented StoreView and EditingView" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented StoreView and EditingView" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

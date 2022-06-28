@@ -3,11 +3,17 @@
 package explode.dataprovider.provider.mongo
 
 import com.mongodb.client.MongoCollection
-import com.mongodb.client.model.*
+import com.mongodb.client.model.Aggregates
+import com.mongodb.client.model.UpdateOptions
+import com.mongodb.client.model.WindowedComputations
 import explode.dataprovider.model.*
-import explode.dataprovider.provider.*
+import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.provider.IBlowResourceProvider
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
-import kotlinx.serialization.*
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.bson.types.Binary
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
@@ -64,7 +70,11 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowReso
 		return getUserByToken(token)?.asPlayer
 	}
 
-	override fun UserModel.update(block: UserModel.() -> Unit): UserModel {
+	override fun updateUser(userModel: UserModel): UserModel {
+		return userModel.upsert(userC)
+	}
+
+	fun UserModel.update(block: UserModel.() -> Unit): UserModel {
 		return this.apply(block).upsert(userC)
 	}
 
@@ -175,11 +185,19 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowReso
 		).upsert(chartSetC)
 	}
 
-	override fun DetailedChartModel.update(block: DetailedChartModel.() -> Unit): DetailedChartModel {
+	override fun updateChart(detailedChartModel: DetailedChartModel): DetailedChartModel {
+		return detailedChartModel.upsert(chartC)
+	}
+
+	fun DetailedChartModel.update(block: DetailedChartModel.() -> Unit): DetailedChartModel {
 		return this.apply(block).upsert(chartC)
 	}
 
-	override fun SetModel.update(block: SetModel.() -> Unit): SetModel {
+	override fun updateSet(setModel: SetModel): SetModel {
+		return setModel.upsert(chartSetC)
+	}
+
+	fun SetModel.update(block: SetModel.() -> Unit): SetModel {
 		return this.apply(block).upsert(chartSetC)
 	}
 

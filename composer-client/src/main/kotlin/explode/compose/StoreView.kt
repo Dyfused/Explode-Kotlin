@@ -3,10 +3,13 @@ package explode.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
@@ -14,11 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.*
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import explode.compose.data.StoreDataProvider
+import explode.compose.theme.ExplodeColor
 import explode.dataprovider.model.SetModel
 import kotlinx.coroutines.launch
 
@@ -49,8 +55,10 @@ fun StoreViewList() {
 	LazyColumn(
 		state = listState
 	) {
-		items(charts) {
-			ChartSetCard(it)
+		items(charts) { setModel ->
+			ChartSetCard(setModel) {
+				ExplodeViewModel.setEditingChartSet(it)
+			}
 		}
 	}
 }
@@ -87,13 +95,13 @@ fun StoreSearchBar(requestStoreItemUpdate: (String, Boolean, Boolean, Boolean, B
 			modifier = Modifier.fillMaxWidth(),
 			verticalAlignment = Alignment.CenterVertically
 		) {
-			Checkbox(isRanked, { isRanked = it; if(it) isUnranked = false })
+			Checkbox(isRanked, { isRanked = it; if(it) isUnranked = false else isOfficial = false })
 			Text("Ranked")
 			Spacer(Modifier.size(4.dp))
-			Checkbox(isUnranked, { isUnranked = it; if(it) isRanked = false })
+			Checkbox(isUnranked, { isUnranked = it; if(it) { isRanked = false; isOfficial = false } })
 			Text("Unranked")
 			Spacer(Modifier.size(4.dp))
-			Checkbox(isOfficial, { isOfficial = it; isRanked = true })
+			Checkbox(isOfficial, { isOfficial = it; isRanked = true; isUnranked = false })
 			Text("Official")
 			Spacer(Modifier.size(4.dp))
 			Checkbox(isNeedReview, { isNeedReview = it })
@@ -103,24 +111,33 @@ fun StoreSearchBar(requestStoreItemUpdate: (String, Boolean, Boolean, Boolean, B
 			Text("Hidden")
 		}
 
-		Button(
-			onClick = { requestStoreItemUpdate(searchedName, isRanked, isUnranked, isOfficial, isNeedReview, isHidden) },
-			modifier = Modifier.fillMaxWidth()
-		) {
-			Icon(Icons.Default.Search, "Search")
+		Row {
+			Button(
+				onClick = { ExplodeViewModel.onCreatingPage = true },
+				modifier = Modifier.weight(2F)
+			) {
+				Icon(Icons.Default.Edit, "Add")
+			}
+
+			Spacer(Modifier.weight(0.5F))
+
+			Button(
+				onClick = { requestStoreItemUpdate(searchedName, isRanked, isUnranked, isOfficial, isNeedReview, isHidden) },
+				modifier = Modifier.weight(5F)
+			) {
+				Icon(Icons.Default.Search, "Search")
+			}
 		}
 	}
 }
 
 @Composable
-fun ChartSetCard(chartSet: SetModel) {
+fun ChartSetCard(chartSet: SetModel, onClick: (SetModel) -> Unit) {
 	Card(
 		modifier = Modifier
 			.fillMaxWidth()
 			.padding(15.dp)
-			.clickable {
-				// TODO: Switch to the Chart Detail View
-			},
+			.clickable { onClick(chartSet) },
 		elevation = 10.dp
 	) {
 		val iter = chartSet.chart.iterator()
@@ -143,11 +160,11 @@ fun ChartSetCard(chartSet: SetModel) {
 				while(iter.hasNext()) {
 					val chart = iter.next()
 					val difficultyColor = when(chart.difficultyClass) {
-						1 -> Color.Green
-						2 -> Color.Cyan
-						3 -> Color.Red
-						4 -> Color.Magenta
-						5 -> Color.LightGray
+						1 -> ExplodeColor.Casual
+						2 -> ExplodeColor.Normal
+						3 -> ExplodeColor.Hard
+						4 -> ExplodeColor.Mega
+						5 -> ExplodeColor.Giga
 						else -> Color.Black
 					}
 
@@ -190,12 +207,12 @@ fun ChartSetCard(chartSet: SetModel) {
 								}
 							}
 						} else {
-							withStyle(SpanStyle(color = Color.Green)) {
+							withStyle(SpanStyle(color = ExplodeColor.DarkGreen)) {
 								append("Unranked")
 							}
 						}
 						append("/")
-						withStyle(SpanStyle(color = Color.Magenta)) {
+						withStyle(SpanStyle(color = ExplodeColor.Gold)) {
 							append("${chartSet.coinPrice}")
 						}
 					}

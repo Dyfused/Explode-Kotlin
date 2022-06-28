@@ -25,18 +25,18 @@ data class ReviewRequestModel(
 @Serializable
 data class SetModel(
 	val _id: String,
-	val introduction: String,
-	val coinPrice: Int,
+	var introduction: String,
+	var coinPrice: Int,
 	val noter: NoterModel,
-	val musicTitle: String,
-	val composerName: String,
-	val playCount: Int,
+	var musicTitle: String,
+	var composerName: String,
+	var playCount: Int,
 	val chart: List<ChartModel>,
-	val isGot: Boolean,
-	val isRanked: Boolean,
-	val isOfficial: Boolean,
-	val OverridePriceStr: String, // DON'T FIX: Capital 'O' is defined in the game not Explode's fault.
-	val needReview: Boolean
+	var isGot: Boolean,
+	var isRanked: Boolean,
+	var isOfficial: Boolean,
+	var OverridePriceStr: String, // DON'T FIX: Capital 'O' is defined in the game not Explode's fault.
+	var needReview: Boolean
 )
 
 @Serializable

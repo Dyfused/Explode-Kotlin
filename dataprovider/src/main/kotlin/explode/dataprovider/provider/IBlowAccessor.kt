@@ -14,11 +14,11 @@ interface IBlowAccessor {
 
 	fun getChart(chartId: String): DetailedChartModel?
 
-	fun UserModel.update(block: UserModel.() -> Unit): UserModel
+	fun updateUser(userModel: UserModel): UserModel
 
-	fun SetModel.update(block: SetModel.() -> Unit): SetModel
+	fun updateSet(setModel: SetModel): SetModel
 
-	fun DetailedChartModel.update(block: DetailedChartModel.() -> Unit): DetailedChartModel
+	fun updateChart(detailedChartModel: DetailedChartModel): DetailedChartModel
 
 	/**
 	 * Read [password] of [User][UserModel]s from the database.
