@@ -22,7 +22,9 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import explode.compose.data.ChartDetailHolder
+import explode.compose.data.StoreDataProvider
 import explode.compose.theme.ExplodeColor
+import explode.compose.theme.ExplodeColor.getDifficultyName
 import java.awt.FileDialog
 import java.io.File
 import kotlin.math.roundToInt
@@ -91,6 +93,8 @@ fun ActualMetaCreating() {
 
     val holders = remember { mutableStateListOf(ChartDetailHolder.of(1)) }
 
+    var uploaded by remember { mutableStateOf(false) }
+
     Column(
         Modifier.padding(12.dp)
     ) {
@@ -114,7 +118,8 @@ fun ActualMetaCreating() {
             OutlinedTextField(
                 price,
                 {
-                    price = it; priceError = it.toIntOrNull() == null; isHidden = -1 == it.toIntOrNull()
+                    price = it; priceError = it.toIntOrNull() == null; isHidden =
+                    -1 == it.toIntOrNull()
                 },
                 label = {
                     Text("Coin Price")
@@ -126,9 +131,15 @@ fun ActualMetaCreating() {
         }
 
         val scrollState = rememberScrollState()
-        OutlinedTextField(introduction, { introduction = it }, label = {
-            Text("Introduction")
-        }, maxLines = 2, modifier = Modifier.fillMaxWidth().scrollable(scrollState, Orientation.Vertical))
+        OutlinedTextField(
+            introduction,
+            { introduction = it },
+            label = {
+                Text("Introduction")
+            },
+            maxLines = 2,
+            modifier = Modifier.fillMaxWidth().scrollable(scrollState, Orientation.Vertical)
+        )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -148,7 +159,7 @@ fun ActualMetaCreating() {
             Text("Official")
             Checkbox(isNeedReview, { isNeedReview = it })
             Text("Need Review")
-            Checkbox(isHidden, { isHidden = it; price = if(it) "-1" else "0" })
+            Checkbox(isHidden, { isHidden = it; price = if (it) "-1" else "0" })
             Text("Hidden")
         }
 
@@ -201,30 +212,67 @@ fun ActualMetaCreating() {
             }
         }
 
-        holders.forEachIndexed { index, holder ->
-            DifficultyDetails(holder) {
-                // FIXME: Only the last element will be removed.
-                holders.removeAt(index)
-            }
+        holders.forEachIndexed { _, holder ->
+            DifficultyDetails(holder, holders)
         }
 
         Divider(Modifier.padding(vertical = 4.dp))
 
         Button(
             onClick = {
-
                 runCatching {
-                    // TODO: Implement the upload operations.
+
+                    // validate: fast-fail, and catch exceptions by runCatching
+                    val takenDiff = mutableListOf<Int>()
+                    holders.forEach {
+                        if(it.difficultyBase!! in takenDiff) {
+                            error("Duplicate Difficulty Class: ${getDifficultyName(it.difficultyBase!!)}")
+                        } else {
+                            ExplodeViewModel.validateFile(it.chartFile, true, onReject = { f -> error("Chart(${it.difficultyBase}) unset or not exist") })
+                            takenDiff += it.difficultyBase!!
+                        }
+                    }
+                    ExplodeViewModel.validateFile(musicFile, true, onReject = { error("Music unset or not exist") })
+                    ExplodeViewModel.validateFile(coverFile, true, onReject = { error("Cover unset or not exist") })
+                    ExplodeViewModel.validateFile(previewFile, true, onReject = { error("Preview unset or not exist") })
+
+                    val set = StoreDataProvider.p.buildChartSet(
+                        title,
+                        composerName,
+                        StoreDataProvider.p.officialUser,
+                        isRanked,
+                        price.toInt(),
+                        introduction,
+                        isNeedReview
+                    ) {
+                        holders.forEach {
+                            addChart(
+                                checkNotNull(it.difficultyBase) { "Invalid Difficulty Class" },
+                                checkNotNull(it.difficultyValue) { "Invalid Difficulty Value for ${getDifficultyName(it.difficultyBase!!)}" }
+                            )
+                        }
+                    }
+
+                    StoreDataProvider.p.addMusicResource(set._id, musicFile!!.readBytes())
+                    StoreDataProvider.p.addSetCoverResource(set._id, coverFile!!.readBytes())
+                    StoreDataProvider.p.addPreviewResource(set._id, previewFile!!.readBytes())
+
+                    set.chart.forEach { (id, diffClass, _) ->
+                        StoreDataProvider.p.addChartResource(id, holders.find { it.difficultyBase == diffClass }!!.chartFile!!.readBytes())
+                    }
                 }.onSuccess {
                     operationResult = true
                     operationResultMessage = "Successfully updated"
+
+                    uploaded = true
                 }.onFailure {
                     operationResult = false
                     operationResultMessage =
                         "Failed due to ${it.message} (${it.javaClass.simpleName})"
                     it.printStackTrace()
                 }
-            }
+            },
+            enabled = !uploaded
         ) {
             Text("Create")
         }
@@ -269,7 +317,7 @@ fun FileReceiver(
 }
 
 @Composable
-fun DifficultyDetails(holder: ChartDetailHolder, onRemove: () -> Unit = {}) {
+fun DifficultyDetails(holder: ChartDetailHolder, holders: MutableList<ChartDetailHolder>) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -296,7 +344,7 @@ fun DifficultyDetails(holder: ChartDetailHolder, onRemove: () -> Unit = {}) {
             modifier = Modifier.weight(1F)
         ) {
             Text(
-                text = ExplodeColor.getDifficultyName(diffClass),
+                text = getDifficultyName(diffClass),
                 fontWeight = FontWeight.Bold,
                 color = ExplodeColor.getDifficultyForegroundColor(diffClass)
             )
@@ -326,7 +374,7 @@ fun DifficultyDetails(holder: ChartDetailHolder, onRemove: () -> Unit = {}) {
         Spacer(Modifier.weight(0.1F))
 
         Button(
-            onClick = { onRemove() },
+            onClick = { holders.remove(holder) },
             colors = ButtonDefaults.textButtonColors(Color.Red, Color.White)
         ) {
             Text("Remove")
