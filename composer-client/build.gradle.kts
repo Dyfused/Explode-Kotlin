@@ -9,10 +9,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm")
     application
-    id("org.jetbrains.compose") version "1.1.0"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.jetbrains.compose") version "1.2.0-alpha01-dev741"
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "taskeren.explode"
@@ -27,10 +27,10 @@ repositories {
 dependencies {
     implementation(project(":dataprovider"))
 
-    implementation(compose.desktop.currentOs)
+    implementation(compose.desktop.windows_x64)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
 tasks.getByName<Test>("test") {

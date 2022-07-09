@@ -9,7 +9,7 @@ import explode.blow.BlowUtils.query
 import graphql.GraphQL
 
 private val config = SchemaGeneratorConfig(
-	supportedPackages = listOf("explode.blow.graphql.model"),
+	supportedPackages = listOf("explode.blow", "explode.dataprovider.model"),
 	hooks = CustomSchemaGeneratorHooks
 )
 

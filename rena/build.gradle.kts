@@ -1,5 +1,8 @@
 plugins {
     id("java")
+    kotlin("jvm")
+    application
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "taskeren.explode"
@@ -10,10 +13,18 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    implementation(project(":dataprovider"))
+
+    implementation("cn.hutool", "hutool-core", "5.8.4")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
 }
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+application {
+    mainClass.set("explode.rena.RenaAppKt")
 }
