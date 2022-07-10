@@ -4,8 +4,17 @@
             <pattern>[%d{YYYY-MM-dd HH:mm:ss.SSS}][%thread][%p][%logger{36}/%class{36}] %msg%n</pattern>
         </encoder>
     </appender>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>./latest.log</file>
+        <append>false</append>
+        <immediateFlush>true</immediateFlush>
+        <encoder>
+            <pattern>[%d{YYYY-MM-dd HH:mm:ss.SSS}][%thread][%p][%logger{36}/%class{36}] %msg%n</pattern>
+        </encoder>
+    </appender>
     <root level="info">
         <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
     </root>
     <logger name="org.eclipse.jetty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>

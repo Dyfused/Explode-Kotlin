@@ -43,6 +43,12 @@ class Config(file: File) {
 		false,
 		"True if allow Ktor to mess your console up."
 	).delegateBoolean()
+	val graphQLLogging by config.get(
+		"debugging",
+		"allow-graphql-logging",
+		false,
+		"True if allow GraphQL execution to mess your console up."
+	).delegateBoolean()
 
 	fun save() = config.save()
 

@@ -26,6 +26,9 @@ fun main(args: Array<String>) {
 	if(!explodeConfig.ktorLogging) {
 		disableKtorLogging()
 	}
+	if(!explodeConfig.graphQLLogging) {
+		disableGraphQLLogging()
+	}
 
 	mainLogger.info("Explode ($GameVersion)")
 
@@ -60,6 +63,10 @@ private fun disableMongoLogging() {
 
 private fun disableKtorLogging() {
 	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("Application").level = Level.WARN
+}
+
+private fun disableGraphQLLogging() {
+	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("notprivacysafe.graphql.execution.SimpleDataFetcherExceptionHandler").level = Level.ERROR
 }
 
 private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: IBlowResourceProvider) {
