@@ -8,7 +8,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.graphQLModule(blow: IBlowDataProvider) {
+fun Application.graphQLModule(blow: IBlowDataProvider, usePlayground: Boolean) {
 	routing {
 		get {
 			call.respondText("You're finally here. Brother Slayer. Spawn Killer.")
@@ -18,12 +18,14 @@ fun Application.graphQLModule(blow: IBlowDataProvider) {
 			KtorServer(blow).handle(call)
 		}
 
-		get("sdl") {
-			call.respondText(getGraphQLSchema(blow).print())
-		}
+		if(usePlayground) {
+			get("sdl") {
+				call.respondText(getGraphQLSchema(blow).print())
+			}
 
-		get("graphql") {
-			call.respondText(buildPlaygroundHtml("graphql", "subscriptions"), ContentType.Text.Html)
+			get("graphql") {
+				call.respondText(buildPlaygroundHtml("graphql", "subscriptions"), ContentType.Text.Html)
+			}
 		}
 	}
 }

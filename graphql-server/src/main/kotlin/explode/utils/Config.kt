@@ -14,14 +14,35 @@ class Config(file: File) {
 	private val config = Configuration(file)
 
 	// GraphQL
-	val port by config.get("graphql", "port", 10443).delegateInt()
+	val port by config.get("graphql", "port", 10443, "The port of the GraphQL backend server.").delegateInt()
+	val enablePlayground by config.get(
+		"graphql",
+		"enable-playground",
+		false,
+		"True if enable GraphQL playground on GET method."
+	).delegateBoolean()
 
 	// DataProvider
-	val mongoUrl by config.get("dataprovider", "mongo-connection-string", "mongodb://localhost:27017").delegateString()
+	val mongoUrl by config.get(
+		"dataprovider",
+		"mongo-connection-string",
+		"mongodb://localhost:27017",
+		"The URI to connect the MongoDB."
+	).delegateString()
 
 	// Debugging
-	val mongoLogging by config.get("debugging", "allow-mongodb-client-logging", false).delegateBoolean()
-	val ktorLogging by config.get("debugging", "allow-ktor-server-logging", false).delegateBoolean()
+	val mongoLogging by config.get(
+		"debugging",
+		"allow-mongodb-client-logging",
+		false,
+		"True if allow MongoDB to mess your console up."
+	).delegateBoolean()
+	val ktorLogging by config.get(
+		"debugging",
+		"allow-ktor-server-logging",
+		false,
+		"True if allow Ktor to mess your console up."
+	).delegateBoolean()
 
 	fun save() = config.save()
 

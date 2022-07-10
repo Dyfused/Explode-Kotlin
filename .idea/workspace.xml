@@ -4,17 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Implement Avatar and Store Preview">
-      <change afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Update .gitignore">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/GraphQLModule.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLSchema.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLSchema.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLServer.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorServer.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/resources/application.conf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -430,7 +426,21 @@
       <option name="project" value="LOCAL" />
       <updated>1657438686572</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="Added Configuration">
+      <created>1657462189460</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1657462189460</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Update .gitignore">
+      <created>1657462235932</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1657462235932</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -466,7 +476,9 @@
     <MESSAGE value="Initial commit of RenaApp&#10;&#10;1. implemented the rena reading and outputting as RSP.&#10;2. updated compose version.&#10;3. fixed graphql model package not included bug." />
     <MESSAGE value="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file." />
     <MESSAGE value="Implement Avatar and Store Preview" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implement Avatar and Store Preview" />
+    <MESSAGE value="Added Configuration" />
+    <MESSAGE value="Update .gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update .gitignore" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

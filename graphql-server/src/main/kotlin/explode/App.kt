@@ -64,11 +64,17 @@ private fun disableKtorLogging() {
 
 private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: IBlowResourceProvider) {
 	// EngineMain.main(args) // deprecated since it is not allowed to modify the port in the code.
+	mainLogger.info("Configuration:")
+	mainLogger.info("\tGraphQLPort=${explodeConfig.port}")
+	mainLogger.info("\tUsePlayground=${explodeConfig.enablePlayground}")
+	mainLogger.info("\tMongoDBUri=${explodeConfig.mongoUrl}")
+	mainLogger.info("Starting Ktor!")
+
 	embeddedServer(
 		Netty,
 		environment = applicationEngineEnvironment {
 			module {
-				graphQLModule(dataProvider)
+				graphQLModule(dataProvider, explodeConfig.enablePlayground)
 				dynamiteResourceModule(resourceProvider)
 				// bombModule() // dont use due to working in progress state.
 			}
