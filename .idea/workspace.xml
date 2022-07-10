@@ -4,15 +4,9 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Initial commit of RenaApp&#10;&#10;1. implemented the rena reading and outputting as RSP.&#10;2. updated compose version.&#10;3. fixed graphql model package not included bug.">
-      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/util.kt" afterDir="false" />
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowAccessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowAccessor.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowResourceProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowResourceProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rena/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/rena/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rena/src/main/kotlin/explode/rena/RenaApp.kt" beforeDir="false" afterPath="$PROJECT_DIR$/rena/src/main/kotlin/explode/rena/RenaApp.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rena/src/main/kotlin/explode/rena/RenaReader.kt" beforeDir="false" afterPath="$PROJECT_DIR$/rena/src/main/kotlin/explode/rena/RenaReader.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -420,7 +414,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657365225091</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file.">
+      <created>1657438418640</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1657438418640</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -454,7 +455,8 @@
     <MESSAGE value="Implemented StoreView and EditingView" />
     <MESSAGE value="Initial commit of RenaApp&#10;&#10;1. implemented the rena reading and outputting as RSP&#10;2. updated compose version&#10;3. fixed graphql model package not included bug" />
     <MESSAGE value="Initial commit of RenaApp&#10;&#10;1. implemented the rena reading and outputting as RSP.&#10;2. updated compose version.&#10;3. fixed graphql model package not included bug." />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit of RenaApp&#10;&#10;1. implemented the rena reading and outputting as RSP.&#10;2. updated compose version.&#10;3. fixed graphql model package not included bug." />
+    <MESSAGE value="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file." />
+    <option name="LAST_COMMIT_MESSAGE" value="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

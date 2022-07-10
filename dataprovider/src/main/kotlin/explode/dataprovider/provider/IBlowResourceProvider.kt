@@ -104,6 +104,8 @@ class BlowFileResourceProvider(private val dataBin: File) : IBlowFileResourcePro
 	private val chartFolder = dataBin.resolve("chart").ensureExistanceAsFolder()
 	private val musicFolder = dataBin.resolve("music").ensureExistanceAsFolder()
 	private val coverFolder = dataBin.resolve("cover").ensureExistanceAsFolder()
+	private val avatarFolder = dataBin.resolve("avatar").ensureExistanceAsFolder()
+	private val storePreviewFolder = dataBin.resolve("store_preview").ensureExistanceAsFolder()
 
 	override fun getChartFile(chartId: String?): File? =
 		chartId?.let { chartFolder.resolve("$chartId.xml") }
@@ -118,10 +120,10 @@ class BlowFileResourceProvider(private val dataBin: File) : IBlowFileResourcePro
 		setId?.let { coverFolder.resolve("$setId.jpg") }
 
 	override fun getStorePreviewFile(setId: String?): File? =
-		null // TODO
+		setId?.let { storePreviewFolder.resolve("$setId.jpg") }
 
 	override fun getUserAvatarFile(userId: String?): File? =
-		null // TODO
+		userId?.let { avatarFolder.resolve("$userId.jpg") }
 
 	override fun addChartFile(chartId: String, data: ByteArray) {
 		getChartFile(chartId)?.writeBytes(data)
