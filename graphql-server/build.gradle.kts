@@ -26,6 +26,7 @@ dependencies {
     implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.7.0")
     implementation("com.github.taskeren", "tconfig", "1.0")
     implementation("org.litote.kmongo", "kmongo-serialization", "4.6.1")
+    implementation("com.github.taskeren", "tconfig", "1.0")
     testImplementation(kotlin("test"))
     testImplementation("com.squareup.okhttp3:okhttp:4.10.0")
 }

@@ -4,9 +4,17 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file.">
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Implement Avatar and Store Preview">
+      <change afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowResourceProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowResourceProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/GraphQLModule.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/GraphQLModule.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLSchema.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLSchema.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorGraphQLServer.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorServer.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/graphql/KtorServer.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,24 +75,6 @@
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
                 <item name="shadow" type="c8890929:TasksNode$1" />
               </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="rena" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="rena" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="rena" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="shadow" type="c8890929:TasksNode$1" />
-              </path>
             </expand>
             <select />
           </tree_state>
@@ -99,9 +89,9 @@
         <option value="Kotlin Annotation" />
         <option value="Kotlin Object" />
         <option value="Kotlin Enum" />
-        <option value="Kotlin Class" />
         <option value="Kotlin File" />
         <option value="Kotlin Interface" />
+        <option value="Kotlin Class" />
       </list>
     </option>
   </component>
@@ -115,6 +105,8 @@
     <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.Taskeren/tconfig/1.0/1e613c77fcbe44d7eca4143a51c7fe38a240e46a/tconfig-1.0-sources.jar!/TConfig/Configuration.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.7.0/f9c9b06e827013c64085993d479138766ef16aed/kotlin-stdlib-common-1.7.0-sources.jar!/kotlin/properties/Delegates.kt" root0="SKIP_INSPECTION" />
     <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.litote.kmongo/kmongo-property/4.6.1/9f1c49ad27b0a75cc194e5df53beb27c418e5102/kmongo-property-4.6.1-sources.jar!/org/litote/kmongo/Aggregates.kt" root0="SKIP_INSPECTION" />
     <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.mongodb/mongodb-driver-core/4.6.0/ada95bef8943a58950786f6f0e5ea1b788546e/mongodb-driver-core-4.6.0-sources.jar!/com/mongodb/client/model/Aggregates.java" root0="SKIP_INSPECTION" />
   </component>
@@ -130,14 +122,11 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
-    <property name="cidr.known.project.marker" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\explode\rena" />
@@ -158,13 +147,34 @@
       <command value="&quot;[\\\\/:*?\&quot;&lt;&gt;|]&quot;" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.explode:rena [shadowJar]">
+  <component name="RunManager" selected="Application.GraphQL">
     <configuration name="GraphQL" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="explode.AppKt" />
       <module name="explode.graphql-server.main" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
+    </configuration>
+    <configuration name="explode:composer-client [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/composer-client" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="shadowJar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
     </configuration>
     <configuration name="explode:graphql-server [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -250,14 +260,6 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="Composable Explode" type="JetRunConfigurationType" temporary="true">
-      <option name="MAIN_CLASS_NAME" value="explode.compose.AppKt" />
-      <module name="explode.composer-client.main" />
-      <shortenClasspath name="NONE" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Rena" type="JetRunConfigurationType">
       <option name="MAIN_CLASS_NAME" value="explode.rena.RenaAppKt" />
       <module name="explode.rena.main" />
@@ -269,20 +271,20 @@
     </configuration>
     <list>
       <item itemvalue="Application.GraphQL" />
+      <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
       <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
       <item itemvalue="Gradle.explode:rena [build]" />
       <item itemvalue="Gradle.explode:rena [shadowJar]" />
       <item itemvalue="Gradle.explode:graphql-server [build]" />
       <item itemvalue="Kotlin.Rena" />
-      <item itemvalue="Kotlin.Composable Explode" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.explode:rena [shadowJar]" />
         <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
+        <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
+        <item itemvalue="Gradle.explode:rena [shadowJar]" />
         <item itemvalue="Gradle.explode:rena [build]" />
         <item itemvalue="Gradle.explode:graphql-server [build]" />
-        <item itemvalue="Kotlin.Composable Explode" />
       </list>
     </recent_temporary>
   </component>
@@ -421,7 +423,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657438418640</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Implement Avatar and Store Preview">
+      <created>1657438686572</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1657438686572</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -456,7 +465,8 @@
     <MESSAGE value="Initial commit of RenaApp&#10;&#10;1. implemented the rena reading and outputting as RSP&#10;2. updated compose version&#10;3. fixed graphql model package not included bug" />
     <MESSAGE value="Initial commit of RenaApp&#10;&#10;1. implemented the rena reading and outputting as RSP.&#10;2. updated compose version.&#10;3. fixed graphql model package not included bug." />
     <MESSAGE value="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file." />
-    <option name="LAST_COMMIT_MESSAGE" value="Data Capacity fix&#10;&#10;1. removed database-driven binary data storage.&#10;2. moved binary data storage to file system. (where '.explode_data' folder in the same directory of the executing directory.)&#10;3. implemented rena export to database.&#10;4. deprecated/will remove rena export to zip file." />
+    <MESSAGE value="Implement Avatar and Store Preview" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implement Avatar and Store Preview" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

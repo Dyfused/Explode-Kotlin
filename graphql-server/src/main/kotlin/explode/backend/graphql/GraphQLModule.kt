@@ -1,32 +1,35 @@
 package explode.backend.graphql
 
 import com.expediagroup.graphql.generator.extensions.print
-import explode.blowResource
+import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.provider.IBlowResourceProvider
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.graphQLModule() {
-	install(Routing)
-
+fun Application.graphQLModule(blow: IBlowDataProvider) {
 	routing {
 		get {
 			call.respondText("You're finally here. Brother Slayer. Spawn Killer.")
 		}
 
 		post("graphql") {
-			KtorServer().handle(call)
+			KtorServer(blow).handle(call)
 		}
 
 		get("sdl") {
-			call.respondText(graphQLSchema.print())
+			call.respondText(getGraphQLSchema(blow).print())
 		}
 
-		get("playground") {
+		get("graphql") {
 			call.respondText(buildPlaygroundHtml("graphql", "subscriptions"), ContentType.Text.Html)
 		}
+	}
+}
 
+fun Application.dynamiteResourceModule(blowResource: IBlowResourceProvider) {
+	routing {
 		route("download") {
 			get("/music/encoded/{setId}") {
 				val id = this.call.parameters["setId"]

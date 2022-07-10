@@ -1,6 +1,6 @@
 package explode.backend.console
 
-import explode.blow
+import explode.dataprovider.provider.IBlowDataProvider
 import kotlin.concurrent.thread
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
@@ -9,7 +9,7 @@ import kotlin.reflect.full.findAnnotation
 @Retention(AnnotationRetention.RUNTIME)
 annotation class SubCommand(val value: String = "", val desc: String = "")
 
-object ExplodeConsole {
+class ExplodeConsole(private val data: IBlowDataProvider) {
 
 	private val validFunctions = mutableMapOf<String, KFunction<Any?>>()
 	private val commandDescs = mutableMapOf<String, String>()
@@ -22,7 +22,9 @@ object ExplodeConsole {
 					val command = sc.value.ifBlank { func.name }
 
 					validFunctions[command] = func
-					if(sc.desc.isNotBlank()) { commandDescs[command] = sc.desc }
+					if(sc.desc.isNotBlank()) {
+						commandDescs[command] = sc.desc
+					}
 
 					println("Found Subcommand[$command]${if(sc.desc.isNotBlank()) ": ${sc.desc}" else ""}")
 				}
@@ -43,14 +45,14 @@ object ExplodeConsole {
 		val username = sp.getOrNull(1) ?: return "Missing parameter: username"
 		val password = sp.getOrNull(2) ?: return "Missing parameter: password"
 
-		return blow.registerUser(username, password)
+		return data.registerUser(username, password)
 	}
 
 	@SubCommand
 	fun findUser(sp: List<String>): Any {
 		val username = sp.getOrNull(1) ?: return "Missing parameter: username"
 
-		return blow.getUser("", username) ?: "Cannot find the user named $username"
+		return data.getUser("", username) ?: "Cannot find the user named $username"
 	}
 
 }
