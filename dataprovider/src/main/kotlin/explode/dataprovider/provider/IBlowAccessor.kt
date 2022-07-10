@@ -1,6 +1,7 @@
 package explode.dataprovider.provider
 
 import explode.dataprovider.model.*
+import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassNum
 
 interface IBlowAccessor {
 
@@ -127,6 +128,13 @@ interface IBlowAccessor {
 	) {
 
 		private val chart = mutableSetOf<DetailedChartModel>()
+
+		fun addChart(
+			difficultyClass: String,
+			difficultyValue: Int,
+			D: Double? = null
+		): DetailedChartModel =
+			addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D)
 
 		fun addChart(
 			difficultyClass: Int,

@@ -36,7 +36,7 @@ interface IBlowResourceProvider {
 
 }
 
-abstract class BlowFileResourceProvider : IBlowResourceProvider {
+interface IBlowFileResourceProvider : IBlowResourceProvider {
 	override fun getChartResource(chartId: String?): ByteArray? = getChartFile(chartId)?.readBytes()
 
 	override fun getMusicResource(setId: String?): ByteArray? = getMusicFile(setId)?.readBytes()
@@ -61,27 +61,90 @@ abstract class BlowFileResourceProvider : IBlowResourceProvider {
 
 	override fun addUserAvatarResource(userId: String, data: ByteArray) = addUserAvatarFile(userId, data)
 
-	abstract fun getChartFile(chartId: String?): File?
+	fun getChartFile(chartId: String?): File?
 
-	abstract fun getMusicFile(setId: String?): File?
+	fun getMusicFile(setId: String?): File?
 
-	abstract fun getPreviewFile(setId: String?): File?
+	fun getPreviewFile(setId: String?): File?
 
-	abstract fun getSetCoverFile(setId: String?): File?
+	fun getSetCoverFile(setId: String?): File?
 
-	abstract fun getStorePreviewFile(setId: String?): File?
+	fun getStorePreviewFile(setId: String?): File?
 
-	abstract fun getUserAvatarFile(userId: String?): File?
+	fun getUserAvatarFile(userId: String?): File?
 
-	abstract fun addChartFile(chartId: String, data: ByteArray)
+	fun addChartFile(chartId: String, data: ByteArray)
 
-	abstract fun addMusicFile(setId: String, data: ByteArray)
+	fun addMusicFile(setId: String, data: ByteArray)
 
-	abstract fun addPreviewFile(setId: String, data: ByteArray)
+	fun addPreviewFile(setId: String, data: ByteArray)
 
-	abstract fun addSetCoverFile(setId: String, data: ByteArray)
+	fun addSetCoverFile(setId: String, data: ByteArray)
 
-	abstract fun addStorePreviewFile(setId: String, data: ByteArray)
+	fun addStorePreviewFile(setId: String, data: ByteArray)
 
-	abstract fun addUserAvatarFile(userId: String, data: ByteArray)
+	fun addUserAvatarFile(userId: String, data: ByteArray)
+}
+
+class BlowFileResourceProvider(private val dataBin: File) : IBlowFileResourceProvider {
+
+	private fun File.ensureExistanceAsFolder() = apply {
+		if(!this.exists() || !this.isDirectory) {
+			if(!this.isDirectory) this.delete()
+			if(!this.exists()) this.mkdirs()
+		}
+	}
+
+	init {
+		dataBin.ensureExistanceAsFolder()
+	}
+
+	override fun toString(): String = "BlowFileResourceProvider[${dataBin.absolutePath}]"
+
+	private val chartFolder = dataBin.resolve("chart").ensureExistanceAsFolder()
+	private val musicFolder = dataBin.resolve("music").ensureExistanceAsFolder()
+	private val coverFolder = dataBin.resolve("cover").ensureExistanceAsFolder()
+
+	override fun getChartFile(chartId: String?): File? =
+		chartId?.let { chartFolder.resolve("$chartId.xml") }
+
+	override fun getMusicFile(setId: String?): File? =
+		setId?.let { musicFolder.resolve("$setId.mp3") }
+
+	override fun getPreviewFile(setId: String?): File? =
+		setId?.let { musicFolder.resolve("${setId}_preview.mp3") }
+
+	override fun getSetCoverFile(setId: String?): File? =
+		setId?.let { coverFolder.resolve("$setId.jpg") }
+
+	override fun getStorePreviewFile(setId: String?): File? =
+		null // TODO
+
+	override fun getUserAvatarFile(userId: String?): File? =
+		null // TODO
+
+	override fun addChartFile(chartId: String, data: ByteArray) {
+		getChartFile(chartId)?.writeBytes(data)
+	}
+
+	override fun addMusicFile(setId: String, data: ByteArray) {
+		getMusicFile(setId)?.writeBytes(data)
+	}
+
+	override fun addPreviewFile(setId: String, data: ByteArray) {
+		getPreviewFile(setId)?.writeBytes(data)
+	}
+
+	override fun addSetCoverFile(setId: String, data: ByteArray) {
+		getSetCoverFile(setId)?.writeBytes(data)
+	}
+
+	override fun addStorePreviewFile(setId: String, data: ByteArray) {
+		getStorePreviewFile(setId)?.writeBytes(data)
+	}
+
+	override fun addUserAvatarFile(userId: String, data: ByteArray) {
+		getUserAvatarFile(userId)?.writeBytes(data)
+	}
+
 }

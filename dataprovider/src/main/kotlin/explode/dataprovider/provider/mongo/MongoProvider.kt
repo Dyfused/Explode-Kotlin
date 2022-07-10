@@ -3,26 +3,23 @@
 package explode.dataprovider.provider.mongo
 
 import com.mongodb.client.MongoCollection
-import com.mongodb.client.model.Aggregates
-import com.mongodb.client.model.UpdateOptions
-import com.mongodb.client.model.WindowedComputations
+import com.mongodb.client.model.*
 import explode.dataprovider.model.*
-import explode.dataprovider.provider.IBlowAccessor
-import explode.dataprovider.provider.IBlowDataProvider
-import explode.dataprovider.provider.IBlowResourceProvider
+import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import org.bson.types.Binary
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.math.pow
 import kotlin.math.round
 
-class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowResourceProvider {
+class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowResourceProvider by BlowFileResourceProvider(
+	File(".explode_data")
+) {
 
 	private val logger = LoggerFactory.getLogger("MongoProvider")
 	private val mongo = (if(connectionString == null) KMongo.createClient() else KMongo.createClient(connectionString))
@@ -326,54 +323,6 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowReso
 
 	fun downloadData(id: String): ByteArray? {
 		return binaryC.findOne(IdToBytes::_id eq id)?.data?.data
-	}
-
-	override fun getChartResource(chartId: String?): ByteArray? {
-		return downloadData("CHART_$chartId")
-	}
-
-	override fun getMusicResource(setId: String?): ByteArray? {
-		return downloadData("MUSIC_$setId")
-	}
-
-	override fun getPreviewResource(setId: String?): ByteArray? {
-		return downloadData("PREVIEW_$setId")
-	}
-
-	override fun getSetCoverResource(setId: String?): ByteArray? {
-		return downloadData("COVER_$setId")
-	}
-
-	override fun getStorePreviewResource(setId: String?): ByteArray? {
-		return downloadData("STORE_$setId")
-	}
-
-	override fun getUserAvatarResource(userId: String?): ByteArray? {
-		return downloadData("AVATAR_$userId")
-	}
-
-	override fun addChartResource(chartId: String, data: ByteArray) {
-		uploadData("CHART_$chartId", data)
-	}
-
-	override fun addMusicResource(setId: String, data: ByteArray) {
-		uploadData("MUSIC_$setId", data)
-	}
-
-	override fun addPreviewResource(setId: String, data: ByteArray) {
-		uploadData("PREVIEW_$setId", data)
-	}
-
-	override fun addSetCoverResource(setId: String, data: ByteArray) {
-		uploadData("COVER_$setId", data)
-	}
-
-	override fun addStorePreviewResource(setId: String, data: ByteArray) {
-		uploadData("STORE_$setId", data)
-	}
-
-	override fun addUserAvatarResource(userId: String, data: ByteArray) {
-		uploadData("AVATAR_$userId", data)
 	}
 
 	// IBlowProvider methods

@@ -54,7 +54,19 @@ object RenaReader {
 			if(!exists() || !isDirectory) error("Invalid Data folder, not existing or not a directory.")
 		}
 
-		return read(renaFile).map { resolveRenaObject(it, resolveFolder) }
+		return read(renaFile).mapNotNull {
+			val r = runCatching {
+				resolveRenaObject(it, resolveFolder)
+			}.onFailure {
+				mainLogger.error("Exception occurred when loading Rena.", it)
+			}
+
+			if(ignoreMode) {
+				r.getOrNull()
+			} else {
+				r.getOrThrow()
+			}
+		}
 	}
 
 	private fun execute(lines: Iterable<String>): List<RenaObject> {

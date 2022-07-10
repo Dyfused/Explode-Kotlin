@@ -1,8 +1,12 @@
 package explode.rena
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.LoggerContext
 import cn.hutool.core.util.ZipUtil
+import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassNum
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.rena.model.loadAsRenaStandardPack
+import org.slf4j.LoggerFactory
 import java.io.*
 import java.nio.channels.FileChannel
 import java.nio.file.*
@@ -30,7 +34,7 @@ private val HelpMessage = """
 		
 	[--debug] or [-d] refers to show all the logs including debug level, for debugging or stacktracing.
 	
-	*You must set either [--local] or [--mongodb].
+	[--ignore] or [-ig] refers to ignore the corrupted rena entries like missing resources or invalid resources.
 """.trimIndent()
 
 private val ArgParsedMessage
@@ -39,7 +43,12 @@ private val ArgParsedMessage
 	Rena: ${if(::renaFile.isInitialized) renaFile.path else "~ERROR~"}
 	Export Data to: ${if(shouldImportToDatabase) databaseConnStr else "NONE"}
 	Export File to: ${if(shouldExportToZipFile) outputZipPath else "NONE"}
+	Ignore Mode: $ignoreMode
 	========================
+""".trimIndent()
+
+private val DeprecatedExportZipMessage = """
+	You are using deprecated operation to export to zip file.
 """.trimIndent()
 
 fun main(args: Array<String>) {
@@ -55,7 +64,8 @@ fun main(args: Array<String>) {
 		exportToDatabase(renaResult)
 	}
 	if(shouldExportToZipFile) {
-		exportToZip(renaResult)
+		mainLogger.warn(DeprecatedExportZipMessage)
+		// exportToZip(renaResult)
 	}
 }
 
@@ -64,6 +74,8 @@ lateinit var renaFile: File
 lateinit var databaseConnStr: String
 
 lateinit var outputZipPath: String
+
+var ignoreMode = false
 
 val shouldImportToDatabase: Boolean get() = ::databaseConnStr.isInitialized
 val shouldExportToZipFile: Boolean get() = ::outputZipPath.isInitialized
@@ -94,6 +106,9 @@ private fun readArgs(args: Array<String>) {
 					"-l", "--local", "--renastandardpack" -> {
 						outputZipPath = v ?: "./out.rsp.zip"
 					}
+					"-ig", "--ignore" -> {
+						ignoreMode = true
+					}
 					// hidden parameters
 					"--use-system-proxy" -> {
 						System.setProperty("java.net.useSystemProxies", "true")
@@ -104,8 +119,6 @@ private fun readArgs(args: Array<String>) {
 		}
 
 		if(!::renaFile.isInitialized) fastfail("Rena has not been set!")
-		if(!::databaseConnStr.isInitialized && !::outputZipPath.isInitialized)
-			fastfail("Neither [import] nor [export] has not been set!")
 	}
 }
 
@@ -163,7 +176,7 @@ fun exportToZip(renas: List<ResolvedRenaObject>) {
 	7. The Chart XML files should be named with "<SET_NAME>_<CHART_DIFFICULTY>.xml" or "<SET_NAME>_<CHART_DIFFICULTY>.xml.rnx".
 	 */
 	renas.forEach { rr ->
-		val setName = rr.setName
+		val setName = rr.setName.replace(Regex("[\\\\/:*?\"<>|.]"), "_")
 		val setFolder = Files.createDirectories(cacheFolder.resolve(setName))
 
 		rr.soundPath = Files.copy(
@@ -215,6 +228,44 @@ fun exportToZip(renas: List<ResolvedRenaObject>) {
 
 fun exportToDatabase(renas: List<ResolvedRenaObject>) {
 
+	// shut up mf mongodb
+	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("org.mongodb.driver").level = Level.WARN
+
+	val p = MongoProvider(databaseConnStr)
+
+	renas.forEach { r ->
+		val s = p.buildChartSet(
+			setTitle = r.setName,
+			composerName = r.composerName,
+			noterUser = p.getUserByName(r.noterName) ?: p.officialUser, // noter user can be null, so we use the safe way.
+			isRanked = false, // rsp contain no ranked data, you should modify it later.
+			coinPrice = 0, // rsp contains no coin data, you should modify it later.
+			introduction = r.introduction,
+			needReview = false // since it is all from rsp or official, no need to review.
+		) {
+			r.charts.forEach {
+				addChart(
+					difficultyClass = it.hardClass,
+					difficultyValue = it.hardLevel
+				)
+			}
+		}
+
+		p.addMusicResource(s._id, r.soundFile.readBytes())
+		p.addSetCoverResource(s._id, r.coverFile.readBytes())
+		p.addPreviewResource(s._id, r.previewFile.readBytes())
+		s.chart.forEach {c1 ->
+			r.charts.forEach { c2 ->
+				if(c1.difficultyClass == c2.hardClass.toDifficultyClassNum()) {
+					p.addChartResource(c1._id, c2.chartFile.readBytes())
+				}
+			}
+		}
+
+		mainLogger.info("Created ${s.musicTitle}(${s._id})")
+	}
+
+	mainLogger.info("Uploaded ${renas.size} charts.")
 }
 
 // DIRECT MODE
@@ -243,55 +294,5 @@ val mainLogger = object : Logger {
 				System.err.println("   $str")
 			}
 		}
-	}
-}
-
-private fun formatByRenaIndexList(renaPath: String) {
-
-	val renaIndex = File(renaPath)
-	if(!renaIndex.exists() || !renaIndex.isFile) error("Invalid RenaIndexList.")
-	val dataFolder = renaIndex.parentFile.resolve("Charts")
-	if(!dataFolder.exists() || !dataFolder.isDirectory) error("Invalid DataFolder.")
-
-	val p = MongoProvider()
-
-	println("All pre-check passed.")
-
-	val renas = RenaReader.read(renaIndex)
-
-	println("Rena data loaded.")
-
-	renas.forEach { (setId, setName, soundPath, coverPath, previewPath, _, composerName, introduction, charts) ->
-		val soundFile = dataFolder.resolve(soundPath)
-		val coverFile = dataFolder.resolve(coverPath)
-		val previewFile = dataFolder.resolve(previewPath)
-
-		if(!soundFile.exists()) return@forEach mainLogger.warn("谱 $setName（${setId}）丢失音乐文件：$soundPath，跳过。")
-		if(!coverFile.exists()) return@forEach mainLogger.warn("谱 $setName（${setId}）丢失封面文件：$coverPath，跳过。")
-		if(!previewFile.exists()) return@forEach mainLogger.warn("谱 $setName（${setId}）丢失预览音乐文件：$previewPath，跳过。")
-
-		val s = runCatching {
-			p.buildChartSet(setName, composerName, p.officialUser, false, 0, introduction, true) {
-				charts.forEach { (hardClass, hardLevel, chartPath) ->
-					val chartFile = dataFolder.resolve(chartPath)
-					if(chartFile.exists()) {
-						val c = addChart(RenaReader.getHardClassNum(hardClass), hardLevel)
-						p.addChartResource(c._id, chartFile.readBytes())
-						mainLogger.info("找到谱面（${c.chartName}）：${c._id}")
-					} else {
-						mainLogger.warn("找不到谱（${setName}）的谱面文件：$chartFile，跳过。")
-					}
-				}
-			}
-		}.onSuccess {
-			p.addMusicResource(it._id, soundFile.readBytes())
-			p.addSetCoverResource(it._id, coverFile.readBytes())
-			p.addPreviewResource(it._id, previewFile.readBytes())
-		}.onFailure {
-			mainLogger.error("", it)
-		}.getOrThrow()
-
-		mainLogger.info("成功添加谱 $setName（$setId）及其谱面 ${s.chart.map { "${it._id}(${it.difficultyClass}/${it.difficultyValue})" }}（共${s.chart.size}张）。")
-		mainLogger.info(s.toString())
 	}
 }
