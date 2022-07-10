@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Added documents">
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Shut up GraphQL">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -460,7 +458,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657467350921</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="Shut up GraphQL">
+      <created>1657474841663</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1657474841663</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -476,7 +481,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Initial commit&#10;&#10;1. set up the frame with Ktor and kotlin-graphql&#10;2. create UserLogin queries and mutations" />
     <MESSAGE value="Add license" />
     <MESSAGE value="Added more Services&#10;&#10;1. Assessment &amp; AssessmentRank&#10;2. Store(FetchSet)" />
     <MESSAGE value="Added Blow framework" />
@@ -501,7 +505,8 @@
     <MESSAGE value="Added playground config entry&#10;&#10;1. added GraphQL Playground setting entry.&#10;2. optimized logging pattern and configuration debugging output." />
     <MESSAGE value="Update README.md" />
     <MESSAGE value="Added documents" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added documents" />
+    <MESSAGE value="Shut up GraphQL" />
+    <option name="LAST_COMMIT_MESSAGE" value="Shut up GraphQL" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

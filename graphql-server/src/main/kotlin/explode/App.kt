@@ -47,7 +47,7 @@ fun main(args: Array<String>) {
 		ignoreUnknownKeys = true
 	}
 
-	ExplodeConsole(m.provider).loop()
+	ExplodeConsole(m.provider, m).loop()
 
 	when(operation) {
 		"backend", null -> startKtorServer(m.provider, m)
