@@ -8,6 +8,15 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * GraphQL Module for Ktor
+ *
+ * providing following endpoints:
+ * 	- / => welcome message only
+ * 	- /graphql =(POST)=> the actual backend part of the Dynamite server
+ * 	- /graphql =(GET)=> the playground of GraphQL
+ * 	- /sdl =(GET)=> the schema data
+ */
 fun Application.graphQLModule(blow: IBlowDataProvider, usePlayground: Boolean) {
 	routing {
 		get {
@@ -30,6 +39,17 @@ fun Application.graphQLModule(blow: IBlowDataProvider, usePlayground: Boolean) {
 	}
 }
 
+/**
+ * Resource Dispatch Server Module
+ *
+ * providing following endpoints:
+ *  - /download/music/encoded/(set-id)
+ *  - /download/cover/encoded/(set-id)
+ *  - /download/chart/encoded/(set-id)
+ *  - /download/preview/encoded/(set-id)
+ *  - /download/avatar/256x256_jpg/(user-id)
+ *  - /download/cover/480x270_jpg/(set-id)
+ */
 fun Application.dynamiteResourceModule(blowResource: IBlowResourceProvider) {
 	routing {
 		route("download") {
