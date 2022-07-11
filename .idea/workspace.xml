@@ -4,10 +4,19 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Shut up GraphQL">
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Added ResetPassword function to Console">
+      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowUserAccessor.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowAccessor.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowAccessor.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowDataProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowDataProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowCustomTypeImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowCustomTypeImpl.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowMutationServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowMutationServiceImpl.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowQueryServiceImpl.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/blow/impl/BlowQueryServiceImpl.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +62,24 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="composer-client" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="composer-client" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="composer-client" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="shadow" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
                 <item name="graphql-server" type="2d1252cf:ModuleNode" />
               </path>
               <path>
@@ -83,8 +110,8 @@
         <option value="Kotlin Object" />
         <option value="Kotlin Enum" />
         <option value="Kotlin File" />
-        <option value="Kotlin Interface" />
         <option value="Kotlin Class" />
+        <option value="Kotlin Interface" />
       </list>
     </option>
   </component>
@@ -93,6 +120,11 @@
       <list>
         <option value="Taskeren &lt;r0yalist@outlook.com&gt;" />
       </list>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
@@ -115,11 +147,11 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\explode\rena" />
@@ -140,7 +172,7 @@
       <command value="&quot;[\\\\/:*?\&quot;&lt;&gt;|]&quot;" />
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.explode:graphql-server [shadowJar]">
+  <component name="RunManager" selected="Gradle.explode:composer-client [shadowJar]">
     <configuration name="GraphQL" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="explode.AppKt" />
       <module name="explode.graphql-server.main" />
@@ -273,8 +305,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
         <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
+        <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
         <item itemvalue="Gradle.explode:rena [shadowJar]" />
         <item itemvalue="Gradle.explode:rena [build]" />
         <item itemvalue="Gradle.explode:graphql-server [build]" />
@@ -465,7 +497,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657474841663</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="Added ResetPassword function to Console">
+      <created>1657476778331</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1657476778331</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -481,7 +520,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Add license" />
     <MESSAGE value="Added more Services&#10;&#10;1. Assessment &amp; AssessmentRank&#10;2. Store(FetchSet)" />
     <MESSAGE value="Added Blow framework" />
     <MESSAGE value="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode" />
@@ -506,7 +544,8 @@
     <MESSAGE value="Update README.md" />
     <MESSAGE value="Added documents" />
     <MESSAGE value="Shut up GraphQL" />
-    <option name="LAST_COMMIT_MESSAGE" value="Shut up GraphQL" />
+    <MESSAGE value="Added ResetPassword function to Console" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added ResetPassword function to Console" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

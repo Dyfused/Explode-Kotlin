@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
 
 	@Suppress("DEPRECATION") // no warning to set
 	run {
-		blow = m.provider
+		blow = m
 		blowAccess = m
 		blowResource = m
 	}
@@ -47,10 +47,10 @@ fun main(args: Array<String>) {
 		ignoreUnknownKeys = true
 	}
 
-	ExplodeConsole(m.provider, m).loop()
+	ExplodeConsole(m, m).loop()
 
 	when(operation) {
-		"backend", null -> startKtorServer(m.provider, m)
+		"backend", null -> startKtorServer(m, m)
 		else -> println("Unknown subcommand: $operation")
 	}
 
