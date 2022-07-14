@@ -4,10 +4,13 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Huge change in Blow">
+    <list default="true" id="233565b3-4a2b-48e6-885d-2740d7db96c7" name="Changes" comment="Fuzzy Search On!">
+      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/Detonate.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/util/ConfigPropertyDelegates.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dataprovider/src/test/kotlin/TestCoin.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/util.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/util.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,11 +83,11 @@
       <list>
         <option value="Kotlin Data Class" />
         <option value="Kotlin Annotation" />
-        <option value="Kotlin Object" />
         <option value="Kotlin Enum" />
         <option value="Kotlin File" />
-        <option value="Kotlin Class" />
         <option value="Kotlin Interface" />
+        <option value="Kotlin Object" />
+        <option value="Kotlin Class" />
       </list>
     </option>
   </component>
@@ -133,6 +136,7 @@
       <recent name="D:\explode\src\main\kotlin\explode\graphql\ktor" />
     </key>
     <key name="MoveKotlinTopLevelDeclarationsDialog.RECENTS_KEY">
+      <recent name="explode.dataprovider.provider.mongo" />
       <recent name="explode.rena" />
       <recent name="explode.blow.provider" />
       <recent name="explode.graphql.schema" />
@@ -152,6 +156,29 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="TestCoin.testCoin" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":dataprovider:test" />
+            <option value="--tests" />
+            <option value="&quot;TestCoin.testCoin&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="explode:composer-client [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -164,27 +191,6 @@
         <option name="taskNames">
           <list>
             <option value="shadowJar" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="explode:graphql-server [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/graphql-server" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="build" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -268,20 +274,20 @@
     </configuration>
     <list>
       <item itemvalue="Application.GraphQL" />
+      <item itemvalue="Gradle.TestCoin.testCoin" />
       <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
       <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
       <item itemvalue="Gradle.explode:rena [build]" />
       <item itemvalue="Gradle.explode:rena [shadowJar]" />
-      <item itemvalue="Gradle.explode:graphql-server [build]" />
       <item itemvalue="Kotlin.Rena" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
+        <item itemvalue="Gradle.TestCoin.testCoin" />
         <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
         <item itemvalue="Gradle.explode:rena [shadowJar]" />
         <item itemvalue="Gradle.explode:rena [build]" />
-        <item itemvalue="Gradle.explode:graphql-server [build]" />
       </list>
     </recent_temporary>
   </component>
@@ -483,7 +489,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657525916352</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="Fuzzy Search On!">
+      <created>1657773831361</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1657773831361</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -499,7 +512,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
-    <MESSAGE value="Added Blow framework" />
     <MESSAGE value="Work on Single mode done&#10;&#10;1. Implemented Blow provider with MongoDB on Single mode" />
     <MESSAGE value="RenaIndex reader and Dispatch server implementation&#10;&#10;1. Implemented the dispatch server&#10;2. Setup Rena_Index_List reader" />
     <MESSAGE value="Added dispatch interface" />
@@ -524,7 +536,8 @@
     <MESSAGE value="Shut up GraphQL" />
     <MESSAGE value="Added ResetPassword function to Console" />
     <MESSAGE value="Huge change in Blow" />
-    <option name="LAST_COMMIT_MESSAGE" value="Huge change in Blow" />
+    <MESSAGE value="Fuzzy Search On!" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fuzzy Search On!" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

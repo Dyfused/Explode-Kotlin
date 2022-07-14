@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
 import explode.dataprovider.model.*
 import explode.dataprovider.provider.*
+import explode.dataprovider.provider.mongo.Detonate.calcGainCoin
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
 import kotlinx.serialization.*
 import org.bson.types.Binary
@@ -447,12 +448,20 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 		// remove the data
 		playingC.deleteOneById(p.randomId)
 
+		// check record
 		val before = getPlayRankSelf(p.chartId)
 		updatePlayerScoreOnChart(playerId, chartId, record)
 		updatePlayerRValue(playerId, chartId, record)
 		val after = getPlayRankSelf(p.chartId)
 
 		val needUpdate = before == null || before.rank != after!!.rank
+
+		// get coins
+		val chartSet = getSetByChart(chartId) ?: error("Invalid Chart: Cannot find Set.")
+		val chart = getChart(chartId)
+		val coinDiff = calcGainCoin(chartSet.isRanked, chart.difficultyValue, record)
+		this.coin = (this.coin ?: 0) + coinDiff
+		updateUser(this)
 
 		return AfterPlaySubmitModel(
 			RankingModel(needUpdate, RankModel(after!!.rank)), this.RThisMonth ?: 0, this.coin, this.diamond
