@@ -200,7 +200,8 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 	): List<SetModel> {
 		// logger.info("$limit, $skip, $searchedName, $showHidden, $showOfficial, $showRanked, $showUnranked")
 		return if(searchedName.isNotEmpty()) {
-			chartSetC.find(SetModel::musicTitle eq searchedName).limit(limit).skip(skip).toList()
+			chartSetC.find("""{ "musicTitle": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
+			// chartSetC.find(SetModel::musicTitle eq searchedName).limit(limit).skip(skip).toList()
 		} else if(showHidden) {
 			chartSetC.find(SetModel::coinPrice eq -1).limit(limit).skip(skip).toList()
 		} else if(showOfficial) {

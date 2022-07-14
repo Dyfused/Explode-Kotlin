@@ -16,3 +16,6 @@ object DifficultyUtils {
 	fun String.toDifficultyClassNum() = DifficultyStringIntMapping.getOrElse(this.lowercase()) { 0 }
 	fun Int.toDifficultyClassStr() = DifficultyIntStringMapping.getOrElse(this) { "unknown" }
 }
+
+internal fun String.toFuzzySearch() =
+	"{ \$regex: \"$this\", \$options: \"\$i\" }"
