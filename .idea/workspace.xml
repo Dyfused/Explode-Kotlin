@@ -4,11 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Update .gitignore">
+    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages">
+      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/detonate/ExplodeConfig.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoExplodeConfig.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowResourceProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/IBlowResourceProvider.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/Detonate.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/Detonate.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,6 +59,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Kotlin Object" />
+        <option value="Kotlin Interface" />
+        <option value="Kotlin Class" />
       </list>
     </option>
   </component>
@@ -106,7 +110,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657933128819</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages">
+      <created>1657935856058</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1657935856058</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -122,6 +133,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Update .gitignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update .gitignore" />
+    <MESSAGE value="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages" />
   </component>
 </project>

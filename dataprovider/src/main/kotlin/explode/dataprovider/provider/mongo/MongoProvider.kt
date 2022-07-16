@@ -4,9 +4,10 @@ package explode.dataprovider.provider.mongo
 
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
+import explode.dataprovider.detonate.ExplodeConfig
 import explode.dataprovider.model.*
 import explode.dataprovider.provider.*
-import explode.dataprovider.provider.mongo.Detonate.calcGainCoin
+import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
 import kotlinx.serialization.*
 import org.bson.types.Binary
@@ -18,11 +19,13 @@ import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
 
-class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUserAccessor, IBlowDataProvider,
-	IBlowResourceProvider by Detonate.ResourceProvider {
+class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor, IBlowUserAccessor, IBlowDataProvider,
+	IBlowResourceProvider by detonate.resourceProvider {
+
+	constructor(config: ExplodeConfig) : this(config.toMongo())
 
 	private val logger = LoggerFactory.getLogger("MongoProvider")
-	private val mongo = (if(connectionString == null) KMongo.createClient() else KMongo.createClient(connectionString))
+	private val mongo = (KMongo.createClient(config.connectionString))
 	private val db = mongo.getDatabase("Explode")
 
 	private val userC = db.getCollection<UserModel>("User")
@@ -477,7 +480,7 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 		// get coins
 		val chartSet = getSetByChart(chartId) ?: error("Invalid Chart: Cannot find Set.")
 		val chart = getChart(chartId)
-		val coinDiff = calcGainCoin(chartSet.isRanked, chart.difficultyValue, record)
+		val coinDiff = detonate.calcGainCoin(chartSet.isRanked, chart.difficultyValue, record)
 		this.coin = (this.coin ?: 0) + coinDiff
 		updateUser(this)
 		logger.info("User[${this.username}] submited a record of ChartSet[${chartSet.musicTitle}] score ${record.score}(${record.perfect}/${record.good}/${record.miss}).")
