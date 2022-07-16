@@ -12,14 +12,14 @@ import kotlinx.serialization.*
 import org.bson.types.Binary
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.time.OffsetDateTime
+import java.time.*
 import java.util.*
+import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
 
 class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUserAccessor, IBlowDataProvider,
-	IBlowResourceProvider by BlowFileResourceProvider(File(".explode_data")) {
+	IBlowResourceProvider by Detonate.ResourceProvider {
 
 	private val logger = LoggerFactory.getLogger("MongoProvider")
 	private val mongo = (if(connectionString == null) KMongo.createClient() else KMongo.createClient(connectionString))
@@ -260,10 +260,25 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 		@Contextual val createTime: OffsetDateTime = OffsetDateTime.now()
 	)
 
-	private val playingC = db.getCollection<PlayingData>("PlayingData")
+	private val playingDataCache = mutableMapOf<String, PlayingData>()
 
 	init {
-		playingC.drop()
+		thread(name = "PlayingDataGC", isDaemon = true) {
+			while(true) {
+				// execute every 10 mins
+				Thread.sleep(Duration.ofMinutes(10).toMillis())
+
+				val needRemoving = mutableListOf<String>()
+				// select all the playingData existed greater than 1 hr.
+				playingDataCache.forEach { (_, p) ->
+					if(p.createTime + Duration.ofHours(1) < OffsetDateTime.now()) {
+						needRemoving += p.randomId
+					}
+				}
+				// remove 'em all
+				needRemoving.forEach(playingDataCache::remove)
+			}
+		}
 	}
 
 	private fun updatePlayerScoreOnChart(playerId: String, chartId: String, record: PlayRecordInput): PlayRecordData {
@@ -386,7 +401,7 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 				ownSet += s._id
 				ownChart += s.chart.map(ChartModel::_id)
 			}
-			logger.info("User(${this.username}) has just bought Set(${s.musicTitle}).")
+			logger.info("User[${this.username}] bought ChartSet(${s.musicTitle}) cost ${s.coinPrice} remaining ${coin}.")
 			return ExchangeSetModel(this.coin)
 		} else {
 			error("Cannot afford.")
@@ -429,7 +444,10 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 		chartId: String, ppCost: Int, eventArgs: String
 	): BeforePlaySubmitModel {
 		val p = PlayingData(randomId(), chartId, ppCost)
-		playingC.insertOne(p)
+		playingDataCache[p.randomId] = p
+		logger.info(
+			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires ${p.createTime + Duration.ofHours(1)}"
+		)
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(p.randomId))
 	}
 
@@ -440,13 +458,13 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 	}
 
 	override fun UserModel.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel {
-		val p = playingC.findOne(PlayingData::randomId eq randomId)!!
+		val p = playingDataCache[randomId] ?: error("Invalid randomId.")
 
 		val playerId = this._id
 		val chartId = p.chartId
 
 		// remove the data
-		playingC.deleteOneById(p.randomId)
+		playingDataCache -= randomId
 
 		// check record
 		val before = getPlayRankSelf(p.chartId)
@@ -462,7 +480,7 @@ class MongoProvider(connectionString: String? = null) : IBlowAccessor, IBlowUser
 		val coinDiff = calcGainCoin(chartSet.isRanked, chart.difficultyValue, record)
 		this.coin = (this.coin ?: 0) + coinDiff
 		updateUser(this)
-
+		logger.info("User[${this.username}] submited a record of ChartSet[${chartSet.musicTitle}] score ${record.score}(${record.perfect}/${record.good}/${record.miss}).")
 		return AfterPlaySubmitModel(
 			RankingModel(needUpdate, RankModel(after!!.rank)), this.RThisMonth ?: 0, this.coin, this.diamond
 		)

@@ -2,8 +2,10 @@ package explode.dataprovider.provider.mongo
 
 import TConfig.Configuration
 import explode.dataprovider.model.PlayRecordInput
+import explode.dataprovider.provider.BlowFileResourceProvider
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateBoolean
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateInt
+import explode.dataprovider.util.ConfigPropertyDelegates.delegateString
 import java.io.File
 import kotlin.math.*
 
@@ -55,6 +57,27 @@ object Detonate {
 		"Value for calculating the gaining coin when player finishes a chart. The Greater this is, the Smaller result is."
 	).delegateInt()
 
+	private val resourceDirectory by c.get(
+		MongoCategoryName,
+		"resource-directory",
+		".explode_data",
+		"The path to the directory of data."
+	).delegateString()
+
+	private val defaultUserAvatar by c.get(
+		MongoCategoryName,
+		"default-user-avatar",
+		"",
+		"The ID of the default user avatar. Empty if disable."
+	).delegateString()
+
+	private val defaultStorePreview by c.get(
+		MongoCategoryName,
+		"default-store-preview",
+		"",
+		"The ID of the default set. Empty if disable."
+	).delegateString()
+
 	init {
 		c.save()
 	}
@@ -93,6 +116,12 @@ object Detonate {
 //		""".trimIndent())
 
 		return floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * ( 1F / superCoinFactor )).roundToInt() + 1
+	}
+
+	val ResourceProvider: BlowFileResourceProvider by lazy {
+		val avatar = defaultUserAvatar.takeIf { it.isNotBlank() }
+		val preview = defaultStorePreview.takeIf { it.isNotBlank() }
+		BlowFileResourceProvider(File(resourceDirectory), defaultUserAvatar = avatar, defaultStorePreview = preview)
 	}
 
 }
