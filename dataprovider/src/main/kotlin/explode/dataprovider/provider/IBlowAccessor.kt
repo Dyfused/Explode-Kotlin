@@ -5,12 +5,6 @@ import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassNum
 
 interface IBlowAccessor {
 
-	fun getUser(userId: String): UserModel?
-
-	fun getUserByName(username: String): UserModel?
-
-	fun getUserByToken(soudayo: String): UserModel?
-
 	fun getSet(setId: String): SetModel?
 
 	fun getChart(chartId: String): DetailedChartModel?
@@ -20,21 +14,6 @@ interface IBlowAccessor {
 	fun updateSet(setModel: SetModel): SetModel
 
 	fun updateChart(detailedChartModel: DetailedChartModel): DetailedChartModel
-
-	/**
-	 * Read [password] of [User][UserModel]s from the database.
-	 * Password is stored separatedly.
-	 */
-	val UserModel.password: String
-
-	/**
-	 * Write [password] of [User][UserModel] to the database.
-	 * Password should be plain text without encryption.
-	 * Password is stored separatedly.
-	 *
-	 * @param password The new password
-	 */
-	fun UserModel.setPassword(password: String): UserModel
 
 	/**
 	 * Create and store a new [User][UserModel].

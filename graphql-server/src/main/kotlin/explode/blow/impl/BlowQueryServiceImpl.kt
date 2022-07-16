@@ -17,7 +17,7 @@ class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService 
 	}
 
 	override suspend fun gameSetting(env: DataFetchingEnvironment, ): GameSettingModel {
-		return p.getGameSetting(env.soudayo)
+		return p.gameSetting
 	}
 
 	override suspend fun reviewer(env: DataFetchingEnvironment): BlowReviewerService {
@@ -40,7 +40,6 @@ class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService 
 		if(isOfficial == null) return listOf()
 
 		return p.getSets(
-			env.soudayo,
 			limit!!.value,
 			skip!!.value,
 			musicTitle!!,
@@ -58,15 +57,15 @@ class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService 
 	}
 
 	override suspend fun ownOrGotChart(env: DataFetchingEnvironment): List<DetailedChartModel> {
-		return p.getOwnedOrGotCharts(env.soudayo)
+		return p.getUserByToken(env.soudayo)?.ownChart?.map(p::getChart) ?: listOf()
 	}
 
 	override suspend fun charts(env: DataFetchingEnvironment, limit: Int?, skip: Int?, ranked: Int?): List<DetailedChartModel> {
-		return p.getOwnedCharts(env.soudayo, limit!!, skip!!, ranked == 1)
+		return p.getUserByToken(env.soudayo)?.ownSet?.map(p::getChart) ?: listOf()
 	}
 
 	override suspend fun assessmentGroup(env: DataFetchingEnvironment, limit: Int?, skip: Int?): List<AssessmentGroupModel> {
-		return p.getAssessmentGroups(env.soudayo, limit!!, skip!!)
+		return listOf()
 	}
 
 	override suspend fun assessmentRank(
@@ -76,29 +75,23 @@ class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService 
 		skip: NNInt?,
 		limit: NNInt?
 	): List<AssessmentRecordWithRankModel> {
-		return p.getAssessmentRank(
-			env.soudayo,
-			assessmentGroupId!!,
-			medalLevel!!,
-			limit!!.value,
-			skip!!.value
-		)
+		return listOf()
 	}
 
 	override suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel {
-		return p.getSet(env.soudayo, _id!!)
+		return p.getSet(_id!!)
 	}
 
 	override suspend fun userByUsername(env: DataFetchingEnvironment, username: String?): UserModel? {
-		return p.getUser(env.soudayo, username!!)
+		return p.getUser(username!!)
 	}
 
 	override suspend fun playRank(env: DataFetchingEnvironment, chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank> {
-		return p.getPlayRank(env.soudayo, chartId!!, limit!!.value, skip!!.value)
+		return p.getPlayRank(chartId!!, limit!!.value, skip!!.value)
 	}
 
 	override suspend fun refreshSet(env: DataFetchingEnvironment, setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set> {
-		return setVersion.map { p.getSet(env.soudayo, it.setId) }.map {
+		return setVersion.map { p.getSet(it.setId) }.map {
 			ClassifiedModels.Set(it._id, it.isRanked, it.introduction, it.noter.username, it.musicTitle)
 		}
 	}

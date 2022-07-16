@@ -9,7 +9,7 @@ import graphql.schema.DataFetchingEnvironment
 
 class ProviderSelfService(private val p: IBlowDataProvider) : BlowSelfService() {
 	override suspend fun gotSet(env: DataFetchingEnvironment): List<SetModel> {
-		return p.getGotSets(env.soudayo)
+		return p.getUserByToken(env.soudayo)?.ownSet?.map(p::getSet) ?: listOf()
 	}
 
 	override suspend fun assessmentRankSelf(
@@ -17,11 +17,15 @@ class ProviderSelfService(private val p: IBlowDataProvider) : BlowSelfService() 
 		assessmentGroupId: String?,
 		medalLevel: Int?
 	): AssessmentRecordWithRankModel? {
-		return p.getAssessmentRankSelf(env.soudayo, assessmentGroupId!!, medalLevel!!)
+		return with(p) {
+			p.getUserByToken(env.soudayo)?.getAssessmentRankSelf(assessmentGroupId!!, medalLevel!!)
+		}
 	}
 
 	override suspend fun playRankSelf(env: DataFetchingEnvironment, chartId: String?): PlayRecordWithRank? {
-		return p.getPlayRankSelf(env.soudayo, chartId!!)
+		return with(p) {
+			p.getUserByToken(env.soudayo)?.getPlayRankSelf(chartId!!)
+		}
 	}
 }
 
@@ -33,6 +37,22 @@ class ProviderReviewerService(private val p: IBlowDataProvider) : BlowReviewerSe
 		status: Int?,
 		searchStr: String?
 	): List<ReviewRequestModel> {
-		return p.getReviewRequests(env.soudayo, limit!!, skip!!, status!!, searchStr!!)
+		val u = p.getUserByToken(env.soudayo)
+
+		if(u == null || !u.access.reviewer) return emptyList()
+
+		return p.getSets(
+			limit!!,
+			skip!!,
+			searchStr ?: "",
+			onlyRanked = false,
+			onlyOfficial = false,
+			onlyReview = false,
+			onlyHidden = false,
+			playCountOrder = false,
+			publishTimeOrder = false
+		).map {
+			ReviewRequestModel(it, !it.isRanked)
+		}
 	}
 }

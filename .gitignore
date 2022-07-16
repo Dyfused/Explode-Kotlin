@@ -44,3 +44,4 @@ bin/
 
 ### Running Trashes ###
 /explode.cfg
+/dataprovider/provider.cfg

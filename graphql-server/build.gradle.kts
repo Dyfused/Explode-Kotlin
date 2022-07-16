@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "taskeren.explode"
-version = "1.0-SNAPSHOT"
+version = "1.1-SNAPSHOT"
 
 val ktorVersion: String by project
 val logbackVersion: String by project

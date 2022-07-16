@@ -1,10 +1,12 @@
 package explode
 
+import TConfig.Configuration
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
+import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.utils.Config
@@ -32,11 +34,12 @@ fun main(args: Array<String>) {
 
 	mainLogger.info("Explode ($GameVersion)")
 
-	val m = MongoProvider()
+	val cfg = Configuration(File("./provider.cfg"))
+	val m = MongoProvider(cfg.explode())
 
 	@Suppress("DEPRECATION") // no warning to set
 	run {
-		blow = m.provider
+		blow = m
 		blowAccess = m
 		blowResource = m
 	}
@@ -47,10 +50,10 @@ fun main(args: Array<String>) {
 		ignoreUnknownKeys = true
 	}
 
-	ExplodeConsole(m.provider, m).loop()
+	ExplodeConsole(m, m).loop()
 
 	when(operation) {
-		"backend", null -> startKtorServer(m.provider, m)
+		"backend", null -> startKtorServer(m, m)
 		else -> println("Unknown subcommand: $operation")
 	}
 

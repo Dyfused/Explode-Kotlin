@@ -16,12 +16,15 @@ class BlowMutationServiceImpl(private val p: IBlowDataProvider) : BlowMutationSe
 		return p.registerUser(username!!, password!!)
 	}
 
+	// Dynamite Obsolete
 	override suspend fun purchaseChart(env: DataFetchingEnvironment, chartId: String?): UserModel {
-		return p.getUser(env.soudayo, "")!! // TODO
+		return p.getUser("")!! // TODO
 	}
 
 	override suspend fun exchangeSet(env: DataFetchingEnvironment, setId: String?): ExchangeSetModel {
-		return p.buySet(env.soudayo, setId!!)
+		return with(p) {
+			p.getUserByToken(env.soudayo)?.buySet(setId!!) ?: error("Invalid Soudayo")
+		}
 	}
 
 	override suspend fun submitBeforeAssessment(
@@ -29,7 +32,9 @@ class BlowMutationServiceImpl(private val p: IBlowDataProvider) : BlowMutationSe
 		assessmentGroupId: String?,
 		medalLevel: Int?
 	): BeforePlaySubmitModel {
-		return p.submitBeforeAssessment(env.soudayo, assessmentGroupId!!, medalLevel!!)
+		return with(p) {
+			p.getUserByToken(env.soudayo)?.submitBeforeAssessment(assessmentGroupId!!, medalLevel!!) ?: error("Invalid Soudayo")
+		}
 	}
 
 	override suspend fun submitAfterAssessment(
@@ -37,7 +42,9 @@ class BlowMutationServiceImpl(private val p: IBlowDataProvider) : BlowMutationSe
 		playRecords: List<PlayRecordInput?>?,
 		randomId: String?
 	): AfterAssessmentModel {
-		return p.submitAfterAssessment(env.soudayo, playRecords!!.filterNotNull(), randomId!!)
+		return with(p) {
+			p.getUserByToken(env.soudayo)?.submitAfterAssessment(playRecords!!.filterNotNull(), randomId!!) ?: error("Invalid Soudayo")
+		}
 	}
 
 	override suspend fun submitBeforePlay(
@@ -46,7 +53,9 @@ class BlowMutationServiceImpl(private val p: IBlowDataProvider) : BlowMutationSe
 		PPCost: Int?,
 		eventArgs: String?
 	): BeforePlaySubmitModel {
-		return p.submitBeforePlay(env.soudayo, chartId!!, PPCost!!, eventArgs!!)
+		return with(p) {
+			p.getUserByToken(env.soudayo)?.submitBeforePlay(chartId!!, PPCost!!, eventArgs!!) ?: error("Invalid Soudayo")
+		}
 	}
 
 	override suspend fun submitAfterPlay(
@@ -54,6 +63,8 @@ class BlowMutationServiceImpl(private val p: IBlowDataProvider) : BlowMutationSe
 		randomId: String?,
 		playRecord: PlayRecordInput?
 	): AfterPlaySubmitModel {
-		return p.submitAfterPlay(env.soudayo, playRecord!!, randomId!!)
+		return with(p) {
+			p.getUserByToken(env.soudayo)?.submitAfterPlay(playRecord!!, randomId!!) ?: error("Invalid Soudayo")
+		}
 	}
 }

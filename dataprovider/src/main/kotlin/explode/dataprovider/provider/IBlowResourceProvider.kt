@@ -86,7 +86,12 @@ interface IBlowFileResourceProvider : IBlowResourceProvider {
 	fun addUserAvatarFile(userId: String, data: ByteArray)
 }
 
-class BlowFileResourceProvider(private val dataBin: File) : IBlowFileResourceProvider {
+class BlowFileResourceProvider(
+	private val dataBin: File,
+
+	private val defaultUserAvatar: String? = null,
+	private val defaultStorePreview: String? = null
+) : IBlowFileResourceProvider {
 
 	private fun File.ensureExistanceAsFolder() = apply {
 		if(!this.exists() || !this.isDirectory) {
@@ -120,10 +125,10 @@ class BlowFileResourceProvider(private val dataBin: File) : IBlowFileResourcePro
 		setId?.let { coverFolder.resolve("$setId.jpg") }
 
 	override fun getStorePreviewFile(setId: String?): File? =
-		setId?.let { storePreviewFolder.resolve("$setId.jpg") }
+		setId?.let { storePreviewFolder.resolve("$setId.jpg") } ?: defaultStorePreview?.let { storePreviewFolder.resolve("$defaultStorePreview.jpg") }
 
 	override fun getUserAvatarFile(userId: String?): File? =
-		userId?.let { avatarFolder.resolve("$userId.jpg") }
+		userId?.let { avatarFolder.resolve("$userId.jpg") } ?: defaultUserAvatar?.let { avatarFolder.resolve("$defaultUserAvatar.jpg") }
 
 	override fun addChartFile(chartId: String, data: ByteArray) {
 		getChartFile(chartId)?.writeBytes(data)

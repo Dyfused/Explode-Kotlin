@@ -46,7 +46,7 @@ class ExplodeConsole(private val data: IBlowDataProvider, private val acc: IBlow
 		val username = sp.getOrNull(1) ?: return "Missing parameter: username"
 		val password = sp.getOrNull(2) ?: return "Missing parameter: password"
 
-		return if(acc.getUser(username) != null) {
+		return if(data.getUserByName(username) != null) {
 			"Duplicating username."
 		} else {
 			data.registerUser(username, password)
@@ -57,19 +57,30 @@ class ExplodeConsole(private val data: IBlowDataProvider, private val acc: IBlow
 	fun findUser(sp: List<String>): Any {
 		val username = sp.getOrNull(1) ?: return "Missing parameter: username"
 
-		return acc.getUser(username) ?: "Cannot find the user named $username"
+		return data.getUserByName(username) ?: "Cannot find the user named $username"
 	}
 
-	@SubCommand(desc = "(/resetPassword <username>) Reset the password of a existing User with given <username>")
+	@SubCommand(desc = "(/resetPassword <username> [password]) Reset the password of a existing User with given <username>")
 	fun resetPassword(sp: List<String>): Any {
 		val username = sp.getOrNull(1) ?: return "Missing parameter: username"
-
-		val u = acc.getUser(username) ?: return "Cannot find the user named $username"
-		val p = List(16) { (('A'..'z') + ('0'..'9')).random() }.joinToString()
-		with(acc) {
-			u.setPassword(p)
+		val u = data.getUserByName(username) ?: return "Cannot find the user named $username"
+		val p = sp.getOrNull(2) ?: List(8) { (('A'..'z') + ('0'..'9')).random() }.joinToString()
+		with(data) {
+			u.password = p
 			return "New password: $p"
 		}
+	}
+
+	@SubCommand(desc = "(/setChartRankedState <setId> [rankedState=true]) Change the 'ranked' state of given Chart Set.")
+	fun setChartRankedState(sp: List<String>): Any {
+		val chartId = sp.getOrNull(1) ?: return "Missing parameter: setId"
+		val rankedState = (sp.getOrNull(2) ?: "true").toBooleanStrictOrNull() ?: return "Invalid parameter: rankedState"
+
+		val s = acc.getSet(chartId) ?: return "Cannot find the chart with ID $chartId"
+
+		s.isRanked = rankedState
+
+		return "Set(${s._id})[${s.musicTitle}] has changed ranked state to ${s.isRanked}"
 	}
 
 }
