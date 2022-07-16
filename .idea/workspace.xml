@@ -4,23 +4,29 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages">
-      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/detonate/ExplodeConfig.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoExplodeConfig.kt" afterDir="false" />
+    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Refactored configurations">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/Detonate.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/Detonate.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer-client/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/CreatingChartPage.kt" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/CreatingChartPage.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/StoreDataProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/data/StoreDataProvider.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
   <component name="ExternalProjectsManager">
     <system id="GRADLE">
       <state>
         <task path="$PROJECT_DIR$/graphql-server">
+          <activation />
+        </task>
+        <task path="$PROJECT_DIR$/composer-client">
           <activation />
         </task>
         <projects_view>
@@ -29,6 +35,24 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="explode" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="composer-client" type="2d1252cf:ModuleNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="composer-client" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="explode" type="f1a62948:ProjectNode" />
+                <item name="composer-client" type="2d1252cf:ModuleNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="shadow" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -74,7 +98,28 @@
     <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.mongodb/mongodb-driver-core/4.6.0/ada95bef8943a58950786f6f0e5ea1b788546e/mongodb-driver-core-4.6.0-sources.jar!/com/mongodb/client/model/Aggregates.java" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
-  <component name="RunManager">
+  <component name="RunManager" selected="Gradle.explode:composer-client [shadowJar]">
+    <configuration name="explode:composer-client [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/composer-client" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="shadowJar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="explode:graphql-server [shadowJar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -96,8 +141,13 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
+      <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
+    </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
         <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
       </list>
     </recent_temporary>
@@ -117,7 +167,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657935856058</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Refactored configurations">
+      <created>1657937559884</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1657937559884</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -134,6 +191,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Update .gitignore" />
     <MESSAGE value="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages" />
+    <MESSAGE value="Refactored configurations" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactored configurations" />
   </component>
 </project>

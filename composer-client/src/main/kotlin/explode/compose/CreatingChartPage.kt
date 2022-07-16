@@ -228,7 +228,7 @@ fun ActualMetaCreating() {
                         if(it.difficultyBase!! in takenDiff) {
                             error("Duplicate Difficulty Class: ${getDifficultyName(it.difficultyBase!!)}")
                         } else {
-                            ExplodeViewModel.validateFile(it.chartFile, true, onReject = { f -> error("Chart(${it.difficultyBase}) unset or not exist") })
+                            ExplodeViewModel.validateFile(it.chartFile, true, onReject = { _ -> error("Chart(${it.difficultyBase}) unset or not exist") })
                             takenDiff += it.difficultyBase!!
                         }
                     }
