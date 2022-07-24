@@ -17,6 +17,8 @@ repositories {
 dependencies {
     implementation(project(":dataprovider"))
 
+    implementation("com.github.taskeren", "tconfig", "1.0")
+
     implementation("cn.hutool", "hutool-core", "5.8.4")
     implementation("ch.qos.logback", "logback-classic", logbackVersion)
 

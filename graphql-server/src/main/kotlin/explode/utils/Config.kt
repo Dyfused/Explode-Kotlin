@@ -22,14 +22,6 @@ class Config(file: File) {
 		"True if enable GraphQL playground on GET method."
 	).delegateBoolean()
 
-	// DataProvider
-	val mongoUrl by config.get(
-		"dataprovider",
-		"mongo-connection-string",
-		"mongodb://localhost:27017",
-		"The URI to connect the MongoDB."
-	).delegateString()
-
 	// Debugging
 	val mongoLogging by config.get(
 		"debugging",

@@ -15,6 +15,13 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 		"The URI of the MongoDB to persistant data."
 	).delegateString()
 
+	val databaseName by config.get(
+		"mongo-provider",
+		"mongodb-database-name",
+		"Explode",
+		"The database of current Explode."
+	).delegateString()
+
 	val allowUnrankedCoin by config.get(
 		"mongodb-coin",
 		"allow-unranked-coin",

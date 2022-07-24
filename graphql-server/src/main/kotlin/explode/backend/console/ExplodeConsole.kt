@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_PARAMETER")
+
 package explode.backend.console
 
 import explode.dataprovider.provider.IBlowAccessor
@@ -6,6 +8,7 @@ import kotlin.concurrent.thread
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
+import kotlin.system.exitProcess
 
 @Retention(AnnotationRetention.RUNTIME)
 annotation class SubCommand(val value: String = "", val desc: String = "")
@@ -81,6 +84,20 @@ class ExplodeConsole(private val data: IBlowDataProvider, private val acc: IBlow
 		s.isRanked = rankedState
 
 		return "Set(${s._id})[${s.musicTitle}] has changed ranked state to ${s.isRanked}"
+	}
+
+	@SubCommand(desc = "(/listRanking <ChartId> [limit=15] [skip=0]) List the play records of the given chart.")
+	fun listRanking(sp: List<String>): Any {
+		val chartId = sp.getOrNull(1) ?: return "Missing parameter: chartId"
+		val limit = sp.getOrNull(2)?.let { it.toIntOrNull() ?: return "Invalid parameter: limit" } ?: 15
+		val skip = sp.getOrNull(3)?.let { it.toIntOrNull() ?: return "Invalid parameter: skip" } ?: 0
+
+		val l = data.getPlayRank(chartId, limit, skip);
+		println("Fetched ${l.size} records:")
+		l.forEach {
+			println("[${it.rank}] ${it.player.username} - ${it.score}(${it.perfect}/${it.good}/${it.miss})")
+		}
+		return ""
 	}
 
 }

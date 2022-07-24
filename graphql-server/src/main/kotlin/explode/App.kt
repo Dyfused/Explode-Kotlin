@@ -77,7 +77,6 @@ private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: I
 	mainLogger.info("Configuration:")
 	mainLogger.info("\tGraphQLPort=${explodeConfig.port}")
 	mainLogger.info("\tUsePlayground=${explodeConfig.enablePlayground}")
-	mainLogger.info("\tMongoDBUri=${explodeConfig.mongoUrl}")
 	mainLogger.info("Starting Ktor!")
 
 	embeddedServer(

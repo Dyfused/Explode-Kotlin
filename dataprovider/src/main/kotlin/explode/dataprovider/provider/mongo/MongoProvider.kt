@@ -19,14 +19,15 @@ import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
 
-class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor, IBlowUserAccessor, IBlowDataProvider,
+class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor,
+	IBlowUserAccessor, IBlowDataProvider,
 	IBlowResourceProvider by detonate.resourceProvider {
 
 	constructor(config: ExplodeConfig) : this(config.toMongo())
 
-	private val logger = LoggerFactory.getLogger("MongoProvider")
+	private val logger = LoggerFactory.getLogger("Mongo")
 	private val mongo = (KMongo.createClient(config.connectionString))
-	private val db = mongo.getDatabase("Explode")
+	private val db = mongo.getDatabase(config.databaseName)
 
 	private val userC = db.getCollection<UserModel>("User")
 
@@ -78,6 +79,7 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 	}
 
 	override fun createUser(username: String, password: String): UserModel {
+		logger.info("Creating user with parameters [username=$username, password=$password]")
 		return UserModel(
 			UUID.randomUUID().toString(),
 			username,
@@ -146,7 +148,7 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 	): DetailedChartModel {
 		return DetailedChartModel(
 			randomId(), charterUser, chartName, gcPrice, MusicModel(musicianName), difficultyClass, difficultyValue, D
-		).upsert(chartC)
+		).upsert(chartC).apply { logger.info("Created DetailedChart: $this") }
 	}
 
 	override fun createSet(
@@ -174,7 +176,7 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 			false,
 			OverridePriceStr,
 			needReview
-		).upsert(chartSetC)
+		).upsert(chartSetC).apply { logger.info("Created ChartSet: $this") }
 	}
 
 	override fun updateChart(detailedChartModel: DetailedChartModel): DetailedChartModel {
@@ -301,10 +303,11 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 		if(old == null) {
 			playRecordC.insertOne(new)
 		} else {
-			if(old.score <= new.score) {
+			if(old.score < new.score) { // should not update if score equals, in order to keep the time order.
 				playRecordC.updateOneById(old._id, new)
 			}
 		}
+		logger.info("Updated PlayRecord: $old => $new")
 		return new
 	}
 
@@ -317,21 +320,6 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 		50.0
 	} else {
 		round((0.5813 * d.pow(3) - (3.28 * d.pow(2) + (14.43 * d) - 29.3)))
-	}
-
-	// File System
-
-	val binaryC = db.getCollection<IdToBytes>("BinaryData")
-
-	@Serializable
-	data class IdToBytes(val _id: String, @Contextual val data: Binary)
-
-	fun uploadData(id: String, data: ByteArray) {
-		IdToBytes(id, Binary(data)).upsert(binaryC)
-	}
-
-	fun downloadData(id: String): ByteArray? {
-		return binaryC.findOne(IdToBytes::_id eq id)?.data?.data
 	}
 
 	// IBlowProvider methods
@@ -449,7 +437,7 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 		val p = PlayingData(randomId(), chartId, ppCost)
 		playingDataCache[p.randomId] = p
 		logger.info(
-			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires ${p.createTime + Duration.ofHours(1)}"
+			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires at ${p.createTime + Duration.ofHours(1)}. [${p.randomId}]"
 		)
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(p.randomId))
 	}
@@ -483,7 +471,7 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 		val coinDiff = detonate.calcGainCoin(chartSet.isRanked, chart.difficultyValue, record)
 		this.coin = (this.coin ?: 0) + coinDiff
 		updateUser(this)
-		logger.info("User[${this.username}] submited a record of ChartSet[${chartSet.musicTitle}] score ${record.score}(${record.perfect}/${record.good}/${record.miss}).")
+		logger.info("User[${this.username}] submited a record of ChartSet[${chartSet.musicTitle}] score ${record.score}(${record.perfect}/${record.good}/${record.miss}). [$randomId]")
 		return AfterPlaySubmitModel(
 			RankingModel(needUpdate, RankModel(after!!.rank)), this.RThisMonth ?: 0, this.coin, this.diamond
 		)

@@ -1,8 +1,10 @@
 package explode.rena
 
+import TConfig.Configuration
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import cn.hutool.core.util.ZipUtil
+import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassNum
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.rena.model.loadAsRenaStandardPack
@@ -231,7 +233,7 @@ fun exportToDatabase(renas: List<ResolvedRenaObject>) {
 	// shut up mf mongodb
 	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("org.mongodb.driver").level = Level.WARN
 
-	val p = MongoProvider(databaseConnStr)
+	val p = MongoProvider(Configuration(File("./provider.cfg")).explode())
 
 	renas.forEach { r ->
 		val s = p.buildChartSet(
