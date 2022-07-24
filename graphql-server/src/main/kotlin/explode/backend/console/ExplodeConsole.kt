@@ -8,7 +8,6 @@ import kotlin.concurrent.thread
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.findAnnotation
-import kotlin.system.exitProcess
 
 @Retention(AnnotationRetention.RUNTIME)
 annotation class SubCommand(val value: String = "", val desc: String = "")
@@ -92,7 +91,7 @@ class ExplodeConsole(private val data: IBlowDataProvider, private val acc: IBlow
 		val limit = sp.getOrNull(2)?.let { it.toIntOrNull() ?: return "Invalid parameter: limit" } ?: 15
 		val skip = sp.getOrNull(3)?.let { it.toIntOrNull() ?: return "Invalid parameter: skip" } ?: 0
 
-		val l = data.getPlayRank(chartId, limit, skip);
+		val l = data.getPlayRank(chartId, limit, skip)
 		println("Fetched ${l.size} records:")
 		l.forEach {
 			println("[${it.rank}] ${it.player.username} - ${it.score}(${it.perfect}/${it.good}/${it.miss})")

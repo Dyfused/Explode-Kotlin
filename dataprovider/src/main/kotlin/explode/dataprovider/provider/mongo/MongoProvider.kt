@@ -10,16 +10,16 @@ import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
 import kotlinx.serialization.*
-import org.bson.types.Binary
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
-import java.time.*
+import java.time.Duration
+import java.time.OffsetDateTime
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.math.round
 
-class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor,
+class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor,
 	IBlowUserAccessor, IBlowDataProvider,
 	IBlowResourceProvider by detonate.resourceProvider {
 
@@ -405,13 +405,23 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 		return null
 	}
 
+	/**
+	 * Return the ChartId removed the last 4 characters when UnencryptedMode is on.
+	 *
+	 * 为了避免忘记，我在这里用中文注释。
+	 * 这个方法应该只被[getPlayRank]和[getPlayRankSelf]调用，因为上传的[分数存档][PlayRecordData]的[谱面ID][PlayRecordData.playedChartId]缺少最后四字符，所以在查询的时候应该移除四字符。
+	 * 但在其他除了 PlayRecord 的地方，就目前来讲，谱面ID都是正确的。
+	 */
+	private fun String.tryPatchUnencryptedChartId() =
+		if(config.applyUnencryptedFixes) this.substring(0, this.length - 4) else this
+
 	private val aggregateRanking =
 		Aggregates.setWindowFields(null, PlayRecordDataRanked::score eq -1, WindowedComputations.rank("ranking"))
 
 	override fun UserModel.getPlayRankSelf(chartId: String): PlayRecordWithRank? {
 		val playerId = this._id
 		return playRecordC.aggregate<PlayRecordDataRanked>(
-			match(PlayRecordDataRanked::playedChartId eq chartId),
+			match(PlayRecordDataRanked::playedChartId eq chartId.tryPatchUnencryptedChartId()),
 			aggregateRanking,
 			match(PlayRecordDataRanked::playerId eq playerId)
 		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
@@ -421,7 +431,7 @@ class MongoProvider(config: MongoExplodeConfig, val detonate: Detonate = Detonat
 
 	override fun getPlayRank(chartId: String, limit: Int, skip: Int): List<PlayRecordWithRank> {
 		return playRecordC.aggregate<PlayRecordDataRanked>(
-			match(PlayRecordDataRanked::playedChartId eq chartId), aggregateRanking, skip(skip), limit(limit)
+			match(PlayRecordDataRanked::playedChartId eq chartId.tryPatchUnencryptedChartId()), aggregateRanking, skip(skip), limit(limit)
 		).map { (_, playerId, _, score, perfect, good, miss, mod, time, ranking) ->
 			PlayRecordWithRank(getPlayer(playerId)!!, mod, ranking, score, perfect, good, miss, time)
 		}.toList()

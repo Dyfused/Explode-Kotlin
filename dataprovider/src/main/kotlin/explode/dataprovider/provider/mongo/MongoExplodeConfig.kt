@@ -66,6 +66,13 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 		"The ID of the default set. Empty if disable."
 	).delegateString()
 
+	val applyUnencryptedFixes by config.get(
+		"unencrypted",
+		"use-unencrypted-patches",
+		false,
+		"True if use the Unencrypted mode, which is unstable and contains conflicts to the Normal mode."
+	).delegateBoolean()
+
 	init {
 		config.save()
 	}

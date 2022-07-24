@@ -4,18 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Shut up GraphQL">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Added more logging messages&#10;&#10;1. Added more logging messages&#10;2. Done the chores to the api change">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoExplodeConfig.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoExplodeConfig.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/test/kotlin/TestCoin.kt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/console/ExplodeConsole.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/utils/Config.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rena/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/rena/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rena/src/main/kotlin/explode/rena/RenaApp.kt" beforeDir="false" afterPath="$PROJECT_DIR$/rena/src/main/kotlin/explode/rena/RenaApp.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,24 +38,6 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="explode" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="composer-client" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="composer-client" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="composer-client" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="shadow" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -274,7 +249,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657937559884</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added more logging messages&#10;&#10;1. Added more logging messages&#10;2. Done the chores to the api change">
+      <created>1658690118483</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1658690118483</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -304,7 +286,8 @@
     <MESSAGE value="Update .gitignore" />
     <MESSAGE value="Added Default Avatar and Store Preview&#10;&#10;1. added default user avatar and chart store preview&#10;2. added logging messages" />
     <MESSAGE value="Refactored configurations" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactored configurations" />
+    <MESSAGE value="Added more logging messages&#10;&#10;1. Added more logging messages&#10;2. Done the chores to the api change" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added more logging messages&#10;&#10;1. Added more logging messages&#10;2. Done the chores to the api change" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
