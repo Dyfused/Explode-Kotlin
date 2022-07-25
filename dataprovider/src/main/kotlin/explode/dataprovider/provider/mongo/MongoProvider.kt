@@ -30,6 +30,12 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	private val mongo = (KMongo.createClient(config.connectionString))
 	private val db = mongo.getDatabase(config.databaseName)
 
+	init {
+		logger.info("Database: ${config.databaseName} at ${config.connectionString}")
+		logger.info("Resource: ${config.resourceDirectory}")
+		logger.info("Unencrypted: ${config.applyUnencryptedFixes}")
+	}
+
 	private val userC = db.getCollection<UserModel>("User")
 
 	/**
@@ -474,7 +480,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val needUpdate = before == null || before.rank != after!!.rank
 
 		// get coins
-		val chartSet = getSetByChart(chartId) ?: error("Invalid Chart: Cannot find Set.")
+		val chartSet = getSetByChart(chartId) ?: error("Invalid Chart: Cannot find Set by Chart($chartId).")
 		val chart = getChart(chartId)
 		val coinDiff = detonate.calcGainCoin(chartSet.isRanked, chart.difficultyValue, record)
 		this.coin = (this.coin ?: 0) + coinDiff

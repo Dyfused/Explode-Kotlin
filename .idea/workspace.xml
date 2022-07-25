@@ -4,12 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Fixed the problem where Ranking is not working properly in UnencryptedMode.">
-      <changelist_data name="Taskeren" email="r0yalist@outlook.com" />
+    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="[BREAKING] Changes in Unencrypted charts&#10;&#10;1. Now forces the Unencrypted charts ID ends with 4 zeros.&#10;2. Revoked the commit of [getPlayRank] and [getPlayRankSelf].&#10;3. Added feature that auto add the missing 4 zeros in Unencrypted Mode.">
+      <change afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/explode.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/CreatingChartPage.kt" beforeDir="false" afterPath="$PROJECT_DIR$/composer-client/src/main/kotlin/explode/compose/CreatingChartPage.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/RandomUtil.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/RandomUtil.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,6 +104,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Taskeren &lt;r0yalist@outlook.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="api-v1" />
@@ -130,10 +136,12 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
-  <component name="RunManager" selected="Gradle.explode:graphql-server [shadowJar]">
+  <component name="RunManager" selected="Kotlin.AppKt">
     <configuration name="explode.AppKt" type="Application" factoryName="Application" activateToolWindowBeforeRun="false" nameIsGenerated="true">
       <option name="ALTERNATIVE_JRE_PATH" value="11" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -244,9 +252,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Kotlin.AppKt" />
         <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
         <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
-        <item itemvalue="Kotlin.AppKt" />
         <item itemvalue="Gradle.Run GraphQL" />
         <item itemvalue="Gradle.explode:graphql-server [knows]" />
       </list>
@@ -296,7 +304,14 @@
       <option name="presentableId" value="Default" />
       <updated>1658697789929</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="[BREAKING] Changes in Unencrypted charts&#10;&#10;1. Now forces the Unencrypted charts ID ends with 4 zeros.&#10;2. Revoked the commit of [getPlayRank] and [getPlayRankSelf].&#10;3. Added feature that auto add the missing 4 zeros in Unencrypted Mode.">
+      <created>1658736088222</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1658736088222</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -328,7 +343,8 @@
     <MESSAGE value="Refactored configurations" />
     <MESSAGE value="Added more logging messages&#10;&#10;1. Added more logging messages&#10;2. Done the chores to the api change" />
     <MESSAGE value="Fixed the problem where Ranking is not working properly in UnencryptedMode." />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed the problem where Ranking is not working properly in UnencryptedMode." />
+    <MESSAGE value="[BREAKING] Changes in Unencrypted charts&#10;&#10;1. Now forces the Unencrypted charts ID ends with 4 zeros.&#10;2. Revoked the commit of [getPlayRank] and [getPlayRankSelf].&#10;3. Added feature that auto add the missing 4 zeros in Unencrypted Mode." />
+    <option name="LAST_COMMIT_MESSAGE" value="[BREAKING] Changes in Unencrypted charts&#10;&#10;1. Now forces the Unencrypted charts ID ends with 4 zeros.&#10;2. Revoked the commit of [getPlayRank] and [getPlayRankSelf].&#10;3. Added feature that auto add the missing 4 zeros in Unencrypted Mode." />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

@@ -1,3 +1,7 @@
+import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization") version "1.7.0"
@@ -41,4 +45,30 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 application {
     mainClass.set("explode.AppKt")
+}
+
+val gitHash: String by lazy {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine = listOf("git", "rev-parse", "--short", "HEAD")
+        standardOutput = stdout
+    }
+    stdout.toString().trim()
+}
+
+tasks.jar {
+    manifest {
+        attributes["Built-By"] = System.getProperty("user.name")
+        attributes["Built-Timestamp"] = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(Date())
+        attributes["Built-Revision"] = gitHash
+        attributes["Created-By"] = "Gradle ${gradle.gradleVersion}"
+        attributes["Build-JDK"] = "${System.getProperty("java.version")} (${System.getProperty("java.vendor")})"
+        attributes["Build-OS"] = "${System.getProperty("os.name")} ${System.getProperty("os.arch")} ${System.getProperty("os.version")}"
+    }
+}
+
+tasks.processResources {
+    filesMatching("**/explode.json") {
+        expand("version" to gitHash)
+    }
 }

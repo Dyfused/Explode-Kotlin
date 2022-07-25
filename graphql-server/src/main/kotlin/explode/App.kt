@@ -12,13 +12,18 @@ import explode.dataprovider.provider.mongo.MongoProvider
 import explode.utils.Config
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.time.Duration
+import java.time.LocalDateTime
 
 private val mainLogger = LoggerFactory.getLogger("Explode")
 
 val explodeConfig = Config(File("explode.cfg")).also { it.save() }
+
+private val theVeryBeginningTime = LocalDateTime.now()
 
 fun main(args: Array<String>) {
 
@@ -32,7 +37,7 @@ fun main(args: Array<String>) {
 		disableGraphQLLogging()
 	}
 
-	mainLogger.info("Explode ($GameVersion)")
+	mainLogger.info("Explode ${ExplodeInfo["version"]} ($GameVersion)")
 
 	val cfg = Configuration(File("./provider.cfg"))
 	val m = MongoProvider(cfg.explode())
@@ -69,15 +74,15 @@ private fun disableKtorLogging() {
 }
 
 private fun disableGraphQLLogging() {
-	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("notprivacysafe.graphql.execution.SimpleDataFetcherExceptionHandler").level = Level.ERROR
+	(LoggerFactory.getILoggerFactory() as LoggerContext).getLogger("notprivacysafe.graphql.execution.SimpleDataFetcherExceptionHandler").level =
+		Level.ERROR
 }
 
 private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: IBlowResourceProvider) {
 	// EngineMain.main(args) // deprecated since it is not allowed to modify the port in the code.
-	mainLogger.info("Configuration:")
-	mainLogger.info("\tGraphQLPort=${explodeConfig.port}")
-	mainLogger.info("\tUsePlayground=${explodeConfig.enablePlayground}")
-	mainLogger.info("Starting Ktor!")
+	mainLogger.info("Backend Port: ${explodeConfig.port}")
+	mainLogger.info("GraphQl PlayGround: ${explodeConfig.enablePlayground}")
+	mainLogger.info("Done! (${Duration.between(theVeryBeginningTime, LocalDateTime.now()).toMillis()}ms)")
 
 	embeddedServer(
 		Netty,
@@ -114,3 +119,9 @@ lateinit var blowAccess: IBlowAccessor
 
 @Deprecated("Legacy")
 lateinit var blowResource: IBlowResourceProvider
+
+private val ExplodeInfo by lazy {
+	val cl = object {}.javaClass.classLoader
+	val jsonContent = cl.getResource("explode.json")?.readText() ?: "{}"
+	Json.decodeFromString<Map<String, String>>(jsonContent)
+}
