@@ -6,6 +6,8 @@ Explode（爆炸）是已经歇逼的音游 Dynamite（炸药） 的私服计划
 
 [安装与使用](https://github.com/Dyfused/Explode-Kotlin/wiki/Installation-CN)
 
+如果遇到其他未在安装与使用中说明的问题，你可以在 [Discussions](https://github.com/Dyfused/Explode-Kotlin/discussions) 中新建讨论，或者加群 [746464090](https://jq.qq.com/?_wv=1027&k=KgGAtymy) 获得帮助。
+
 ## 技术上的东西
 
 炸药的后端采用的是 GraphQL，所以爆炸使用 Ktor + KotlinGraphQL 作为核心，配合 MongoDB 作为数据库开发。
