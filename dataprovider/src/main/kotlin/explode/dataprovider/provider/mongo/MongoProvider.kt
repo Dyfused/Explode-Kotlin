@@ -9,6 +9,7 @@ import explode.dataprovider.model.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
+import explode.dataprovider.provider.mongo.RandomUtil.randomIdUncrypted
 import kotlinx.serialization.*
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
@@ -147,7 +148,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		D: Double?
 	): DetailedChartModel {
 		return DetailedChartModel(
-			randomId(), charterUser, chartName, gcPrice, MusicModel(musicianName), difficultyClass, difficultyValue, D
+			if(config.applyUnencryptedFixes) randomIdUncrypted() else randomId(), charterUser, chartName, gcPrice, MusicModel(musicianName), difficultyClass, difficultyValue, D
 		).upsert(chartC).apply { logger.info("Created DetailedChart: $this") }
 	}
 
@@ -405,23 +406,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return null
 	}
 
-	/**
-	 * Return the ChartId removed the last 4 characters when UnencryptedMode is on.
-	 *
-	 * 为了避免忘记，我在这里用中文注释。
-	 * 这个方法应该只被[getPlayRank]和[getPlayRankSelf]调用，因为上传的[分数存档][PlayRecordData]的[谱面ID][PlayRecordData.playedChartId]缺少最后四字符，所以在查询的时候应该移除四字符。
-	 * 但在其他除了 PlayRecord 的地方，就目前来讲，谱面ID都是正确的。
-	 */
-	private fun String.tryPatchUnencryptedChartId() =
-		if(config.applyUnencryptedFixes) this.substring(0, this.length - 4) else this
-
 	private val aggregateRanking =
 		Aggregates.setWindowFields(null, PlayRecordDataRanked::score eq -1, WindowedComputations.rank("ranking"))
 
 	override fun UserModel.getPlayRankSelf(chartId: String): PlayRecordWithRank? {
 		val playerId = this._id
 		return playRecordC.aggregate<PlayRecordDataRanked>(
-			match(PlayRecordDataRanked::playedChartId eq chartId.tryPatchUnencryptedChartId()),
+			match(PlayRecordDataRanked::playedChartId eq chartId),
 			aggregateRanking,
 			match(PlayRecordDataRanked::playerId eq playerId)
 		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
@@ -431,7 +422,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	override fun getPlayRank(chartId: String, limit: Int, skip: Int): List<PlayRecordWithRank> {
 		return playRecordC.aggregate<PlayRecordDataRanked>(
-			match(PlayRecordDataRanked::playedChartId eq chartId.tryPatchUnencryptedChartId()), aggregateRanking, skip(skip), limit(limit)
+			match(PlayRecordDataRanked::playedChartId eq chartId), aggregateRanking, skip(skip), limit(limit)
 		).map { (_, playerId, _, score, perfect, good, miss, mod, time, ranking) ->
 			PlayRecordWithRank(getPlayer(playerId)!!, mod, ranking, score, perfect, good, miss, time)
 		}.toList()
@@ -444,7 +435,14 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun UserModel.submitBeforePlay(
 		chartId: String, ppCost: Int, eventArgs: String
 	): BeforePlaySubmitModel {
-		val p = PlayingData(randomId(), chartId, ppCost)
+		// Uncrypted Fix: the Uncrypted charts SHOULD end with 4 zero, which will be lost in the argument sent to here.
+		//                like actual Chart id is 6c4mcbcvwiw0ayniuze9azca,
+		//                but we can only receive 6c4mcbcvwiw0ayniuze9.
+		//                So I assert the last four character of the chart ID in Uncrypted Mode is zero,
+		//                like this 6c4mcbcvwiw0ayniuze90000.
+		//                And the actual chart ID need fixing ending up as 4 zeros as well.
+		val fixedChartId = if(config.applyUnencryptedFixes) chartId + "0000" else chartId
+		val p = PlayingData(randomId(), fixedChartId, ppCost)
 		playingDataCache[p.randomId] = p
 		logger.info(
 			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires at ${p.createTime + Duration.ofHours(1)}. [${p.randomId}]"
@@ -468,10 +466,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		playingDataCache -= randomId
 
 		// check record
-		val before = getPlayRankSelf(p.chartId)
+		val before = getPlayRankSelf(chartId)
 		updatePlayerScoreOnChart(playerId, chartId, record)
 		updatePlayerRValue(playerId, chartId, record)
-		val after = getPlayRankSelf(p.chartId)
+		val after = getPlayRankSelf(chartId)
 
 		val needUpdate = before == null || before.rank != after!!.rank
 

@@ -8,10 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,7 +88,7 @@ fun ActualMetaCreating() {
     var operationResult by remember { mutableStateOf(true) }
     var operationResultMessage by remember { mutableStateOf("") }
 
-    val holders = remember { mutableStateListOf(ChartDetailHolder.of(1)) }
+    val holders = remember { mutableStateListOf(ChartDetailHolder.of(1), ChartDetailHolder.of(2), ChartDetailHolder.of(3), ChartDetailHolder.of(4), ChartDetailHolder.of(5)) }
 
     var uploaded by remember { mutableStateOf(false) }
 
@@ -198,18 +195,18 @@ fun ActualMetaCreating() {
                         onAccept = { previewFile = it })
                 }
             )
-
-            Button(
-                onClick = {
-                    holders += ChartDetailHolder.of(holders.size + 1)
-                },
-                colors = ButtonDefaults.textButtonColors(backgroundColor = ExplodeColor.Gold),
-                enabled = holders.size < 6
-            ) {
-                Icon(Icons.Default.Add, "Add", tint = Color.White)
-                Spacer(Modifier.width(4.dp))
-                Text("Add Chart", fontWeight = FontWeight.Bold, color = Color.White)
-            }
+//
+//            Button(
+//                onClick = {
+//                    holders += ChartDetailHolder.of(holders.size + 1)
+//                },
+//                colors = ButtonDefaults.textButtonColors(backgroundColor = ExplodeColor.Gold),
+//                enabled = holders.size < 6
+//            ) {
+//                Icon(Icons.Default.Add, "Add", tint = Color.White)
+//                Spacer(Modifier.width(4.dp))
+//                Text("Add Chart", fontWeight = FontWeight.Bold, color = Color.White)
+//            }
         }
 
         holders.forEachIndexed { _, holder ->
@@ -245,7 +242,11 @@ fun ActualMetaCreating() {
                         introduction,
                         isNeedReview
                     ) {
-                        holders.forEach {
+                        holders
+                            .filter {
+                                it.chartFile != null
+                            }
+                            .forEach {
                             addChart(
                                 checkNotNull(it.difficultyBase) { "Invalid Difficulty Class" },
                                 checkNotNull(it.difficultyValue) { "Invalid Difficulty Value for ${getDifficultyName(it.difficultyBase!!)}" }
