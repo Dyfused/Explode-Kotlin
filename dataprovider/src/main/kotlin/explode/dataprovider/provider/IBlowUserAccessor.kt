@@ -21,4 +21,5 @@ interface IBlowUserAccessor {
 	 */
 	var UserModel.password: String
 
+	val emptyUser: UserModel
 }

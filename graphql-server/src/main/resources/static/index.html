@@ -4,29 +4,79 @@
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]>      <html class="no-js"> <![endif]-->
 <html lang="zh">
-    <head>
-        <meta charset="utf-8">
-        <title>Bomb of Explode</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="css/app.css">
-        <script src="js/jquery-3.6.0.js"></script>
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
-        
-            <div id="upload">
-                <form action="http://localhost:10443/bomb/upload" method="post" enctype="multipart/form-data" id="upload_form">
-                    <label for="upload_file">Upload</label>
-                    <input type="file" name="file" id="upload_file" multiple>
-                    <input type="button" value="Upload" id="upload_btn">
-                </form>
-            </div>
+	<head>
+		<meta charset="utf-8" />
+		<title>Bomb of Explode</title>
+		<meta name="description" content="" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="css/app.css" />
+		<link rel="stylesheet" href="css/kico.css" />
+		<script src="js/jquery-3.6.0.js"></script>
+		<script src="js/kico.js"></script>
+	</head>
+	<body class="wrap">
+		<!--[if lt IE 7]>
+			<p class="browsehappy">
+				You are using an <strong>outdated</strong> browser. Please
+				<a href="#">upgrade your browser</a> to improve your experience.
+			</p>
+		<![endif]-->
+		<h1>Upload New Chart</h1>
+		<div id="upload">
+			<form
+				class="ks-form"
+				action="http://localhost:10443/bomb/upload"
+				method="post"
+				enctype="multipart/form-data"
+				id="upload_form"
+			>
+				<fieldset class="inline">
+					<label>
+						<span>Music Name</span>
+						<input type="text" name="music_name" id="music_name" />
+					</label>
+					<label>
+						<span>Music Composer Name</span>
+						<input type="text" name="composer_name" id="composer_name" />
+					</label>
+					<label>
+						<span>Noter Name</span>
+						<input type="text" name="noter_name" id="noter_name" />
+					</label>
+				</fieldset>
+				<fieldset>
+					<label>
+						<span>Music</span>
+						<input type="file" name="music_file" id="music_file" />
+					</label>
+					<label>
+						<span>Preview Music</span>
+						<input
+							type="file"
+							name="preview_music_file"
+							id="preview_music_file"
+						/>
+					</label>
+					<label>
+						<span>Cover Picture</span>
+						<input type="file" name="cover_file" id="cover_file" />
+					</label>
+					<label>
+						<span>Store Preview Picture</span>
+						<input
+							type="file"
+							name="store_preview_file"
+							id="store_preview_file"
+						/>
+					</label>
+				</fieldset>
+				<div id="charts"></div>
+				<a class="btn green small" id="add_chart_btn">Add chart</a>
+				<a class="btn red small" type="submit" id="upload_btn">Submit</a>
+			</form>
+		</div>
 
-        <script src="js/bomb.js" async defer></script>
-    </body>
-    <script>
-    </script>
+		<script src="js/bomb.js" async defer></script>
+	</body>
+	<script></script>
 </html>
