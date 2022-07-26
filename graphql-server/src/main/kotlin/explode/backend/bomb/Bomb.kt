@@ -108,6 +108,11 @@ fun Application.bombModule(
 									res.addChartResource(_id, uploadedData[file]!!)
 								}
 							}
+						}.apply {
+							res.addMusicResource(_id, uploadedData[meta.musicFileName]!!)
+							meta.previewFileName?.let { uploadedData[it] }?.let { res.addPreviewResource(_id, it) }
+							meta.coverFileName?.let { uploadedData[it] }?.let { res.addSetCoverResource(_id, it) }
+							meta.storePreviewFileName?.let { uploadedData[it] }?.let { res.addStorePreviewResource(_id, it) }
 						}
 
 						call.respondJson(mapOf("data" to s))
