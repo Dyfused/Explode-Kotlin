@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="[BREAKING] Changes in Unencrypted charts&#10;&#10;1. Now forces the Unencrypted charts ID ends with 4 zeros.&#10;2. Revoked the commit of [getPlayRank] and [getPlayRankSelf].&#10;3. Added feature that auto add the missing 4 zeros in Unencrypted Mode.">
-      <change afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/explode.json" afterDir="false" />
+    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Endpoint fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/App.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/resources/logback.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/bomb/Bomb.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/bomb/Bomb.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,24 +39,6 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="explode" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="composer-client" type="2d1252cf:ModuleNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="composer-client" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="composer-client" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="shadow" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -111,7 +89,7 @@
     </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="api-v1" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -141,7 +119,7 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
-  <component name="RunManager" selected="Kotlin.AppKt">
+  <component name="RunManager" selected="Gradle.explode:graphql-server [shadowJar]">
     <configuration name="explode.AppKt" type="Application" factoryName="Application" activateToolWindowBeforeRun="false" nameIsGenerated="true">
       <option name="ALTERNATIVE_JRE_PATH" value="11" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -252,10 +230,10 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Kotlin.AppKt" />
         <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
-        <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
         <item itemvalue="Gradle.Run GraphQL" />
+        <item itemvalue="Kotlin.AppKt" />
+        <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
         <item itemvalue="Gradle.explode:graphql-server [knows]" />
       </list>
     </recent_temporary>
@@ -311,7 +289,28 @@
       <option name="project" value="LOCAL" />
       <updated>1658736088222</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Mo' logging.">
+      <created>1658779631316</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1658779631316</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Bomb Module initial">
+      <created>1658830073444</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1658830073444</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Endpoint fix">
+      <created>1658830915275</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1658830915275</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -325,7 +324,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="api-v1" />
+                        <option value="HEAD" />
                       </list>
                     </value>
                   </entry>
@@ -344,7 +343,10 @@
     <MESSAGE value="Added more logging messages&#10;&#10;1. Added more logging messages&#10;2. Done the chores to the api change" />
     <MESSAGE value="Fixed the problem where Ranking is not working properly in UnencryptedMode." />
     <MESSAGE value="[BREAKING] Changes in Unencrypted charts&#10;&#10;1. Now forces the Unencrypted charts ID ends with 4 zeros.&#10;2. Revoked the commit of [getPlayRank] and [getPlayRankSelf].&#10;3. Added feature that auto add the missing 4 zeros in Unencrypted Mode." />
-    <option name="LAST_COMMIT_MESSAGE" value="[BREAKING] Changes in Unencrypted charts&#10;&#10;1. Now forces the Unencrypted charts ID ends with 4 zeros.&#10;2. Revoked the commit of [getPlayRank] and [getPlayRankSelf].&#10;3. Added feature that auto add the missing 4 zeros in Unencrypted Mode." />
+    <MESSAGE value="Mo' logging." />
+    <MESSAGE value="Bomb Module initial" />
+    <MESSAGE value="Endpoint fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="Endpoint fix" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">

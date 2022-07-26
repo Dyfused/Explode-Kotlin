@@ -45,3 +45,4 @@ bin/
 ### Running Trashes ###
 *.cfg
 *.log
+*/.explode_data

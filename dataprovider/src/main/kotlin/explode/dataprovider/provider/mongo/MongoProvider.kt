@@ -50,6 +50,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	 */
 	val officialUser: UserModel get() = getUserByName("official") ?: createUser("official", "official_is_unbreakable")
 
+	override val emptyUser: UserModel
+		get() = officialUser
+
 	override fun getUser(userId: String): UserModel? {
 		return userC.findOne(UserModel::_id eq userId)
 	}

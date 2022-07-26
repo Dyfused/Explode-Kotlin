@@ -3,6 +3,7 @@ package explode
 import TConfig.Configuration
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
+import explode.backend.bomb.bombModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
@@ -58,7 +59,7 @@ fun main(args: Array<String>) {
 	ExplodeConsole(m, m).loop()
 
 	when(operation) {
-		"backend", null -> startKtorServer(m, m)
+		"backend", null -> startKtorServer(m, m, m)
 		else -> println("Unknown subcommand: $operation")
 	}
 
@@ -78,7 +79,7 @@ private fun disableGraphQLLogging() {
 		Level.ERROR
 }
 
-private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: IBlowResourceProvider) {
+private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: IBlowResourceProvider, accessor: IBlowAccessor) {
 	// EngineMain.main(args) // deprecated since it is not allowed to modify the port in the code.
 	mainLogger.info("Backend Port: ${explodeConfig.port}")
 	mainLogger.info("GraphQl PlayGround: ${explodeConfig.enablePlayground}")
@@ -90,7 +91,7 @@ private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: I
 			module {
 				graphQLModule(dataProvider, explodeConfig.enablePlayground)
 				dynamiteResourceModule(resourceProvider)
-				// bombModule() // dont use due to working in progress state.
+				bombModule(dataProvider, resourceProvider, accessor)
 			}
 
 			connector {

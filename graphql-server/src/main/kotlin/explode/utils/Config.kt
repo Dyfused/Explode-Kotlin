@@ -42,6 +42,25 @@ class Config(file: File) {
 		"True if allow GraphQL execution to mess your console up."
 	).delegateBoolean()
 
+	val enableBombBackend by config.get(
+		"bomb",
+		"enable-bomb",
+		false,
+		"True if enable Bomb backend."
+	).delegateBoolean()
+	val enableBombFrontend by config.get(
+		"bomb",
+		"enable-bomb-frontend",
+		false,
+		"True if enable Bomb frontend."
+	).delegateBoolean()
+	val bombFrontendPath by config.get(
+		"bomb",
+		"bomb-frontend-path",
+		"/",
+		"Path of Bomb frontend."
+	).delegateString()
+
 	fun save() = config.save()
 
 	private object ConfigPropertyDelegates {
