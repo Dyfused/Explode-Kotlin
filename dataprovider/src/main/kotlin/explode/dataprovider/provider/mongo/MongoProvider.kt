@@ -17,8 +17,7 @@ import java.time.Duration
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.concurrent.thread
-import kotlin.math.pow
-import kotlin.math.round
+import kotlin.math.roundToInt
 
 class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor,
 	IBlowUserAccessor, IBlowDataProvider,
@@ -157,7 +156,14 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		D: Double?
 	): DetailedChartModel {
 		return DetailedChartModel(
-			if(config.applyUnencryptedFixes) randomIdUncrypted() else randomId(), charterUser, chartName, gcPrice, MusicModel(musicianName), difficultyClass, difficultyValue, D
+			if(config.applyUnencryptedFixes) randomIdUncrypted() else randomId(),
+			charterUser,
+			chartName,
+			gcPrice,
+			MusicModel(musicianName),
+			difficultyClass,
+			difficultyValue,
+			D
 		).upsert(chartC).apply { logger.info("Created DetailedChart: $this") }
 	}
 
@@ -262,7 +268,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val good: Int,
 		val miss: Int,
 		val playMod: PlayMod,
-		@Contextual val time: OffsetDateTime
+		@Contextual val time: OffsetDateTime,
+		val currentR: Double?
 	)
 
 	private val playRecordC = db.getCollection<PlayRecordData>("PlayRecord")
@@ -296,19 +303,25 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 	}
 
-	private fun updatePlayerScoreOnChart(playerId: String, chartId: String, record: PlayRecordInput): PlayRecordData {
+	private fun UserModel.updatePlayerScoreOnChart(chartId: String, record: PlayRecordInput): PlayRecordData {
+		// calculate R
+		val r = getChart(chartId).D?.let {
+			detonate.calcR(it, record)
+		}
+
 		val old =
-			playRecordC.findOne(and(PlayRecordData::playerId eq playerId, PlayRecordData::playedChartId eq chartId))
+			playRecordC.findOne(and(PlayRecordData::playerId eq _id, PlayRecordData::playedChartId eq chartId))
 		val new = PlayRecordData(
 			randomId(),
-			playerId,
+			_id,
 			chartId,
 			record.score!!,
 			record.perfect!!,
 			record.good!!,
 			record.miss!!,
 			record.mod!!.normal,
-			OffsetDateTime.now()
+			OffsetDateTime.now(),
+			r
 		)
 		if(old == null) {
 			playRecordC.insertOne(new)
@@ -321,15 +334,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return new
 	}
 
-	@Suppress("UNUSED_PARAMETER")
-	private fun updatePlayerRValue(playerId: String, chartId: String, record: PlayRecordInput) {
-		// TODO: Find a way to calculate R
-	}
-
-	private fun calcR(d: Double): Double = if(d <= 5.5) {
-		50.0
-	} else {
-		round((0.5813 * d.pow(3) - (3.28 * d.pow(2) + (14.43 * d) - 29.3)))
+	private fun UserModel.updatePlayerRValue(): UserModel {
+		RThisMonth =
+			playRecordC.find(PlayRecordData::playerId eq _id).sort(descending(PlayRecordData::currentR)).limit(20)
+				.sumByDouble { it.currentR ?: 0.0 }.roundToInt()
+		return updateUser(this)
 	}
 
 	// IBlowProvider methods
@@ -454,7 +463,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val p = PlayingData(randomId(), fixedChartId, ppCost)
 		playingDataCache[p.randomId] = p
 		logger.info(
-			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires at ${p.createTime + Duration.ofHours(1)}. [${p.randomId}]"
+			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires at ${
+				p.createTime + Duration.ofHours(
+					1
+				)
+			}. [${p.randomId}]"
 		)
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(p.randomId))
 	}
@@ -468,7 +481,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun UserModel.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel {
 		val p = playingDataCache[randomId] ?: error("Invalid randomId.")
 
-		val playerId = this._id
 		val chartId = p.chartId
 
 		// remove the data
@@ -476,8 +488,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 		// check record
 		val before = getPlayRankSelf(chartId)
-		updatePlayerScoreOnChart(playerId, chartId, record)
-		updatePlayerRValue(playerId, chartId, record)
+		updatePlayerScoreOnChart(chartId, record)
+		updatePlayerRValue()
 		val after = getPlayRankSelf(chartId)
 
 		val needUpdate = before == null || before.rank != after!!.rank

@@ -64,4 +64,29 @@ class Detonate(private val config: MongoExplodeConfig) {
 		BlowFileResourceProvider(File(config.resourceDirectory), defaultUserAvatar = avatar, defaultStorePreview = preview)
 	}
 
+	/**
+	 * Calculate the R score on All Perfect
+	 */
+	private fun calcFullR(d: Double): Double = if(d <= 5.5) {
+		50.0
+	} else {
+		round((0.5813 * d.pow(3) - (3.28 * d.pow(2) + (14.43 * d) - 29.3)))
+	}
+
+	/**
+	 * Calculate the Current R score
+	 */
+	fun calcR(d: Double, record: PlayRecordInput): Double {
+		val p = record.perfect!!
+		val g = record.good!!
+		val m = record.miss!!
+		val n = p + g + m
+
+		val r = calcFullR(d)
+
+		val a1 = (r * d) / n
+
+		return r - (g * ((a1/2) + 2)) - (m * (a1+2))
+	}
+
 }

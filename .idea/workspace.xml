@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Endpoint fix">
+    <list default="true" id="bd0a766d-3d7a-4170-b17f-3876de96198b" name="Changes" comment="Resource process fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/bomb/Bomb.kt" beforeDir="false" afterPath="$PROJECT_DIR$/graphql-server/src/main/kotlin/explode/backend/bomb/Bomb.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/Detonate.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/Detonate.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" beforeDir="false" afterPath="$PROJECT_DIR$/dataprovider/src/main/kotlin/explode/dataprovider/provider/mongo/MongoProvider.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,13 +51,6 @@
                 <item name="explode" type="f1a62948:ProjectNode" />
                 <item name="graphql-server" type="2d1252cf:ModuleNode" />
                 <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="explode" type="f1a62948:ProjectNode" />
-                <item name="graphql-server" type="2d1252cf:ModuleNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="application" type="c8890929:TasksNode$1" />
               </path>
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
@@ -231,10 +225,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.explode:graphql-server [shadowJar]" />
-        <item itemvalue="Gradle.Run GraphQL" />
         <item itemvalue="Kotlin.AppKt" />
-        <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
+        <item itemvalue="Gradle.Run GraphQL" />
         <item itemvalue="Gradle.explode:graphql-server [knows]" />
+        <item itemvalue="Gradle.explode:composer-client [shadowJar]" />
       </list>
     </recent_temporary>
   </component>
@@ -310,7 +304,14 @@
       <option name="project" value="LOCAL" />
       <updated>1658830915275</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Resource process fix">
+      <created>1658831712041</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1658831712041</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -324,7 +325,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="HEAD" />
+                        <option value="origin/master" />
                       </list>
                     </value>
                   </entry>
@@ -346,7 +347,8 @@
     <MESSAGE value="Mo' logging." />
     <MESSAGE value="Bomb Module initial" />
     <MESSAGE value="Endpoint fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="Endpoint fix" />
+    <MESSAGE value="Resource process fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="Resource process fix" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
