@@ -85,7 +85,7 @@ $("#upload_btn").on('click', () => {
 
 
     $.ajax({
-        url: "http://127.0.0.1:10443/bomb/upload",
+        url: `${location.href}bomb/upload`,
         method: "post",
         data: data,
         contentType: false,
