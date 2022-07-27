@@ -16,6 +16,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .idea
+.idea/kotlinc.xml
 
 ### Eclipse ###
 .apt_generated
