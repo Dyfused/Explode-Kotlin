@@ -1,7 +1,9 @@
 package explode.dataprovider.provider.mongo
 
+import explode.dataprovider.detonate.RCalculator
 import explode.dataprovider.model.PlayRecordInput
 import explode.dataprovider.provider.BlowFileResourceProvider
+import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.math.*
 
@@ -21,6 +23,17 @@ import kotlin.math.*
  * 	GainingCoin: C(B) = G*B + 1
  */
 class Detonate(private val config: MongoExplodeConfig) {
+
+	private val logger = LoggerFactory.getLogger("Mongo-Detonate")
+
+	private val rCalc: RCalculator
+
+	init {
+		rCalc = runCatching { RCalcAlgorithms.valueOf(config.rScoreAlgorithm) }.getOrElse {
+			logger.warn("Cannot find R-Calc-Algorithm: ${config.rScoreAlgorithm}, fallback to 'Simple'.")
+			RCalcAlgorithms.Simple
+		}
+	}
 
 	private fun levelFactor(level: Int) = exp(level.toFloat() / 4)
 
@@ -55,22 +68,17 @@ class Detonate(private val config: MongoExplodeConfig) {
 //			TotalFactor:      ${difficultyFactor * playModeFactor * rateFactor * ( 1F / superCoinFactor ) }
 //		""".trimIndent())
 
-		return floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * ( 1F / config.superCoinFactor )).roundToInt() + 1
+		return floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * (1F / config.superCoinFactor)).roundToInt() + 1
 	}
 
 	val resourceProvider: BlowFileResourceProvider by lazy {
 		val avatar = config.defaultUserAvatar.takeIf { it.isNotBlank() }
-		val preview = config.defaultStorePreview.takeIf { it.isNotBlank() }
-		BlowFileResourceProvider(File(config.resourceDirectory), defaultUserAvatar = avatar, defaultStorePreview = preview)
-	}
-
-	/**
-	 * Calculate the R score on All Perfect
-	 */
-	private fun calcFullR(d: Double): Double = if(d <= 5.5) {
-		50.0
-	} else {
-		round((0.5813 * d.pow(3) - (3.28 * d.pow(2) + (14.43 * d) - 29.3)))
+		val preview = config.rScoreAlgorithm.takeIf { it.isNotBlank() }
+		BlowFileResourceProvider(
+			File(config.resourceDirectory),
+			defaultUserAvatar = avatar,
+			defaultStorePreview = preview
+		)
 	}
 
 	/**
@@ -80,13 +88,8 @@ class Detonate(private val config: MongoExplodeConfig) {
 		val p = record.perfect!!
 		val g = record.good!!
 		val m = record.miss!!
-		val n = p + g + m
 
-		val r = calcFullR(d)
-
-		val a1 = (r * d) / n
-
-		return r - (g * ((a1/2) + 2)) - (m * (a1+2))
+		return rCalc.calculateRScore(d, p, g, m)
 	}
 
 }
