@@ -76,7 +76,7 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 	val rScoreAlgorithm by config.get(
 		"mongo-r",
 		"r-score-algorithm",
-		"Simple",
+		RCalcAlgorithms.CrazyBull.name,
 		"The algorithm to calculate the R score. ${RCalcAlgorithms.values().map(RCalcAlgorithms::name)}"
 	).delegateString()
 

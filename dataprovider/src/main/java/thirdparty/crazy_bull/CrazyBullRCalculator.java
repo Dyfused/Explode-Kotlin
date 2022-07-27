@@ -1,9 +1,9 @@
-package thirdparty.kesdiaeken;
+package thirdparty.crazy_bull;
 
-public class KesdiaeKenRCalculator {
+public class CrazyBullRCalculator {
 	public static double XLo, XHi, YLo, YHi;
 
-	private KesdiaeKenRCalculator() {}
+	private CrazyBullRCalculator() {}
 
 	static {
 		init();
