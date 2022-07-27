@@ -73,6 +73,13 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 		"True if use the Unencrypted mode, which is unstable and contains conflicts to the Normal mode."
 	).delegateBoolean()
 
+	val rScoreAlgorithm by config.get(
+		"mongo-r",
+		"r-score-algorithm",
+		"Simple",
+		"The algorithm to calculate the R score. ${RCalcAlgorithms.values().map(RCalcAlgorithms::name)}"
+	).delegateString()
+
 	init {
 		config.save()
 	}

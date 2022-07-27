@@ -1,7 +1,9 @@
 package explode.dataprovider.provider.mongo
 
+import explode.dataprovider.detonate.RCalculator
 import explode.dataprovider.model.PlayRecordInput
 import explode.dataprovider.provider.BlowFileResourceProvider
+import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.math.*
 
@@ -21,6 +23,17 @@ import kotlin.math.*
  * 	GainingCoin: C(B) = G*B + 1
  */
 class Detonate(private val config: MongoExplodeConfig) {
+
+	private val logger = LoggerFactory.getLogger("Mongo-Detonate")
+
+	private val rCalc: RCalculator
+
+	init {
+		rCalc = runCatching { RCalcAlgorithms.valueOf(config.rScoreAlgorithm) }.getOrElse {
+			logger.warn("Cannot find R-Calc-Algorithm: ${config.rScoreAlgorithm}, fallback to 'Simple'.")
+			RCalcAlgorithms.Simple
+		}
+	}
 
 	private fun levelFactor(level: Int) = exp(level.toFloat() / 4)
 
@@ -55,13 +68,28 @@ class Detonate(private val config: MongoExplodeConfig) {
 //			TotalFactor:      ${difficultyFactor * playModeFactor * rateFactor * ( 1F / superCoinFactor ) }
 //		""".trimIndent())
 
-		return floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * ( 1F / config.superCoinFactor )).roundToInt() + 1
+		return floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * (1F / config.superCoinFactor)).roundToInt() + 1
 	}
 
 	val resourceProvider: BlowFileResourceProvider by lazy {
 		val avatar = config.defaultUserAvatar.takeIf { it.isNotBlank() }
-		val preview = config.defaultStorePreview.takeIf { it.isNotBlank() }
-		BlowFileResourceProvider(File(config.resourceDirectory), defaultUserAvatar = avatar, defaultStorePreview = preview)
+		val preview = config.rScoreAlgorithm.takeIf { it.isNotBlank() }
+		BlowFileResourceProvider(
+			File(config.resourceDirectory),
+			defaultUserAvatar = avatar,
+			defaultStorePreview = preview
+		)
+	}
+
+	/**
+	 * Calculate the Current R score
+	 */
+	fun calcR(d: Double, record: PlayRecordInput): Double {
+		val p = record.perfect!!
+		val g = record.good!!
+		val m = record.miss!!
+
+		return rCalc.calculateRScore(d, p, g, m)
 	}
 
 }
