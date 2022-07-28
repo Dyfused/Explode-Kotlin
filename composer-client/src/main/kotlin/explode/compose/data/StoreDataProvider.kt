@@ -1,13 +1,10 @@
 package explode.compose.data
 
-import TConfig.Configuration
-import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.provider.mongo.MongoProvider
-import java.io.File
 
 object StoreDataProvider {
 
-	internal val p = MongoProvider(Configuration(File("./provider.cfg")).explode())
+	internal val p = MongoProvider()
 
 	fun getChartSets() = p.getSetList(10, 0, isRanked = true)
 
