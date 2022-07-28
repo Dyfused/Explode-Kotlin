@@ -339,7 +339,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return new
 	}
 
-	private fun UserModel.updatePlayerRValue(): UserModel {
+	fun UserModel.updatePlayerRValue(): UserModel {
 		RThisMonth =
 			playRecordC.find(PlayRecordData::playerId eq _id).sort(descending(PlayRecordData::currentR)).limit(20)
 				.sumByDouble { it.currentR ?: 0.0 }.roundToInt()
@@ -451,6 +451,30 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		).map { (_, playerId, _, score, perfect, good, miss, mod, time, ranking) ->
 			PlayRecordWithRank(getPlayer(playerId)!!, mod, ranking, score, perfect, good, miss, time)
 		}.toList()
+	}
+
+	override fun UserModel.getLastPlayRecords(limit: Int, skip: Int): Iterable<PlayRecordWithRank> {
+		return playRecordC.aggregate<PlayRecordDataRanked>(
+			aggregateRanking,
+			match(PlayRecordDataRanked::playerId eq _id),
+			sort(descending(PlayRecordDataRanked::time)),
+			limit(limit),
+			skip(skip)
+		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
+			PlayRecordWithRank(this.asPlayer, mod, ranking, score, perfect, good, miss, time)
+		}
+	}
+
+	override fun UserModel.getBestPlayRecords(limit: Int, skip: Int): Iterable<PlayRecordWithRank> {
+		return playRecordC.aggregate<PlayRecordDataRanked>(
+			aggregateRanking,
+			match(PlayRecordDataRanked::playerId eq _id),
+			sort(descending(PlayRecordDataRanked::score)),
+			limit(limit),
+			skip(skip)
+		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
+			PlayRecordWithRank(this.asPlayer, mod, ranking, score, perfect, good, miss, time)
+		}
 	}
 
 	override fun UserModel.submitBeforeAssessment(assessmentId: String, medal: Int): BeforePlaySubmitModel {

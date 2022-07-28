@@ -1,6 +1,8 @@
 package explode.backend.bomb
 
 import explode.dataprovider.provider.*
+import explode.dataprovider.provider.mongo.MongoProvider
+import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.explodeConfig
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -13,6 +15,8 @@ import io.ktor.server.routing.*
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 
 suspend inline fun <reified T> ApplicationCall.respondJson(message: T, status: HttpStatusCode? = null) =
 	respondText(Json.encodeToString(message), contentType = ContentType.Application.Json, status = status)
@@ -38,8 +42,37 @@ data class PostChartData(
 	val chartDifficultyValue: Int
 )
 
-private val json = Json {
+private val j = Json {
 	ignoreUnknownKeys = true
+	serializersModule = SerializersModule {
+		contextual(OffsetDateTimeSerializer)
+	}
+}
+
+@Serializable
+data class OkResult<T>(val data: T)
+
+@Serializable
+data class BadResult<T>(val error: String, val data: T?)
+
+private fun badResult(error: String): BadResult<Nothing> = BadResult(error, null)
+
+
+
+/**
+ * Replace respond with this for not using ContentNegotiation,
+ * which seems has conflicts with GraphQL query serialization.
+ */
+private suspend inline fun <reified T> ApplicationCall.respond(data: T) {
+	respondText(j.encodeToString(data))
+}
+
+/**
+ * Replace respond with this for not using ContentNegotiation,
+ * which seems has conflicts with GraphQL query serialization.
+ */
+private suspend inline fun <reified T> ApplicationCall.respond(status: HttpStatusCode, data: T) {
+	respondText(j.encodeToString(data), status = status)
 }
 
 fun Application.bombModule(
@@ -79,7 +112,7 @@ fun Application.bombModule(
 								}
 								is PartData.FormItem -> {
 									if(partName == "chart-data") {
-										meta = json.decodeFromString(part.value)
+										meta = j.decodeFromString(part.value)
 									}
 								}
 								else -> {}
@@ -112,12 +145,96 @@ fun Application.bombModule(
 							res.addMusicResource(_id, uploadedData[meta.musicFileName]!!)
 							meta.previewFileName?.let { uploadedData[it] }?.let { res.addPreviewResource(_id, it) }
 							meta.coverFileName?.let { uploadedData[it] }?.let { res.addSetCoverResource(_id, it) }
-							meta.storePreviewFileName?.let { uploadedData[it] }?.let { res.addStorePreviewResource(_id, it) }
+							meta.storePreviewFileName?.let { uploadedData[it] }
+								?.let { res.addStorePreviewResource(_id, it) }
 						}
 
 						call.respondJson(mapOf("data" to s))
 					} catch(ex: IllegalStateException) {
 						call.respondJson(mapOf("error" to ex.message))
+					}
+				}
+
+				route("user") {
+					route("{userId}") {
+						get {
+							val uid = call.parameters["userId"] ?: return@get call.respond(
+								HttpStatusCode.BadRequest,
+								badResult("Undefined userId.")
+							)
+							val user = data.getUser(uid) ?: return@get call.respond(
+								HttpStatusCode.NotFound,
+								badResult("Requested user not found.")
+							)
+							call.respond(OkResult(user))
+						}
+
+						get("last20") {
+							val uid = call.parameters["userId"] ?: return@get call.respond(
+								HttpStatusCode.BadRequest,
+								badResult("Undefined userId.")
+							)
+							val user = data.getUser(uid) ?: return@get call.respond(
+								HttpStatusCode.NotFound,
+								badResult("Requested user not found.")
+							)
+							with(data) {
+								val d = user.getLastPlayRecords(20, 0).toList()
+								call.respond(OkResult(d))
+							}
+						}
+
+						get("best20") {
+							val uid = call.parameters["userId"] ?: return@get call.respond(
+								HttpStatusCode.BadRequest,
+								badResult("Undefined userId.")
+							)
+							val user = data.getUser(uid) ?: return@get call.respond(
+								HttpStatusCode.NotFound,
+								badResult("Requested user not found.")
+							)
+							with(data) {
+								val d = user.getBestPlayRecords(20, 0).toList()
+								call.respond(OkResult(d))
+							}
+						}
+
+						post("update-r") {
+							val uid = call.parameters["userId"] ?: return@post call.respond(
+								HttpStatusCode.BadRequest,
+								badResult("Undefined userId.")
+							)
+							val user = data.getUser(uid) ?: return@post call.respond(
+								HttpStatusCode.NotFound,
+								badResult("Requested user not found.")
+							)
+							if(data is MongoProvider) {
+								with(data) {
+									user.updatePlayerRValue()
+									call.respond(OkResult(user))
+								}
+							} else {
+								call.respond(HttpStatusCode.ServiceUnavailable, badResult("Unsupported operation."))
+							}
+						}
+					}
+				}
+
+				route("set") {
+					route("{setId}") {
+						get {
+							val sid = call.parameters["setId"] ?: return@get call.respond(
+								HttpStatusCode.BadRequest,
+								badResult("Undefined setId.")
+							)
+							val set = runCatching { data.getSet(sid) }.onFailure {
+								return@get call.respond(
+									HttpStatusCode.NotFound,
+									badResult("Requested set not found.")
+								)
+							}.getOrThrow()
+							call.respond(OkResult(set))
+						}
 					}
 				}
 			}

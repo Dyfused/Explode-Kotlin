@@ -67,4 +67,8 @@ interface IBlowDataProvider : IBlowUserAccessor {
 	fun UserModel.submitAfterAssessment(records: List<PlayRecordInput>, randomId: String): AfterAssessmentModel
 
 	fun UserModel.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel
+
+	fun UserModel.getLastPlayRecords(limit: Int, skip: Int): Iterable<PlayRecordWithRank>
+
+	fun UserModel.getBestPlayRecords(limit: Int, skip: Int): Iterable<PlayRecordWithRank>
 }
