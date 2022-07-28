@@ -1,13 +1,11 @@
 package explode
 
-import TConfig.Configuration
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
 import explode.backend.bomb.bombModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
-import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.utils.Config
@@ -40,8 +38,7 @@ fun main(args: Array<String>) {
 
 	mainLogger.info("Explode ${ExplodeInfo["version"]} ($GameVersion)")
 
-	val cfg = Configuration(File("./provider.cfg"))
-	val m = MongoProvider(cfg.explode())
+	val m = MongoProvider()
 
 	@Suppress("DEPRECATION") // no warning to set
 	run {

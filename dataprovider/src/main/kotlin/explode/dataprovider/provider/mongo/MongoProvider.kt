@@ -2,9 +2,11 @@
 
 package explode.dataprovider.provider.mongo
 
+import TConfig.Configuration
+import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
-import explode.dataprovider.detonate.ExplodeConfig
+import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
@@ -13,6 +15,7 @@ import explode.dataprovider.provider.mongo.RandomUtil.randomIdUncrypted
 import kotlinx.serialization.*
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.util.*
@@ -23,7 +26,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	IBlowUserAccessor, IBlowDataProvider,
 	IBlowResourceProvider by detonate.resourceProvider {
 
-	constructor(config: ExplodeConfig) : this(config.toMongo())
+	constructor() : this(Configuration(File("./provider.cfg")).explode().toMongo())
 
 	private val logger = LoggerFactory.getLogger("Mongo")
 	private val mongo = (KMongo.createClient(config.connectionString))
@@ -153,10 +156,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		difficultyClass: Int,
 		difficultyValue: Int,
 		gcPrice: Int,
-		D: Double?
+		D: Double?,
+		defaultId: String?
 	): DetailedChartModel {
 		return DetailedChartModel(
-			if(config.applyUnencryptedFixes) randomIdUncrypted() else randomId(),
+			defaultId ?: if(config.applyUnencryptedFixes) randomIdUncrypted() else randomId(),
 			charterUser,
 			chartName,
 			gcPrice,
@@ -176,10 +180,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		introduction: String,
 		coinPrice: Int,
 		OverridePriceStr: String,
-		needReview: Boolean
+		needReview: Boolean,
+		defaultId: String?
 	): SetModel {
 		return SetModel(
-			randomId(),
+			defaultId ?: randomId(),
 			introduction,
 			coinPrice,
 			NoterModel(noterName),
@@ -397,6 +402,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	): List<SetModel> {
 		return getSetStoreList(limit, skip, searchedName, onlyRanked, onlyOfficial, onlyReview, onlyHidden)
 	}
+
+	fun getAllSets(): FindIterable<SetModel> = chartSetC.find()
 
 	override fun UserModel.buySet(id: String): ExchangeSetModel {
 		val s = getSet(id)

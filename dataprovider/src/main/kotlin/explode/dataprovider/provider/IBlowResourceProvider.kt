@@ -112,23 +112,28 @@ class BlowFileResourceProvider(
 	private val avatarFolder = dataBin.resolve("avatar").ensureExistanceAsFolder()
 	private val storePreviewFolder = dataBin.resolve("store_preview").ensureExistanceAsFolder()
 
+	private fun File.resolveExists(relative: String): File? {
+		val f = this.resolve(relative)
+		return f.takeIf { f.exists() }
+	}
+
 	override fun getChartFile(chartId: String?): File? =
-		chartId?.let { chartFolder.resolve("$chartId.xml") }
+		chartId?.let { chartFolder.resolveExists("$chartId.xml") }
 
 	override fun getMusicFile(setId: String?): File? =
-		setId?.let { musicFolder.resolve("$setId.mp3") }
+		setId?.let { musicFolder.resolveExists("$setId.mp3") }
 
 	override fun getPreviewFile(setId: String?): File? =
-		setId?.let { musicFolder.resolve("${setId}_preview.mp3") }
+		setId?.let { musicFolder.resolveExists("${setId}_preview.mp3") }
 
 	override fun getSetCoverFile(setId: String?): File? =
-		setId?.let { coverFolder.resolve("$setId.jpg") }
+		setId?.let { coverFolder.resolveExists("$setId.jpg") }
 
 	override fun getStorePreviewFile(setId: String?): File? =
-		setId?.let { storePreviewFolder.resolve("$setId.jpg") } ?: defaultStorePreview?.let { storePreviewFolder.resolve("$defaultStorePreview.jpg") }
+		setId?.let { storePreviewFolder.resolveExists("$setId.jpg") } ?: defaultStorePreview?.let { storePreviewFolder.resolveExists("$defaultStorePreview.jpg") }
 
 	override fun getUserAvatarFile(userId: String?): File? =
-		userId?.let { avatarFolder.resolve("$userId.jpg") } ?: defaultUserAvatar?.let { avatarFolder.resolve("$defaultUserAvatar.jpg") }
+		userId?.let { avatarFolder.resolveExists("$userId.jpg") } ?: defaultUserAvatar?.let { avatarFolder.resolveExists("$defaultUserAvatar.jpg") }
 
 	override fun addChartFile(chartId: String, data: ByteArray) {
 		getChartFile(chartId)?.writeBytes(data)

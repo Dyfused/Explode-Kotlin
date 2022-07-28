@@ -46,7 +46,8 @@ interface IBlowAccessor {
 		introduction: String = "",
 		coinPrice: Int = 0,
 		OverridePriceStr: String = "",
-		needReview: Boolean = true
+		needReview: Boolean = true,
+		defaultId: String? = null
 	): SetModel
 
 	/**
@@ -62,7 +63,8 @@ interface IBlowAccessor {
 		difficultyClass: Int,
 		difficultyValue: Int,
 		gcPrice: Int = 0,
-		D: Double? = null
+		D: Double? = null,
+		defaultId: String? = null
 	): DetailedChartModel
 
 	/**
@@ -79,6 +81,7 @@ interface IBlowAccessor {
 		coinPrice: Int,
 		introduction: String = "",
 		needReview: Boolean = true,
+		defaultId: String? = null,
 		block: ChartSetBuilder.() -> Unit
 	) = ChartSetBuilder(
 		this,
@@ -88,7 +91,8 @@ interface IBlowAccessor {
 		isRanked,
 		coinPrice,
 		introduction,
-		needReview
+		needReview,
+		defaultId
 	).apply(block).buildSet()
 
 	/**
@@ -103,7 +107,8 @@ interface IBlowAccessor {
 		private val isRanked: Boolean,
 		private val coinPrice: Int,
 		private val introduction: String = "",
-		private val needReview: Boolean = true
+		private val needReview: Boolean = true,
+		private val defaultId: String? = null
 	) {
 
 		private val chart = mutableSetOf<DetailedChartModel>()
@@ -111,14 +116,16 @@ interface IBlowAccessor {
 		fun addChart(
 			difficultyClass: String,
 			difficultyValue: Int,
-			D: Double? = null
+			D: Double? = null,
+			defaultId: String? = null
 		): DetailedChartModel =
-			addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D)
+			addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D, defaultId)
 
 		fun addChart(
 			difficultyClass: Int,
 			difficultyValue: Int,
-			D: Double? = null
+			D: Double? = null,
+			defaultId: String? = null
 		): DetailedChartModel {
 			// Unranked charts should have no D value
 			val d = if(isRanked) D else null
@@ -133,7 +140,8 @@ interface IBlowAccessor {
 				noterUser, composerName,
 				difficultyClass, difficultyValue,
 				0,
-				D = d
+				D = d,
+				defaultId = defaultId
 			).apply(chart::add)
 		}
 
@@ -144,7 +152,7 @@ interface IBlowAccessor {
 				composerName, noterUser.username,
 				chart.map(DetailedChartModel::minify),
 				isRanked, introduction, coinPrice,
-				"", needReview
+				"", needReview, defaultId
 			)
 		}
 	}
