@@ -156,12 +156,15 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		showOfficial: Boolean,
 		showRanked: Boolean,
 		showUnranked: Boolean,
+		showReview: Boolean
 	): List<MongoSet> {
 		// logger.info("$limit, $skip, $searchedName, $showHidden, $showOfficial, $showRanked, $showUnranked")
 		return if(searchedName.isNotEmpty()) {
 			chartSetC.find("""{ "musicName": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
 		} else if(showHidden) {
 			chartSetC.find(MongoSet::status eq SetStatus.HIDDEN).limit(limit).skip(skip).toList()
+		} else if(showReview) {
+			chartSetC.find(MongoSet::status eq SetStatus.NEED_REVIEW).limit(limit).skip(skip).toList()
 		} else if(showOfficial) {
 			chartSetC.find(MongoSet::status eq SetStatus.OFFICIAL).limit(limit).skip(skip).toList()
 		} else if(showRanked) {
@@ -291,7 +294,16 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		playCountOrder: Boolean,
 		publishTimeOrder: Boolean
 	): List<MongoSet> {
-		return getSetStoreList(limit, skip, searchedName, onlyRanked, onlyOfficial, onlyReview, onlyHidden)
+		//return getSetStoreList(limit, skip, searchedName, onlyRanked, onlyOfficial, onlyReview, onlyHidden)
+		return getSetStoreList(
+			limit, skip,
+			searchedName,
+			onlyHidden,
+			onlyOfficial,
+			onlyRanked,
+			!onlyRanked,
+			onlyReview
+		)
 	}
 
 	fun getAllSets(): FindIterable<MongoSet> = chartSetC.find()

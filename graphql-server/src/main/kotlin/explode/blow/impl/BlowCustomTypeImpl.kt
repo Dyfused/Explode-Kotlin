@@ -48,7 +48,7 @@ class ProviderReviewerService(private val p: IBlowAccessor) : BlowReviewerServic
 				searchStr ?: "",
 				onlyRanked = false,
 				onlyOfficial = false,
-				onlyReview = false,
+				onlyReview = true,
 				onlyHidden = false,
 				playCountOrder = false,
 				publishTimeOrder = false
