@@ -58,7 +58,7 @@ private fun import() {
 			mp.buildChartSet(
 				setTitle = set.musicName,
 				composerName = set.composerName,
-				noterUser = mp.getUserByName(set.noterName) ?: mp.officialUser,
+				noterUser = mp.getUserByName(set.noterName) ?: mp.serverUser,
 				isRanked = false,
 				coinPrice = 0,
 				introduction = set.introduction ?: "",
@@ -76,6 +76,8 @@ private fun import() {
 				mp.addPreviewResource(_id, packFolder.resolve(set.previewMusicPath).readBytes())
 				mp.addSetCoverResource(_id, packFolder.resolve(set.coverPicturePath).readBytes())
 				set.storePreviewPicturePath?.let { mp.addStorePreviewResource(_id, packFolder.resolve(it).readBytes()) }
+
+				println(_id)
 			}
 			setCount++
 		}.onFailure {
@@ -128,22 +130,22 @@ private fun export() {
 		}
 
 		SetMeta(id = set._id,
-			musicName = set.musicTitle,
+			musicName = set.musicName,
 			composerName = set.composerName,
-			noterName = set.noter.username,
+			noterName = mp.getUser(set.noterId)?.username ?: "unknown",
 			introduction = set.introduction,
 			musicPath = musicPath,
 			previewMusicPath = previewMusicPath,
 			coverPicturePath = coverPicturePath,
 			storePreviewPicturePath = storePreviewPicturePath,
-			charts = set.chart.map {
-				val c = mp.getChart(it._id)
+			charts = set.charts.map {
+				val c = mp.getChart(it) ?: error("Invalid chartId: $it")
 				ChartMeta(
-					id = it._id,
-					difficultyClass = c.difficultyBase,
+					id = it,
+					difficultyClass = c.difficultyClass,
 					difficultyValue = c.difficultyValue,
 					DValue = c.D,
-					chartPath = "${set._id}/${set._id}_${MetaUtil.parseHardnessClassInt2String(c.difficultyBase)}.xml",
+					chartPath = "${set._id}/${set._id}_${MetaUtil.parseHardnessClassInt2String(c.difficultyClass)}.xml",
 				).apply {
 					outFolder.resolve(chartPath).writeBytes(mp.getChartResource(c._id)!!)
 				}

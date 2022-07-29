@@ -7,7 +7,10 @@ import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
 import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
-import explode.dataprovider.model.*
+import explode.dataprovider.model.database.*
+import explode.dataprovider.model.extend.BombPlayRecordOfUser
+import explode.dataprovider.model.extend.BombPlayRecordResult
+import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
@@ -23,7 +26,6 @@ import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
 class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor,
-	IBlowUserAccessor, IBlowDataProvider,
 	IBlowResourceProvider by detonate.resourceProvider {
 
 	constructor() : this(Configuration(File("./provider.cfg")).explode().toMongo())
@@ -38,7 +40,45 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		logger.info("Unencrypted: ${config.applyUnencryptedFixes}")
 	}
 
-	private val userC = db.getCollection<UserModel>("User")
+	// ACTUAL DATA ACCESSING
+	private val userC = db.getCollection<MongoUser>("User")
+	private val chartC = db.getCollection<MongoChart>("Chart")
+	private val chartSetC = db.getCollection<MongoSet>("ChartSet")
+	private val playRecordC = db.getCollection<MongoRecord>("PlayRecord")
+
+	// getters
+	override fun getUser(userId: String) = userC.findOneById(userId)
+	override fun getChart(chartId: String) = chartC.findOneById(chartId)
+	override fun getSet(setId: String) = chartSetC.findOneById(setId)
+	override fun getRecord(recordId: String) = playRecordC.findOneById(recordId)
+
+	// advanced getters
+	override fun getSetByChartId(chartId: String) =
+		chartSetC.findOne(MongoSet::charts elemMatch (MongoChart::_id eq chartId))
+
+	override fun getUserByName(username: String) = userC.findOne(MongoUser::username eq username)
+	override fun getUserByToken(token: String) = userC.findOne(MongoUser::token eq token)
+	override fun getUserRecord(userId: String, limit: Int, skip: Int, sort: RecordSort): FindIterable<MongoRecord> =
+		playRecordC.find(MongoRecord::playerId eq userId).sort(descending(sort.prop)).limit(limit).skip(skip)
+
+	override fun getChartRecord(chartId: String, limit: Int, skip: Int, sort: RecordSort): FindIterable<MongoRecord> =
+		playRecordC.find(MongoRecord::chartId eq chartId).sort(descending(sort.prop)).limit(limit).skip(skip)
+
+	override fun getUserChartRecord(
+		userId: String,
+		chartId: String,
+		limit: Int,
+		skip: Int,
+		sort: RecordSort
+	): Iterable<MongoRecord> =
+		playRecordC.find(and(MongoRecord::playerId eq userId, MongoRecord::chartId eq chartId))
+			.sort(descending(sort.prop)).limit(limit).skip(skip)
+
+	// setters
+	override fun updateUser(mongoUser: MongoUser): MongoUser = mongoUser.upsert(userC)
+	override fun updateChart(mongoChart: MongoChart): MongoChart = mongoChart.upsert(chartC)
+	override fun updateSet(mongoSet: MongoSet): MongoSet = mongoSet.upsert(chartSetC)
+
 
 	/**
 	 * Used for inserting or updating new data.
@@ -47,174 +87,66 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		coll.updateOne(this, UpdateOptions().upsert(true))
 	}
 
-	/**
-	 * Official User is used to be the default value of charts whose noter is not currently available.
-	 */
-	val officialUser: UserModel get() = getUserByName("official") ?: createUser("official", "official_is_unbreakable")
+	override val serverUser: MongoUser = MongoUser(
+		_id = "f6fe9c4d-98e6-450a-937c-d64848eacc40",
+		"official",
+		"",
+		mutableListOf(),
+		mutableListOf(),
+		Int.MIN_VALUE,
+		Int.MIN_VALUE,
+		ppTime = OffsetDateTime.MIN,
+		token = "f6fe9c4d-98e6-450a-937c-d64848eacc40",
+		R = Int.MIN_VALUE,
+		permission = UserPermission.Default
+	)
 
-	override val emptyUser: UserModel
-		get() = officialUser
-
-	override fun getUser(userId: String): UserModel? {
-		return userC.findOne(UserModel::_id eq userId)
-	}
-
-	override fun getUserByName(username: String): UserModel? {
-		return userC.findOne(UserModel::username eq username)
-	}
-
-	override fun getUserByToken(soudayo: String): UserModel? {
-		return userC.findOne(UserModel::token eq soudayo)
-	}
-
-	private val UserModel.asPlayer: PlayerModel
-		get() = PlayerModel(_id, username, highestGoldenMedal ?: 0, RThisMonth ?: 0)
-
-	private fun getPlayer(userId: String): PlayerModel? {
-		return getUser(userId)?.asPlayer
-	}
-
-	private fun getPlayerByName(userId: String): PlayerModel? {
-		return getUserByName(userId)?.asPlayer
-	}
-
-	private fun getPlayerByToken(token: String): PlayerModel? {
-		return getUserByToken(token)?.asPlayer
-	}
-
-	override fun updateUser(userModel: UserModel): UserModel {
-		return userModel.upsert(userC)
-	}
-
-	fun UserModel.update(block: UserModel.() -> Unit): UserModel {
-		return this.apply(block).upsert(userC)
-	}
-
-	override fun createUser(username: String, password: String): UserModel {
+	override fun createUser(username: String, password: String): MongoUser {
 		logger.info("Creating user with parameters [username=$username, password=$password]")
-		return UserModel(
-			UUID.randomUUID().toString(),
-			username,
-			mutableListOf(),
-			mutableListOf(),
-			mutableListOf(),
-			0,
-			1000,
-			0,
-			OffsetDateTime.now(),
-			UUID.randomUUID().toString(),
-			0,
-			0,
-			AccessData(false)
-		).upsert(userC).apply {
-			// upload password data
-			UserIdAndPassword(this._id, password).upsert(loginC)
-		}
+		return MongoUser(
+			_id = UUID.randomUUID().toString(),
+			username = username,
+			password = password,
+			ownedSets = mutableListOf(),
+			ownedCharts = mutableListOf(),
+			coin = 1000,
+			diamond = 0,
+			ppTime = OffsetDateTime.now(),
+			token = UUID.randomUUID().toString(),
+			R = 0,
+			permission = UserPermission.Default
+		).upsert(userC)
 	}
 
-	// LOGIN
-
-	private val loginC = db.getCollection<UserIdAndPassword>("UserLogin")
-
-	@Serializable
-	data class UserIdAndPassword(@SerialName("_id") val userId: String, val password: String)
-
-	override var UserModel.password
-		get() = loginC.findOne(UserIdAndPassword::userId eq _id)!!.password
-		set(value) {
-			loginC.findOneAndUpdate(UserIdAndPassword::userId eq this._id, UserIdAndPassword::password eq value)
-		}
-
-	// Charts
-	private val chartC = db.getCollection<DetailedChartModel>("Chart")
-	private val chartSetC = db.getCollection<SetModel>("ChartSet")
-
-	private fun getDetailedChart(id: String): DetailedChartModel? {
-		return chartC.findOne(DetailedChartModel::_id eq id)
-	}
-
-	override fun getSet(setId: String): SetModel {
-		return chartSetC.findOne(SetModel::_id eq setId) ?: error("Cannot find Set($setId)")
-	}
-
-	override fun getChart(chartId: String): DetailedChartModel {
-		return chartC.findOne(DetailedChartModel::_id eq chartId) ?: error("Cannot find Chart($chartId)")
-	}
-
-	private fun getSetByChart(chartId: String): SetModel? {
-		return chartSetC.findOne(SetModel::chart elemMatch (ChartModel::_id eq chartId))
-	}
-
-	private fun DetailedChartModel.minimal(): ChartModel {
-		return ChartModel(_id, difficultyBase, difficultyValue)
-	}
-
-	override fun createChart(
-		chartName: String,
-		charterUser: UserModel,
-		musicianName: String,
-		difficultyClass: Int,
-		difficultyValue: Int,
-		gcPrice: Int,
-		D: Double?,
-		defaultId: String?
-	): DetailedChartModel {
-		return DetailedChartModel(
-			defaultId ?: if(config.applyUnencryptedFixes) randomIdUncrypted() else randomId(),
-			charterUser,
-			chartName,
-			gcPrice,
-			MusicModel(musicianName),
-			difficultyClass,
-			difficultyValue,
-			D
-		).upsert(chartC).apply { logger.info("Created DetailedChart: $this") }
-	}
+	private fun genNewChartId() = if(config.applyUnencryptedFixes) randomIdUncrypted() else randomId()
 
 	override fun createSet(
-		setTitle: String,
+		musicName: String,
 		composerName: String,
-		noterName: String,
-		chart: List<ChartModel>,
-		isRanked: Boolean,
-		introduction: String,
-		coinPrice: Int,
-		OverridePriceStr: String,
-		needReview: Boolean,
-		defaultId: String?
-	): SetModel {
-		return SetModel(
-			defaultId ?: randomId(),
-			introduction,
-			coinPrice,
-			NoterModel(noterName),
-			setTitle,
-			composerName,
-			0,
-			chart,
-			false,
-			isRanked,
-			false,
-			OverridePriceStr,
-			needReview
-		).upsert(chartSetC).apply { logger.info("Created ChartSet: $this") }
-	}
+		noterId: String?,
+		charts: List<MongoChart>,
+		id: String?,
+		introduction: String?,
+		status: SetStatus,
+		price: Int
+	): MongoSet = MongoSet(
+		_id = id ?: randomId(),
+		musicName = musicName,
+		composerName = composerName,
+		noterId = noterId ?: serverUser._id,
+		introduction = introduction,
+		price = price,
+		status = status,
+		charts = charts.map { it._id }.toMutableList()
+	).apply(::updateSet)
 
-	override fun updateChart(detailedChartModel: DetailedChartModel): DetailedChartModel {
-		return detailedChartModel.upsert(chartC)
-	}
-
-	fun DetailedChartModel.update(block: DetailedChartModel.() -> Unit): DetailedChartModel {
-		return this.apply(block).upsert(chartC)
-	}
-
-	override fun updateSet(setModel: SetModel): SetModel {
-		return setModel.upsert(chartSetC)
-	}
-
-	fun SetModel.update(block: SetModel.() -> Unit): SetModel {
-		return this.apply(block).upsert(chartSetC)
-	}
+	override fun createChart(difficultyClass: Int, difficultyValue: Int, id: String?, D: Double?): MongoChart =
+		MongoChart(
+			_id = id ?: genNewChartId(),
+			difficultyClass = difficultyClass,
+			difficultyValue = difficultyValue,
+			D = D
+		).apply(::updateChart)
 
 	private fun getSetStoreList(
 		limit: Int,
@@ -224,19 +156,18 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		showOfficial: Boolean,
 		showRanked: Boolean,
 		showUnranked: Boolean,
-	): List<SetModel> {
+	): List<MongoSet> {
 		// logger.info("$limit, $skip, $searchedName, $showHidden, $showOfficial, $showRanked, $showUnranked")
 		return if(searchedName.isNotEmpty()) {
-			chartSetC.find("""{ "musicTitle": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
-			// chartSetC.find(SetModel::musicTitle eq searchedName).limit(limit).skip(skip).toList()
+			chartSetC.find("""{ "musicName": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
 		} else if(showHidden) {
-			chartSetC.find(SetModel::coinPrice eq -1).limit(limit).skip(skip).toList()
+			chartSetC.find(MongoSet::status eq SetStatus.HIDDEN).limit(limit).skip(skip).toList()
 		} else if(showOfficial) {
-			chartSetC.find(SetModel::isOfficial eq true).limit(limit).skip(skip).toList()
+			chartSetC.find(MongoSet::status eq SetStatus.OFFICIAL).limit(limit).skip(skip).toList()
 		} else if(showRanked) {
-			chartSetC.find(SetModel::isRanked eq true).limit(limit).skip(skip).toList()
+			chartSetC.find(or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL)).limit(limit).skip(skip).toList()
 		} else if(showUnranked) {
-			chartSetC.find(SetModel::isRanked eq false).limit(limit).skip(skip).toList()
+			chartSetC.find(MongoSet::status eq SetStatus.UNRANKED).limit(limit).skip(skip).toList()
 		} else {
 			listOf()
 		}
@@ -250,34 +181,16 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		isOfficial: Boolean? = null,
 		isRanked: Boolean? = null,
 		isNeedReview: Boolean? = null
-	): List<SetModel> {
+	): List<MongoSet> {
 		val filter = buildList {
-			if(searchedName != null) add(SetModel::musicTitle eq searchedName)
-			if(isHidden != null) if(isHidden) add(SetModel::coinPrice eq -1) else add(SetModel::coinPrice ne -1)
-			if(isOfficial != null) add(SetModel::isOfficial eq isOfficial)
-			if(isRanked != null) add(SetModel::isRanked eq isRanked)
-			if(isNeedReview != null) add(SetModel::needReview eq isNeedReview)
+			if(searchedName != null) add(MongoSet::musicName eq searchedName)
+			if(isHidden != null) if(isHidden) add(MongoSet::price eq -1) else add(MongoSet::price ne -1)
+			if(isOfficial != null) add(MongoSet::status eq SetStatus.OFFICIAL)
+			if(isRanked != null) add(or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL))
+			if(isNeedReview != null) add(MongoSet::status eq SetStatus.NEED_REVIEW)
 		}.let(::and)
 		return chartSetC.find(filter).limit(limit).skip(skip).toList()
 	}
-
-	// Play Record
-
-	@Serializable
-	data class PlayRecordData(
-		val _id: String,
-		val playerId: String,
-		val playedChartId: String,
-		val score: Int,
-		val perfect: Int,
-		val good: Int,
-		val miss: Int,
-		val playMod: PlayMod,
-		@Contextual val time: OffsetDateTime,
-		val currentR: Double?
-	)
-
-	private val playRecordC = db.getCollection<PlayRecordData>("PlayRecord")
 
 	@Serializable
 	data class PlayingData(
@@ -308,25 +221,21 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 	}
 
-	private fun UserModel.updatePlayerScoreOnChart(chartId: String, record: PlayRecordInput): PlayRecordData {
+	private fun MongoUser.updatePlayerScoreOnChart(chartId: String, record: PlayRecordInput): MongoRecord {
 		// calculate R
-		val r = getChart(chartId).D?.let {
+		val r = getChart(chartId)?.D?.let {
 			detonate.calcR(it, record)
 		}
 
-		val old =
-			playRecordC.findOne(and(PlayRecordData::playerId eq _id, PlayRecordData::playedChartId eq chartId))
-		val new = PlayRecordData(
-			randomId(),
-			_id,
-			chartId,
-			record.score!!,
-			record.perfect!!,
-			record.good!!,
-			record.miss!!,
-			record.mod!!.normal,
-			OffsetDateTime.now(),
-			r
+		val old = getUserChartRecord(_id, chartId, 1, 0, RecordSort.SCORE).firstOrNull()
+		val new = MongoRecord(
+			_id = old?._id ?: randomId(),
+			playerId = _id,
+			chartId = chartId,
+			score = record.score!!,
+			scoreDetail = ScoreDetail(record.perfect!!, record.good!!, record.miss!!),
+			uploadedTime = OffsetDateTime.now(),
+			RScore = r
 		)
 		if(old == null) {
 			playRecordC.insertOne(new)
@@ -339,28 +248,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return new
 	}
 
-	fun UserModel.updatePlayerRValue(): UserModel {
-		RThisMonth =
-			playRecordC.find(PlayRecordData::playerId eq _id).sort(descending(PlayRecordData::currentR)).limit(20)
-				.sumByDouble { it.currentR ?: 0.0 }.roundToInt()
-		return updateUser(this)
+	fun MongoUser.updatePlayerRValue() = apply {
+		R = getUserRecord(_id, 20, 0, RecordSort.SCORE).sumByDouble { it.RScore ?: 0.0 }.roundToInt()
+		updateUser(this)
 	}
-
-	// IBlowProvider methods
-
-	@Serializable
-	private data class PlayRecordDataRanked(
-		val _id: String,
-		val playerId: String,
-		val playedChartId: String,
-		val score: Int,
-		val perfect: Int,
-		val good: Int,
-		val miss: Int,
-		val playMod: PlayMod,
-		@Contextual val time: OffsetDateTime,
-		val ranking: Int
-	)
 
 	override fun getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel> {
 		return emptyList()
@@ -374,7 +265,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	override val gameSetting = GameSettingModel(81)
 
-	override fun loginUser(username: String, password: String): UserModel {
+	override fun loginUser(username: String, password: String): MongoUser {
 		val u = getUserByName(username) ?: error("Invalid username.")
 		return if(u.password == password) {
 			u
@@ -383,7 +274,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 	}
 
-	override fun registerUser(username: String, password: String): UserModel {
+	override fun registerUser(username: String, password: String): MongoUser {
 		return createUser(username, password).apply {
 			logger.info("New User(name=$username, token=$token, password=$password) created.")
 		}
@@ -399,89 +290,106 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		onlyHidden: Boolean,
 		playCountOrder: Boolean,
 		publishTimeOrder: Boolean
-	): List<SetModel> {
+	): List<MongoSet> {
 		return getSetStoreList(limit, skip, searchedName, onlyRanked, onlyOfficial, onlyReview, onlyHidden)
 	}
 
-	fun getAllSets(): FindIterable<SetModel> = chartSetC.find()
+	fun getAllSets(): FindIterable<MongoSet> = chartSetC.find()
 
-	override fun UserModel.buySet(id: String): ExchangeSetModel {
-		val s = getSet(id)
+	override fun MongoUser.buySet(id: String): ExchangeSetModel {
+		val s = getSet(id) ?: error("Invalid set: $id")
 
 		// already bought
-		if(id in this.ownSet) return ExchangeSetModel(this.coin)
+		if(id in ownedSets) return ExchangeSetModel(this.coin)
 
-		val coinRemain = (this.coin ?: 0) - s.coinPrice
+		val coinRemain = this.coin - s.price
 		if(coinRemain >= 0) {
-			this.update {
-				coin = coinRemain
-				ownSet += s._id
-				ownChart += s.chart.map(ChartModel::_id)
-			}
-			logger.info("User[${this.username}] bought ChartSet(${s.musicTitle}) cost ${s.coinPrice} remaining ${coin}.")
+			coin = coinRemain
+			ownedSets += s._id
+			ownedCharts += s.charts
+			updateUser(this)
+			logger.info("User[${this.username}] bought ChartSet[${s.musicName}](${s._id}) cost ${s.price} remaining ${coin}.")
 			return ExchangeSetModel(this.coin)
 		} else {
-			error("Cannot afford.")
+			error("You lack money!")
 		}
 	}
 
-	override fun UserModel.getAssessmentRankSelf(
+	override fun MongoUser.getAssessmentRankSelf(
 		assessmentGroupId: String, medalLevel: Int
 	): AssessmentRecordWithRankModel? {
 		return null
 	}
 
-	private val aggregateRanking =
-		Aggregates.setWindowFields(null, PlayRecordDataRanked::score eq -1, WindowedComputations.rank("ranking"))
+	@Serializable
+	private data class MongoRecordRanked(
+		val _id: String,
+		val playerId: String,
+		val chartId: String,
+		val score: Int,
+		val scoreDetail: ScoreDetail,
+		@Contextual
+		val uploadedTime: OffsetDateTime,
+		val RScore: Double?,
+		val ranking: Int
+	)
 
-	override fun UserModel.getPlayRankSelf(chartId: String): PlayRecordWithRank? {
+	private val aggregateRanking =
+		Aggregates.setWindowFields(null, MongoRecordRanked::score eq -1, WindowedComputations.rank("ranking"))
+
+	override fun MongoUser.getPlayRankSelf(chartId: String): PlayRecordWithRank? {
 		val playerId = this._id
-		return playRecordC.aggregate<PlayRecordDataRanked>(
-			match(PlayRecordDataRanked::playedChartId eq chartId),
+		return playRecordC.aggregate<MongoRecordRanked>(
+			match(MongoRecordRanked::chartId eq chartId),
 			aggregateRanking,
-			match(PlayRecordDataRanked::playerId eq playerId)
-		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
-			PlayRecordWithRank(this.asPlayer, mod, ranking, score, perfect, good, miss, time)
+			match(MongoRecordRanked::playerId eq playerId)
+		).map { (_, _, _, score, detail, time, _, ranking) ->
+			val (perfect, good, miss) = detail
+			PlayRecordWithRank(this.shrink, PlayMod.Default, ranking, score, perfect, good, miss, time)
 		}.firstOrNull()
 	}
 
 	override fun getPlayRank(chartId: String, limit: Int, skip: Int): List<PlayRecordWithRank> {
-		return playRecordC.aggregate<PlayRecordDataRanked>(
-			match(PlayRecordDataRanked::playedChartId eq chartId), aggregateRanking, skip(skip), limit(limit)
-		).map { (_, playerId, _, score, perfect, good, miss, mod, time, ranking) ->
-			PlayRecordWithRank(getPlayer(playerId)!!, mod, ranking, score, perfect, good, miss, time)
+		return playRecordC.aggregate<MongoRecordRanked>(
+			match(MongoRecordRanked::chartId eq chartId), aggregateRanking, skip(skip), limit(limit)
+		).map { (_, uid, _, score, detail, time, _, ranking) ->
+			val (perfect, good, miss) = detail
+			val user = getUser(uid) ?: error("Invalid user: $uid")
+			PlayRecordWithRank(user.shrink, PlayMod.Default, ranking, score, perfect, good, miss, time)
 		}.toList()
 	}
 
-	override fun UserModel.getLastPlayRecords(limit: Int, skip: Int): Iterable<PlayRecordWithRank> {
-		return playRecordC.aggregate<PlayRecordDataRanked>(
+	override fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<BombPlayRecordOfUser> {
+		return playRecordC.aggregate<MongoRecordRanked>(
 			aggregateRanking,
-			match(PlayRecordDataRanked::playerId eq _id),
-			sort(descending(PlayRecordDataRanked::time)),
+			match(MongoRecordRanked::playerId eq _id),
+			sort(descending(MongoRecordRanked::uploadedTime)),
 			limit(limit),
 			skip(skip)
-		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
-			PlayRecordWithRank(this.asPlayer, mod, ranking, score, perfect, good, miss, time)
+		).map { (_, _, cid, score, detail, time, R, ranking) ->
+			val (perfect, good, miss) = detail
+			BombPlayRecordOfUser(cid, BombPlayRecordResult(score, perfect, good, miss, ranking), time, R)
 		}
 	}
 
-	override fun UserModel.getBestPlayRecords(limit: Int, skip: Int): Iterable<PlayRecordWithRank> {
-		return playRecordC.aggregate<PlayRecordDataRanked>(
+	override fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<BombPlayRecordOfUser> {
+		return playRecordC.aggregate<MongoRecordRanked>(
 			aggregateRanking,
-			match(PlayRecordDataRanked::playerId eq _id),
-			sort(descending(PlayRecordDataRanked::score)),
+			match(MongoRecordRanked::playerId eq _id),
+			sort(descending(MongoRecordRanked::score)),
 			limit(limit),
 			skip(skip)
-		).map { (_, _, _, score, perfect, good, miss, mod, time, ranking) ->
-			PlayRecordWithRank(this.asPlayer, mod, ranking, score, perfect, good, miss, time)
+		).map { (_, _, cid, score, detail, time, R, ranking) ->
+			val (perfect, good, miss) = detail
+			BombPlayRecordOfUser(cid, BombPlayRecordResult(score, perfect, good, miss, ranking), time, R)
 		}
 	}
 
-	override fun UserModel.submitBeforeAssessment(assessmentId: String, medal: Int): BeforePlaySubmitModel {
+	override fun MongoUser.submitBeforeAssessment(assessmentId: String, medal: Int): BeforePlaySubmitModel {
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel("0"))
 	}
 
-	override fun UserModel.submitBeforePlay(
+	override fun MongoUser.submitBeforePlay(
 		chartId: String, ppCost: Int, eventArgs: String
 	): BeforePlaySubmitModel {
 		// Uncrypted Fix: the Uncrypted charts SHOULD end with 4 zero, which will be lost in the argument sent to here.
@@ -503,14 +411,14 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(p.randomId))
 	}
 
-	override fun UserModel.submitAfterAssessment(
+	override fun MongoUser.submitAfterAssessment(
 		records: List<PlayRecordInput>, randomId: String
 	): AfterAssessmentModel {
-		return AfterAssessmentModel(1, this.RThisMonth ?: 0, this.coin, this.diamond)
+		return AfterAssessmentModel(1, R, this.coin, this.diamond)
 	}
 
-	override fun UserModel.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel {
-		val p = playingDataCache[randomId] ?: error("Invalid randomId.")
+	override fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel {
+		val p = playingDataCache[randomId] ?: error("Invalid randomId($randomId)")
 
 		val chartId = p.chartId
 
@@ -526,14 +434,74 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val needUpdate = before == null || before.rank != after!!.rank
 
 		// get coins
-		val chartSet = getSetByChart(chartId) ?: error("Invalid Chart: Cannot find Set by Chart($chartId).")
-		val chart = getChart(chartId)
-		val coinDiff = detonate.calcGainCoin(chartSet.isRanked, chart.difficultyValue, record)
-		this.coin = (this.coin ?: 0) + coinDiff
+		val chartSet = getSetByChartId(chartId) ?: error("Invalid Chart: cannot find the set by chart($chartId)")
+		val chart = getChart(chartId) ?: error("Invalid chart: cannot find chart($chartId)")
+		val coinDiff = detonate.calcGainCoin(chartSet.status.isRanked, chart.difficultyValue, record)
+		this.coin = this.coin + coinDiff
 		updateUser(this)
-		logger.info("User[${this.username}] submited a record of ChartSet[${chartSet.musicTitle}] score ${record.score}(${record.perfect}/${record.good}/${record.miss}). [$randomId]")
+		logger.info("User[${this.username}] submited a record of ChartSet[${chartSet.musicName}] score ${record.score}(${record.perfect}/${record.good}/${record.miss}). [$randomId]")
 		return AfterPlaySubmitModel(
-			RankingModel(needUpdate, RankModel(after!!.rank)), this.RThisMonth ?: 0, this.coin, this.diamond
+			RankingModel(needUpdate, RankModel(after!!.rank)), R, this.coin, this.diamond
 		)
 	}
+
+	// UTILITIES
+	override val MongoUser.tunerize: UserModel
+		get() = UserModel(
+			_id = _id,
+			username = username,
+			ownChart = ownedCharts,
+			coworkChart = mutableListOf(),
+			ownSet = ownedSets,
+			follower = 0,
+			coin = coin,
+			diamond = diamond,
+			PPTime = ppTime,
+			token = token,
+			RThisMonth = R,
+			highestGoldenMedal = null,
+			access = AccessData(permission.review)
+		)
+
+	override val MongoChart.tunerize: DetailedChartModel
+		get() {
+			val s = getSetByChartId(_id) ?: error("Invalid chart($_id): not included in a set.")
+			return DetailedChartModel(
+				_id = _id,
+				charter = (getUser(s.noterId) ?: serverUser).tunerize,
+				chartName = "${s.musicName}_${difficultyClass}",
+				gcPrice = 0,
+				music = MusicModel(s.composerName),
+				difficultyBase = difficultyClass,
+				difficultyValue = difficultyValue,
+				D = D
+			)
+		}
+
+	override val MongoSet.tunerize: SetModel
+		get() = SetModel(
+			_id = _id,
+			introduction = introduction ?: "",
+			coinPrice = price,
+			noter = NoterModel(getUser(noterId)?.username ?: "unknown"),
+			musicTitle = musicName,
+			composerName = composerName,
+			playCount = 0,
+			chart = charts.mapNotNull { getChart(it)?.tunerize?.minify },
+			isGot = false,
+			isRanked = status == SetStatus.RANKED || status == SetStatus.OFFICIAL,
+			isOfficial = status == SetStatus.OFFICIAL,
+			OverridePriceStr = "",
+			needReview = status == SetStatus.NEED_REVIEW
+		)
+
+	val UserModel.asPlayer: PlayerModel
+		get() = PlayerModel(_id, username, highestGoldenMedal ?: 0, RThisMonth ?: 0)
+
+	private fun DetailedChartModel.minimal(): ChartModel {
+		return ChartModel(_id, difficultyBase, difficultyValue)
+	}
+
+	val MongoUser.shrink: PlayerModel
+		get() = PlayerModel(_id, username, 0, R)
 }

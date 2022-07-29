@@ -3,13 +3,13 @@ package explode.blow.impl
 import explode.blow.BlowReviewerService
 import explode.blow.BlowSelfService
 import explode.blow.BlowUtils.soudayo
-import explode.dataprovider.model.*
-import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.model.game.*
+import explode.dataprovider.provider.IBlowAccessor
 import graphql.schema.DataFetchingEnvironment
 
-class ProviderSelfService(private val p: IBlowDataProvider) : BlowSelfService() {
+class ProviderSelfService(private val p: IBlowAccessor) : BlowSelfService() {
 	override suspend fun gotSet(env: DataFetchingEnvironment): List<SetModel> {
-		return p.getUserByToken(env.soudayo)?.ownSet?.map(p::getSet) ?: listOf()
+		return with(p) { p.getUserByToken(env.soudayo)?.tunerize?.ownSet?.mapNotNull(p::getSet)?.map { it.tunerize } ?: listOf() }
 	}
 
 	override suspend fun assessmentRankSelf(
@@ -29,7 +29,7 @@ class ProviderSelfService(private val p: IBlowDataProvider) : BlowSelfService() 
 	}
 }
 
-class ProviderReviewerService(private val p: IBlowDataProvider) : BlowReviewerService() {
+class ProviderReviewerService(private val p: IBlowAccessor) : BlowReviewerService() {
 	override suspend fun reviewRequest(
 		env: DataFetchingEnvironment,
 		limit: Int?,
@@ -39,20 +39,22 @@ class ProviderReviewerService(private val p: IBlowDataProvider) : BlowReviewerSe
 	): List<ReviewRequestModel> {
 		val u = p.getUserByToken(env.soudayo)
 
-		if(u == null || !u.access.reviewer) return emptyList()
+		if(u == null || !u.permission.review) return emptyList()
 
-		return p.getSets(
-			limit!!,
-			skip!!,
-			searchStr ?: "",
-			onlyRanked = false,
-			onlyOfficial = false,
-			onlyReview = false,
-			onlyHidden = false,
-			playCountOrder = false,
-			publishTimeOrder = false
-		).map {
-			ReviewRequestModel(it, !it.isRanked)
+		return with(p) {
+			p.getSets(
+				limit!!,
+				skip!!,
+				searchStr ?: "",
+				onlyRanked = false,
+				onlyOfficial = false,
+				onlyReview = false,
+				onlyHidden = false,
+				playCountOrder = false,
+				publishTimeOrder = false
+			).map {
+				ReviewRequestModel(it.tunerize, !it.status.isRanked)
+			}
 		}
 	}
 }

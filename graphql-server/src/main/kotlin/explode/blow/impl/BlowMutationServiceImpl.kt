@@ -2,23 +2,23 @@ package explode.blow.impl
 
 import explode.blow.BlowMutationService
 import explode.blow.BlowUtils.soudayo
-import explode.dataprovider.model.*
-import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.model.game.*
+import explode.dataprovider.provider.IBlowAccessor
 import graphql.schema.DataFetchingEnvironment
 
-class BlowMutationServiceImpl(private val p: IBlowDataProvider) : BlowMutationService {
+class BlowMutationServiceImpl(private val p: IBlowAccessor) : BlowMutationService {
 
-	override suspend fun loginUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel {
-		return p.loginUser(username!!, password!!)
+	override suspend fun loginUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel = with(p) {
+		p.loginUser(username!!, password!!).tunerize
 	}
 
-	override suspend fun registerUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel {
-		return p.registerUser(username!!, password!!)
+	override suspend fun registerUser(env: DataFetchingEnvironment, username: String?, password: String?): UserModel = with(p) {
+		p.registerUser(username!!, password!!).tunerize
 	}
 
 	// Dynamite Obsolete
-	override suspend fun purchaseChart(env: DataFetchingEnvironment, chartId: String?): UserModel {
-		return p.getUser("")!! // TODO
+	override suspend fun purchaseChart(env: DataFetchingEnvironment, chartId: String?): UserModel = with(p) {
+		p.getUser("")!!.tunerize // TODO
 	}
 
 	override suspend fun exchangeSet(env: DataFetchingEnvironment, setId: String?): ExchangeSetModel {

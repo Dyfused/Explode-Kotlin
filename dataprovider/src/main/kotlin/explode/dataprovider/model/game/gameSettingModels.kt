@@ -1,4 +1,4 @@
-package explode.dataprovider.model
+package explode.dataprovider.model.game
 
 data class GameSettingModel(
 	val appVer: Int?

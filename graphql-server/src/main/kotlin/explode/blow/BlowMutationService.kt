@@ -1,7 +1,7 @@
 package explode.blow
 
 import com.expediagroup.graphql.server.operations.Mutation
-import explode.dataprovider.model.*
+import explode.dataprovider.model.game.*
 import graphql.schema.DataFetchingEnvironment
 
 interface BlowMutationService : Mutation {

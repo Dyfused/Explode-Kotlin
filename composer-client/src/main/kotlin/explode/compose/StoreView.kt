@@ -3,29 +3,23 @@ package explode.compose
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import explode.compose.data.StoreDataProvider
 import explode.compose.theme.ExplodeColor
-import explode.dataprovider.model.SetModel
+import explode.dataprovider.model.game.SetModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -55,7 +49,7 @@ fun StoreViewList() {
 	LazyColumn(
 		state = listState
 	) {
-		items(charts) { setModel ->
+		items(items = charts) { setModel ->
 			ChartSetCard(setModel) {
 				ExplodeViewModel.setEditingChartSet(it)
 			}

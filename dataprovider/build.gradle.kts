@@ -3,7 +3,7 @@ plugins {
     kotlin("plugin.serialization") version "1.7.0"
 }
 
-version = "1.1"
+version = "1.2"
 
 val logbackVersion: String by project
 

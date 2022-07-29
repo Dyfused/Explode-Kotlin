@@ -1,4 +1,4 @@
-package explode.dataprovider.model
+package explode.dataprovider.model.game
 
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -23,7 +23,11 @@ data class PlayMod(
 	val speed: Int,
 	val isBleed: Boolean,
 	val isMirror: Boolean
-)
+) {
+	companion object {
+		val Default = PlayMod(0, 0, isBleed = false, isMirror = false)
+	}
+}
 
 @Serializable
 data class BeforePlaySubmitModel(

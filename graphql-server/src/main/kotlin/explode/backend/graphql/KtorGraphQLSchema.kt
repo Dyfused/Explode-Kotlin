@@ -5,7 +5,7 @@ import com.expediagroup.graphql.generator.scalars.IDValueUnboxer
 import com.expediagroup.graphql.generator.toSchema
 import explode.blow.BlowUtils.mutation
 import explode.blow.BlowUtils.query
-import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.provider.IBlowAccessor
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 
@@ -16,7 +16,7 @@ private val config = SchemaGeneratorConfig(
 
 private lateinit var schema: GraphQLSchema
 
-fun getGraphQLSchema(blow: IBlowDataProvider): GraphQLSchema {
+fun getGraphQLSchema(blow: IBlowAccessor): GraphQLSchema {
 	if(!::schema.isInitialized) { // lazy init
 		schema = toSchema(config, listOf(blow.query), listOf(blow.mutation))
 	}
@@ -24,5 +24,5 @@ fun getGraphQLSchema(blow: IBlowDataProvider): GraphQLSchema {
 	return schema
 }
 
-fun getGraphQLObject(blow: IBlowDataProvider): GraphQL = GraphQL.newGraphQL(getGraphQLSchema(blow)).valueUnboxer(IDValueUnboxer())
+fun getGraphQLObject(blow: IBlowAccessor): GraphQL = GraphQL.newGraphQL(getGraphQLSchema(blow)).valueUnboxer(IDValueUnboxer())
 	.valueUnboxer(CustomSchemaGeneratorHooks.NNIntUnboxer).build()

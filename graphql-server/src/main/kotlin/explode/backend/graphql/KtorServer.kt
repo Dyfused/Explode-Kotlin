@@ -1,12 +1,12 @@
 package explode.backend.graphql
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.provider.IBlowAccessor
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 
-class KtorServer(blow: IBlowDataProvider) {
+class KtorServer(blow: IBlowAccessor) {
 
 	private val mapper = jacksonObjectMapper()
 	private val ktorGQLServer = getGraphQLServer(mapper, blow)

@@ -236,7 +236,7 @@ fun ActualMetaCreating() {
                     val set = StoreDataProvider.p.buildChartSet(
                         title,
                         composerName,
-                        StoreDataProvider.p.officialUser,
+                        StoreDataProvider.p.serverUser,
                         isRanked,
                         price.toInt(),
                         introduction,
@@ -258,7 +258,7 @@ fun ActualMetaCreating() {
                     StoreDataProvider.p.addSetCoverResource(set._id, coverFile!!.readBytes())
                     StoreDataProvider.p.addPreviewResource(set._id, previewFile!!.readBytes())
 
-                    set.chart.forEach { (id, diffClass, _) ->
+                    set.charts.mapNotNull { StoreDataProvider.p.getChart(it) }.forEach { (id, diffClass, _) ->
                         StoreDataProvider.p.addChartResource(id, holders.find { it.difficultyBase == diffClass }!!.chartFile!!.readBytes())
                     }
                 }.onSuccess {

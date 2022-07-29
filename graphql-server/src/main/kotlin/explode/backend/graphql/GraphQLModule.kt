@@ -1,7 +1,7 @@
 package explode.backend.graphql
 
 import com.expediagroup.graphql.generator.extensions.print
-import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.IBlowResourceProvider
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,7 +17,7 @@ import io.ktor.server.routing.*
  * 	- /graphql =(GET)=> the playground of GraphQL
  * 	- /sdl =(GET)=> the schema data
  */
-fun Application.graphQLModule(blow: IBlowDataProvider, usePlayground: Boolean) {
+fun Application.graphQLModule(blow: IBlowAccessor, usePlayground: Boolean) {
 	routing {
 		get {
 			call.respondText("You're finally here. Brother Slayer. Spawn Killer.")

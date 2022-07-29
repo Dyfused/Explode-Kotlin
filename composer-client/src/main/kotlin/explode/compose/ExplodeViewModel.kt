@@ -3,7 +3,7 @@ package explode.compose
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import explode.dataprovider.model.SetModel
+import explode.dataprovider.model.game.SetModel
 import java.io.File
 
 internal object ExplodeViewModel {

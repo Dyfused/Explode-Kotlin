@@ -1,4 +1,4 @@
-package explode.dataprovider.model
+package explode.dataprovider.model.game
 
 
 import kotlinx.serialization.Contextual

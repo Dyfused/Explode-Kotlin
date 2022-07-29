@@ -1,19 +1,40 @@
 package explode.dataprovider.provider
 
-import explode.dataprovider.model.*
+import explode.dataprovider.model.database.*
+import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassNum
 
-interface IBlowAccessor {
+interface IBlowAccessor : IBlowReadOnly {
 
-	fun getSet(setId: String): SetModel?
+	val gameSetting: GameSettingModel
 
-	fun getChart(chartId: String): DetailedChartModel?
+	fun loginUser(username: String, password: String): MongoUser
 
-	fun updateUser(userModel: UserModel): UserModel
+	fun registerUser(username: String, password: String): MongoUser
 
-	fun updateSet(setModel: SetModel): SetModel
+	/**
+	 * Get Chart Sets
+	 *
+	 * Priority: showHidden > showReview > showOfficial > showRanked,
+	 * which means if showHidden is true, it will ignore all other filters.
+	 */
+	fun getSets(
+		limit: Int,
+		skip: Int,
+		searchedName: String,
+		onlyRanked: Boolean,
+		onlyOfficial: Boolean,
+		onlyReview: Boolean,
+		onlyHidden: Boolean,
+		playCountOrder: Boolean,
+		publishTimeOrder: Boolean
+	): List<MongoSet>
 
-	fun updateChart(detailedChartModel: DetailedChartModel): DetailedChartModel
+
+	// updaters
+	fun updateUser(mongoUser: MongoUser): MongoUser
+	fun updateSet(mongoSet: MongoSet): MongoSet
+	fun updateChart(mongoChart: MongoChart): MongoChart
 
 	/**
 	 * Create and store a new [User][UserModel].
@@ -23,32 +44,29 @@ interface IBlowAccessor {
 	 * @param username username
 	 * @param password password
 	 */
-	fun createUser(username: String, password: String): UserModel
+	fun createUser(username: String, password: String): MongoUser
 
 	/**
 	 * Create a Chart Set and store.
 	 *
-	 * @param setTitle The title of the set showed in Dynamite like PUPA.
+	 * @param musicName The title of the set showed in Dynamite like PUPA.
 	 * @param composerName The music composer's name like モリモリあつし
-	 * @param noterName The noter's display name, not have to be username.
-	 * @param chart The charts of the set.
-	 * @param isRanked If true, the set will be listed on Ranked category in the store. Normally charts of ranked set make more sense in gameplay.
+	 * @param noterId The noter's display name, not have to be username.
+	 * @param charts The charts of the set.
+	 * @param status The status of the set.
 	 * @param introduction Introduction texts. No usage in Dynamite.
-	 * @param coinPrice The price to buy in the store.
-	 * @param needReview If true, the set will be listed on Review category instead of others. Default set true for new sets.
+	 * @param price The price to buy in the store.
 	 */
 	fun createSet(
-		setTitle: String,
+		musicName: String,
 		composerName: String,
-		noterName: String,
-		chart: List<ChartModel>,
-		isRanked: Boolean,
-		introduction: String = "",
-		coinPrice: Int = 0,
-		OverridePriceStr: String = "",
-		needReview: Boolean = true,
-		defaultId: String? = null
-	): SetModel
+		noterId: String?,
+		charts: List<MongoChart>,
+		id: String? = null,
+		introduction: String? = null,
+		status: SetStatus = SetStatus.NEED_REVIEW,
+		price: Int = 0
+	): MongoSet
 
 	/**
 	 * Create a Chart. Any chart required to be included in a [Set][createSet] to be available to Dynamite.
@@ -57,15 +75,8 @@ interface IBlowAccessor {
 	 * @param difficultyValue The numeric value of difficulty.
 	 */
 	fun createChart(
-		chartName: String,
-		charterUser: UserModel,
-		musicianName: String,
-		difficultyClass: Int,
-		difficultyValue: Int,
-		gcPrice: Int = 0,
-		D: Double? = null,
-		defaultId: String? = null
-	): DetailedChartModel
+		difficultyClass: Int, difficultyValue: Int, id: String? = null, D: Double? = null
+	): MongoChart
 
 	/**
 	 * Build a set with charts with [ChartSetBuilder].
@@ -76,7 +87,7 @@ interface IBlowAccessor {
 	fun buildChartSet(
 		setTitle: String,
 		composerName: String,
-		noterUser: UserModel,
+		noterUser: MongoUser,
 		isRanked: Boolean,
 		coinPrice: Int,
 		introduction: String = "",
@@ -84,15 +95,7 @@ interface IBlowAccessor {
 		defaultId: String? = null,
 		block: ChartSetBuilder.() -> Unit
 	) = ChartSetBuilder(
-		this,
-		setTitle,
-		composerName,
-		noterUser,
-		isRanked,
-		coinPrice,
-		introduction,
-		needReview,
-		defaultId
+		this, setTitle, composerName, noterUser, isRanked, coinPrice, introduction, needReview, defaultId
 	).apply(block).buildSet()
 
 	/**
@@ -101,59 +104,60 @@ interface IBlowAccessor {
 	class ChartSetBuilder internal constructor(
 		private val accessor: IBlowAccessor,
 
-		private val setTitle: String,
+		private val musicName: String,
 		private val composerName: String,
-		private val noterUser: UserModel,
+		private val noterUser: MongoUser,
 		private val isRanked: Boolean,
-		private val coinPrice: Int,
+		private val price: Int,
 		private val introduction: String = "",
 		private val needReview: Boolean = true,
 		private val defaultId: String? = null
 	) {
 
-		private val chart = mutableSetOf<DetailedChartModel>()
+		private val charts = mutableMapOf<Int, MongoChart>()
 
 		fun addChart(
-			difficultyClass: String,
-			difficultyValue: Int,
-			D: Double? = null,
-			defaultId: String? = null
-		): DetailedChartModel =
-			addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D, defaultId)
+			difficultyClass: String, difficultyValue: Int, D: Double? = null, defaultId: String? = null
+		): MongoChart = addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D, defaultId)
 
 		fun addChart(
-			difficultyClass: Int,
-			difficultyValue: Int,
-			D: Double? = null,
-			defaultId: String? = null
-		): DetailedChartModel {
+			difficultyClass: Int, difficultyValue: Int, D: Double? = null, defaultId: String? = null
+		): MongoChart {
 			// Unranked charts should have no D value
 			val d = if(isRanked) D else null
 
 			// Check difficulty duplication
-			if(difficultyClass in chart.map(DetailedChartModel::difficultyBase)) {
+			if(difficultyClass in charts.keys) {
 				error("Duplicated Difficulty Class: $difficultyClass")
 			}
 
-			return accessor.createChart(
-				"${setTitle}_${difficultyClass}",
-				noterUser, composerName,
-				difficultyClass, difficultyValue,
-				0,
-				D = d,
-				defaultId = defaultId
-			).apply(chart::add)
+			return accessor.createChart(difficultyClass, difficultyValue, defaultId, d).apply {
+				charts[difficultyClass] = this
+			}
 		}
 
-		fun buildSet(): SetModel {
-			if(chart.isEmpty()) error("Must include charts")
+		fun buildSet(): MongoSet {
+			if(charts.isEmpty()) error("Must include at least one chart.")
 			return accessor.createSet(
-				setTitle,
-				composerName, noterUser.username,
-				chart.map(DetailedChartModel::minify),
-				isRanked, introduction, coinPrice,
-				"", needReview, defaultId
+				musicName = musicName,
+				composerName = composerName,
+				noterId = noterUser._id,
+				charts = charts.values.toList(),
+				id = defaultId,
+				introduction = introduction,
+				status = SetStatus.NEED_REVIEW,
+				price = price
 			)
 		}
 	}
+
+	fun MongoUser.buySet(id: String): ExchangeSetModel
+
+	fun MongoUser.submitBeforeAssessment(assessmentId: String, medal: Int): BeforePlaySubmitModel
+
+	fun MongoUser.submitBeforePlay(chartId: String, ppCost: Int, eventArgs: String): BeforePlaySubmitModel
+
+	fun MongoUser.submitAfterAssessment(records: List<PlayRecordInput>, randomId: String): AfterAssessmentModel
+
+	fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel
 }

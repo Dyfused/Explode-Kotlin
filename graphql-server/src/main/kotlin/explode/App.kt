@@ -53,10 +53,10 @@ fun main(args: Array<String>) {
 		ignoreUnknownKeys = true
 	}
 
-	ExplodeConsole(m, m).loop()
+	ExplodeConsole(m).loop()
 
 	when(operation) {
-		"backend", null -> startKtorServer(m, m, m)
+		"backend", null -> startKtorServer(m, m)
 		else -> println("Unknown subcommand: $operation")
 	}
 
@@ -76,7 +76,7 @@ private fun disableGraphQLLogging() {
 		Level.ERROR
 }
 
-private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: IBlowResourceProvider, accessor: IBlowAccessor) {
+private fun startKtorServer(dataProvider: IBlowAccessor, resourceProvider: IBlowResourceProvider) {
 	// EngineMain.main(args) // deprecated since it is not allowed to modify the port in the code.
 	mainLogger.info("Backend Port: ${explodeConfig.port}")
 	mainLogger.info("GraphQl PlayGround: ${explodeConfig.enablePlayground}")
@@ -88,7 +88,7 @@ private fun startKtorServer(dataProvider: IBlowDataProvider, resourceProvider: I
 			module {
 				graphQLModule(dataProvider, explodeConfig.enablePlayground)
 				dynamiteResourceModule(resourceProvider)
-				bombModule(dataProvider, resourceProvider, accessor)
+				bombModule(dataProvider, resourceProvider)
 			}
 
 			connector {
@@ -110,10 +110,10 @@ const val GameVersion = 81
  * This field is used to construct the Schema.
  */
 @Deprecated("Legacy")
-lateinit var blow: IBlowDataProvider
+lateinit var blow: IBlowAccessor
 
 @Deprecated("Legacy")
-lateinit var blowAccess: IBlowAccessor
+lateinit var blowAccess: IBlowReadOnly
 
 @Deprecated("Legacy")
 lateinit var blowResource: IBlowResourceProvider

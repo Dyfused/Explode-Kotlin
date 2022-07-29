@@ -1,6 +1,4 @@
-@file:Suppress("UNUSED_PARAMETER")
-
-package explode.dataprovider.model
+package explode.dataprovider.model.game
 
 import kotlinx.serialization.Serializable
 

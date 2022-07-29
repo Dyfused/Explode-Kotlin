@@ -1,6 +1,7 @@
 package explode.backend.bomb
 
-import explode.dataprovider.provider.*
+import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.IBlowResourceProvider
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.explodeConfig
@@ -76,9 +77,8 @@ private suspend inline fun <reified T> ApplicationCall.respond(status: HttpStatu
 }
 
 fun Application.bombModule(
-	data: IBlowDataProvider,
-	res: IBlowResourceProvider,
-	acc: IBlowAccessor
+	data: IBlowAccessor,
+	res: IBlowResourceProvider
 ) {
 	install(CORS) {
 		anyHost()
@@ -124,10 +124,10 @@ fun Application.bombModule(
 						meta.chartMeta.forEach { if(it.chartFileName !in uploadedData.keys) error("CHART_MISSING: ${it.chartFileName}") }
 
 						// 存入数据库
-						val s = acc.buildChartSet(
+						val s = data.buildChartSet(
 							setTitle = meta.title,
 							composerName = meta.composerName,
-							noterUser = data.getUserByName(meta.noterName) ?: data.emptyUser,
+							noterUser = data.getUserByName(meta.noterName) ?: data.serverUser,
 							isRanked = false,
 							coinPrice = 0,
 							introduction = "",

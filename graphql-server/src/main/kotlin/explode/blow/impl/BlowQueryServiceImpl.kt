@@ -3,11 +3,11 @@ package explode.blow.impl
 import explode.backend.graphql.NNInt
 import explode.blow.*
 import explode.blow.BlowUtils.soudayo
-import explode.dataprovider.model.*
-import explode.dataprovider.provider.IBlowDataProvider
+import explode.dataprovider.model.game.*
+import explode.dataprovider.provider.IBlowAccessor
 import graphql.schema.DataFetchingEnvironment
 
-class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService {
+class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 
 	private val self = ProviderSelfService(p)
 	private val reviewer = ProviderReviewerService(p)
@@ -34,7 +34,7 @@ class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService 
 		musicTitle: String?,
 		isOfficial: Int?,
 		isRanked: Int?
-	): List<SetModel> {
+	): List<SetModel> = with(p) {
 		// 我都不知道请求 refreshSet 的时候要 set 干嘛，
 		// 请求了数据还不用，请求体里面还没任何参数。无语。
 		if(isOfficial == null) return listOf()
@@ -49,19 +49,19 @@ class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService 
 			isRanked == -1,
 			playCountOrder == -1,
 			publishTimeOrder == -1
-		)
+		).map { it.tunerize }
 	}
 
 	override suspend fun self(env: DataFetchingEnvironment): BlowSelfService {
 		return self
 	}
 
-	override suspend fun ownOrGotChart(env: DataFetchingEnvironment): List<DetailedChartModel> {
-		return p.getUserByToken(env.soudayo)?.ownChart?.map(p::getChart) ?: listOf()
+	override suspend fun ownOrGotChart(env: DataFetchingEnvironment): List<DetailedChartModel> = with(p) {
+		return p.getUserByToken(env.soudayo)?.ownedCharts?.mapNotNull(p::getChart)?.map { it.tunerize } ?: listOf()
 	}
 
-	override suspend fun charts(env: DataFetchingEnvironment, limit: Int?, skip: Int?, ranked: Int?): List<DetailedChartModel> {
-		return p.getUserByToken(env.soudayo)?.ownSet?.map(p::getChart) ?: listOf()
+	override suspend fun charts(env: DataFetchingEnvironment, limit: Int?, skip: Int?, ranked: Int?): List<DetailedChartModel> = with(p) {
+		return p.getUserByToken(env.soudayo)?.ownedSets?.mapNotNull(p::getChart)?.map { it.tunerize } ?: listOf()
 	}
 
 	override suspend fun assessmentGroup(env: DataFetchingEnvironment, limit: Int?, skip: Int?): List<AssessmentGroupModel> {
@@ -78,21 +78,21 @@ class BlowQueryServiceImpl(private val p: IBlowDataProvider) : BlowQueryService 
 		return listOf()
 	}
 
-	override suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel {
-		return p.getSet(_id!!)
+	override suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel = with(p) {
+		return p.getSet(_id!!)?.tunerize ?: error("Invalid setId: $_id")
 	}
 
-	override suspend fun userByUsername(env: DataFetchingEnvironment, username: String?): UserModel? {
-		return p.getUser(username!!)
+	override suspend fun userByUsername(env: DataFetchingEnvironment, username: String?): UserModel? = with(p) {
+		return p.getUser(username!!)?.tunerize
 	}
 
 	override suspend fun playRank(env: DataFetchingEnvironment, chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank> {
 		return p.getPlayRank(chartId!!, limit!!.value, skip!!.value)
 	}
 
-	override suspend fun refreshSet(env: DataFetchingEnvironment, setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set> {
-		return setVersion.map { p.getSet(it.setId) }.map {
-			ClassifiedModels.Set(it._id, it.isRanked, it.introduction, it.noter.username, it.musicTitle)
+	override suspend fun refreshSet(env: DataFetchingEnvironment, setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set> = with(p) {
+		return setVersion.mapNotNull { getSet(it.setId) }.map {
+			ClassifiedModels.Set(it._id, it.status.isRanked, it.introduction ?: "", getUser(it.noterId)?.username ?: "unknown", it.musicName)
 		}
 	}
 }

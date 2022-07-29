@@ -16,6 +16,6 @@ object StoreDataProvider {
 		isOfficial: Boolean? = null,
 		isRanked: Boolean? = null,
 		isNeedReview: Boolean? = null
-	) = p.getSetList(limit, skip, searchedName, isHidden, isOfficial, isRanked, isNeedReview)
+	) = with(p) { getSetList(limit, skip, searchedName, isHidden, isOfficial, isRanked, isNeedReview).map { it.tunerize } }
 
 }

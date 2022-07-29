@@ -140,23 +140,23 @@ class BlowFileResourceProvider(
 	}
 
 	override fun addMusicFile(setId: String, data: ByteArray) {
-		getMusicFile(setId)?.writeBytes(data)
+		musicFolder.resolve("$setId.mp3").writeBytes(data)
 	}
 
 	override fun addPreviewFile(setId: String, data: ByteArray) {
-		getPreviewFile(setId)?.writeBytes(data)
+		musicFolder.resolve("${setId}_preview.mp3").writeBytes(data)
 	}
 
 	override fun addSetCoverFile(setId: String, data: ByteArray) {
-		getSetCoverFile(setId)?.writeBytes(data)
+		coverFolder.resolve("$setId.jpg").writeBytes(data)
 	}
 
 	override fun addStorePreviewFile(setId: String, data: ByteArray) {
-		getStorePreviewFile(setId)?.writeBytes(data)
+		storePreviewFolder.resolve("$setId.jpg").writeBytes(data)
 	}
 
 	override fun addUserAvatarFile(userId: String, data: ByteArray) {
-		getUserAvatarFile(userId)?.writeBytes(data)
+		avatarFolder.resolve("$userId.jpg").writeBytes(data)
 	}
 
 }

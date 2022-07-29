@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import explode.compose.data.StoreDataProvider
 import explode.compose.theme.ExplodeColor
-import explode.dataprovider.model.SetModel
+import explode.dataprovider.model.game.SetModel
 import kotlin.math.roundToInt
 
 @Composable
@@ -141,7 +141,8 @@ fun ActualMetaEditing(chartSet: SetModel) {
                 chartSet.needReview = isNeedReview
                 chartSet.coinPrice = (price.toIntOrNull() ?: 0).takeUnless { isHidden } ?: -1
                 runCatching {
-                    StoreDataProvider.p.updateSet(chartSet)
+                    // StoreDataProvider.p.updateSet(chartSet)
+                    TODO("Need a refactor for upstream breaking change. This feature is currently not available.")
                 }.onSuccess {
                     operationResult = true
                     operationResultMessage = "Successfully updated"

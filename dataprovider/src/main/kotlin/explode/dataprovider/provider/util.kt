@@ -1,5 +1,8 @@
 package explode.dataprovider.provider
 
+import explode.dataprovider.model.database.MongoRecord
+import kotlin.reflect.KProperty
+
 private val DifficultyStringIntMapping = mapOf(
 	"casual" to 1,
 	"normal" to 2,
@@ -19,3 +22,8 @@ object DifficultyUtils {
 
 internal fun String.toFuzzySearch() =
 	"{ \$regex: \"$this\", \$options: \"\$i\" }"
+
+enum class RecordSort(val prop: KProperty<*>) {
+	TIME(MongoRecord::uploadedTime),
+	SCORE(MongoRecord::score);
+}

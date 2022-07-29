@@ -1,7 +1,7 @@
 package explode.blow
 
 import explode.backend.graphql.NNInt
-import explode.dataprovider.model.*
+import explode.dataprovider.model.game.*
 import graphql.schema.DataFetchingEnvironment
 
 interface BlowQueryService {

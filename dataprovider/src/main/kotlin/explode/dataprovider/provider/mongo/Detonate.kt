@@ -1,7 +1,7 @@
 package explode.dataprovider.provider.mongo
 
 import explode.dataprovider.detonate.RCalculator
-import explode.dataprovider.model.PlayRecordInput
+import explode.dataprovider.model.game.PlayRecordInput
 import explode.dataprovider.provider.BlowFileResourceProvider
 import org.slf4j.LoggerFactory
 import java.io.File
