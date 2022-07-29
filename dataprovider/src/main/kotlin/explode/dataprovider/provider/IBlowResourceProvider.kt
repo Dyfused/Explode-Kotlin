@@ -136,7 +136,7 @@ class BlowFileResourceProvider(
 		userId?.let { avatarFolder.resolveExists("$userId.jpg") } ?: defaultUserAvatar?.let { avatarFolder.resolveExists("$defaultUserAvatar.jpg") }
 
 	override fun addChartFile(chartId: String, data: ByteArray) {
-		getChartFile(chartId)?.writeBytes(data)
+		chartFolder.resolve("$chartId.xml").writeBytes(data)
 	}
 
 	override fun addMusicFile(setId: String, data: ByteArray) {

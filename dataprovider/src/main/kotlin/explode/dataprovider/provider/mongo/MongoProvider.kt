@@ -54,7 +54,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	// advanced getters
 	override fun getSetByChartId(chartId: String) =
-		chartSetC.findOne(MongoSet::charts elemMatch (MongoChart::_id eq chartId))
+		chartSetC.findOne(MongoSet::charts contains chartId)
 
 	override fun getUserByName(username: String) = userC.findOne(MongoUser::username eq username)
 	override fun getUserByToken(token: String) = userC.findOne(MongoUser::token eq token)
