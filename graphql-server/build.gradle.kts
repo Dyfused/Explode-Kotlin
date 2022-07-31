@@ -19,6 +19,7 @@ val kotlinCoroutineVersion: String by project
 
 dependencies {
     implementation(project(":dataprovider"))
+    implementation(project(":data-fixer"))
 
     implementation("com.expediagroup", "graphql-kotlin-server", "6.0.0-alpha.4")
     implementation("com.graphql-java", "graphql-java-extended-scalars", "18.1")
@@ -26,6 +27,7 @@ dependencies {
     implementation("io.ktor", "ktor-server-core", ktorVersion)
     implementation("io.ktor", "ktor-server-netty", ktorVersion)
     implementation("io.ktor", "ktor-server-cors", ktorVersion)
+    implementation("io.ktor", "ktor-server-auth", ktorVersion)
     implementation("io.ktor", "ktor-server-content-negotiation", ktorVersion)
     implementation("io.ktor", "ktor-serialization-kotlinx-json", ktorVersion)
     implementation("ch.qos.logback", "logback-classic", logbackVersion)
@@ -36,6 +38,7 @@ dependencies {
     implementation("com.github.taskeren", "tconfig", "1.0")
     testImplementation(kotlin("test"))
     testImplementation("com.squareup.okhttp3:okhttp:4.10.0")
+    testImplementation("io.ktor", "ktor-server-test-host", ktorVersion)
 }
 
 tasks.test {

@@ -16,7 +16,7 @@ class KtorServer(blow: IBlowAccessor) {
 
 		if(result != null) {
 			val json = mapper.writeValueAsString(result)
-			appCall.response.call.respond(json)
+			appCall.response.call.respondText(json)
 		} else {
 			appCall.response.call.respond(HttpStatusCode.BadRequest, "Invalid request")
 		}

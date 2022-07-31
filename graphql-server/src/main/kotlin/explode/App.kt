@@ -6,13 +6,17 @@ import explode.backend.bomb.bombModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
+import explode.datafixer.DataFixer
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoProvider
+import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.utils.Config
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.time.Duration
@@ -38,6 +42,14 @@ fun main(args: Array<String>) {
 
 	mainLogger.info("Explode ${ExplodeInfo["version"]} ($GameVersion)")
 
+	// check data
+	val df = DataFixer(File(explodeConfig.dataVersionPath), 1)
+	if(df.shouldUpdate) {
+		mainLogger.warn("Old data structure version: ${df.currentVersion}, need to update to ${df.compatibleVersion}.")
+		df.executeUpdate()
+	}
+
+	// prepare data
 	val m = MongoProvider()
 
 	@Suppress("DEPRECATION") // no warning to set
@@ -96,6 +108,13 @@ private fun startKtorServer(dataProvider: IBlowAccessor, resourceProvider: IBlow
 			}
 		}
 	).start(true)
+}
+
+val globalJson = Json {
+	ignoreUnknownKeys = true
+	serializersModule = SerializersModule {
+		contextual(OffsetDateTimeSerializer)
+	}
 }
 
 /**

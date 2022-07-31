@@ -11,5 +11,15 @@ data class MongoSet(
 	var introduction: String?,
 	var price: Int,
 	val status: SetStatus,
-	val charts: MutableList<String>
+	val charts: MutableList<String>,
+
+	// `null` unless status is NEED_REVIEW
+	var reviews: MutableList<ReviewResult>? = null
+)
+
+@Serializable
+data class ReviewResult(
+	val reviewer: String,
+	val accepted: Boolean,
+	val rejectMessage: String? = null
 )

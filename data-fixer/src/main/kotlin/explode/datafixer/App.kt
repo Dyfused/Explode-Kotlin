@@ -7,21 +7,21 @@ import java.time.LocalDateTime
 fun main() {
 
 	println("Explode Data-Fixer")
-	println("Current available: ${DataFixers.values().map(DataFixers::name)}")
+	println("Current available: ${NamedDataFixer.values().map(NamedDataFixer::name)}")
 	println()
 
 	print("Use Data-Fixer[Default=MongoV0ToV1]: ")
 	val fixerName = readLine()
 
 	val fixer = runCatching {
-		if(fixerName == null || fixerName.isEmpty()) {
-			DataFixers.MongoV0ToV1
+		if(fixerName.isNullOrEmpty()) {
+			NamedDataFixer.MongoV0ToV1
 		} else {
-			DataFixers.valueOf(fixerName)
+			NamedDataFixer.valueOf(fixerName)
 		}
 	}.onFailure {
 		println("Cannot find $fixerName.")
-	}.getOrDefault(DataFixers.MongoV0ToV1)
+	}.getOrDefault(NamedDataFixer.MongoV0ToV1)
 
 	val startTiming = LocalDateTime.now()
 	fixer.fix()
@@ -29,14 +29,12 @@ fun main() {
 	println("Done (${Duration.between(startTiming, LocalDateTime.now()).toMillis()}ms)")
 }
 
-interface DataFixer {
+interface FixExecutor {
 	fun fix()
+	val versionBeforeFix: Int
+	val versionAfterFix: Int
 }
 
-enum class DataFixers : DataFixer {
-	MongoV0ToV1 {
-		override fun fix() {
-			MongoV0ToV1DataFixer.fix()
-		}
-	}
+enum class NamedDataFixer(private val fixer: FixExecutor) : FixExecutor by fixer {
+	MongoV0ToV1(MongoV0ToV1FixExecutor)
 }

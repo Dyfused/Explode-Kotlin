@@ -160,7 +160,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	): List<MongoSet> {
 		// logger.info("$limit, $skip, $searchedName, $showHidden, $showOfficial, $showRanked, $showUnranked")
 		return if(searchedName.isNotEmpty()) {
-			chartSetC.find("""{ "musicName": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
+			chartSetC.find((MongoSet::musicName).regex(searchedName, "i")).limit(limit).skip(skip).toList()
+			// chartSetC.find("""{ "musicName": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
 		} else if(showHidden) {
 			chartSetC.find(MongoSet::status eq SetStatus.HIDDEN).limit(limit).skip(skip).toList()
 		} else if(showReview) {
@@ -195,6 +196,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return chartSetC.find(filter).limit(limit).skip(skip).toList()
 	}
 
+	override fun getSets(limit: Int?, skip: Int?): Iterable<MongoSet> {
+		return chartSetC.find().apply {
+			skip?.let { skip(skip) }
+			limit?.let { limit(limit) }
+		}
+	}
+
 	@Serializable
 	data class PlayingData(
 		@SerialName("_id") val randomId: String,
@@ -224,6 +232,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 	}
 
+	/*
+	 * TODO v1.2.1: since the score is not the key to judge R, so the best R and the best score have change not on the same PlayRecord.
+	 *              So we store every play, and get the best R and best score by sorting and limiting the iterable.
+	 *              This is compatitable with the old version, but the problem is that the performance may be affected.
+	 */
 	private fun MongoUser.updatePlayerScoreOnChart(chartId: String, record: PlayRecordInput): MongoRecord {
 		// calculate R
 		val r = getChart(chartId)?.D?.let {
@@ -455,6 +468,20 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return AfterPlaySubmitModel(
 			RankingModel(needUpdate, RankModel(after!!.rank)), R, this.coin, this.diamond
 		)
+	}
+
+	override fun MongoUser.reviewSet(set: MongoSet, accepted: Boolean, rejectMessage: String?) {
+		if(set.status == SetStatus.NEED_REVIEW) {
+			set.reviews = set.reviews ?: mutableListOf()
+			set.reviews!! += ReviewResult(
+				this._id,
+				accepted,
+				rejectMessage
+			)
+			updateSet(set)
+		} else {
+			error("Invalid status of set: ${set._id}, NEED_REVIEW required.")
+		}
 	}
 
 	// UTILITIES

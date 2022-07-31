@@ -61,6 +61,13 @@ class Config(file: File) {
 		"Path of Bomb frontend."
 	).delegateString()
 
+	val dataVersionPath by config.get(
+		"data",
+		"data-structure-version-cache",
+		".explode_ver",
+		"Path of the Data Structure Version cache."
+	).delegateString()
+
 	fun save() = config.save()
 
 	private object ConfigPropertyDelegates {

@@ -8,11 +8,12 @@ import kotlinx.serialization.Serializable
 import org.litote.kmongo.*
 import java.time.OffsetDateTime
 
-object MongoV0ToV1DataFixer : DataFixer {
+object MongoV0ToV1FixExecutor : FixExecutor {
 
 	private lateinit var db: MongoDatabase
 
 	override fun fix() {
+		println("[MongoV0ToV1FixExecutor] Upgrading MongoDB.")
 
 		prepareDatabase()
 
@@ -20,6 +21,9 @@ object MongoV0ToV1DataFixer : DataFixer {
 		fixChartsAndSets()
 		fixPlayRecords()
 	}
+
+	override val versionBeforeFix: Int = 0
+	override val versionAfterFix: Int = 1
 
 	private fun prepareDatabase() {
 		print("Database URI (mongodb://localhost:27017): ")

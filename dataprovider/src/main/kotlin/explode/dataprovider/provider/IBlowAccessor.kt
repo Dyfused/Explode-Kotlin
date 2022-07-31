@@ -30,6 +30,8 @@ interface IBlowAccessor : IBlowReadOnly {
 		publishTimeOrder: Boolean
 	): List<MongoSet>
 
+	fun getSets(limit: Int? = null, skip: Int? = null): Iterable<MongoSet>
+
 
 	// updaters
 	fun updateUser(mongoUser: MongoUser): MongoUser
@@ -160,4 +162,6 @@ interface IBlowAccessor : IBlowReadOnly {
 	fun MongoUser.submitAfterAssessment(records: List<PlayRecordInput>, randomId: String): AfterAssessmentModel
 
 	fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel
+
+	fun MongoUser.reviewSet(set: MongoSet, accepted: Boolean, rejectMessage: String? = null)
 }
