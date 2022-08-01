@@ -16,6 +16,7 @@ import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.dataprovider.provider.mongo.RandomUtil.randomId
 import explode.dataprovider.provider.mongo.RandomUtil.randomIdUncrypted
 import kotlinx.serialization.*
+import org.bson.conversions.Bson
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -69,10 +70,39 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		chartId: String,
 		limit: Int,
 		skip: Int,
+		sort: RecordSort,
+		duplicate: Boolean
+	): Iterable<MongoRecord> = if(duplicate) {
+		getUserChartRecordDup(userId, chartId, limit, skip, sort)
+	} else {
+		getUserChartRecordNoDup(userId, chartId, limit, skip, sort)
+	}
+
+	private fun getUserChartRecordDup(
+		userId: String,
+		chartId: String,
+		limit: Int,
+		skip: Int,
 		sort: RecordSort
 	): Iterable<MongoRecord> =
 		playRecordC.find(and(MongoRecord::playerId eq userId, MongoRecord::chartId eq chartId))
 			.sort(descending(sort.prop)).limit(limit).skip(skip)
+
+	private fun getUserChartRecordNoDup(
+		userId: String,
+		chartId: String,
+		limit: Int,
+		skip: Int,
+		sort: RecordSort
+	): Iterable<MongoRecord> =
+		playRecordC.aggregate(
+			match(MongoRecord::chartId eq chartId, MongoRecord::playerId eq userId),
+			sort(descending(MongoRecord::playerId, sort.prop)),
+			aggregateGroup,
+			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
+			skip(skip),
+			limit(limit)
+		)
 
 	// setters
 	override fun updateUser(mongoUser: MongoUser): MongoUser = mongoUser.upsert(userC)
@@ -233,9 +263,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	/*
-	 * TODO v1.2.1: since the score is not the key to judge R, so the best R and the best score have change not on the same PlayRecord.
-	 *              So we store every play, and get the best R and best score by sorting and limiting the iterable.
-	 *              This is compatitable with the old version, but the problem is that the performance may be affected.
+	 * Update v1.2.1: since the score is not the key to judge R, so the best R and the best score have change not on the same PlayRecord.
+	 *                So we store every play, and get the best R and best score by sorting and limiting the iterable.
+	 *                This is compatitable with the old version, but the problem is that the performance may be affected.
 	 */
 	private fun MongoUser.updatePlayerScoreOnChart(chartId: String, record: PlayRecordInput): MongoRecord {
 		// calculate R
@@ -243,9 +273,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			detonate.calcR(it, record)
 		}
 
-		val old = getUserChartRecord(_id, chartId, 1, 0, RecordSort.SCORE).firstOrNull()
 		val new = MongoRecord(
-			_id = old?._id ?: randomId(),
+			_id = randomId(),
 			playerId = _id,
 			chartId = chartId,
 			score = record.score!!,
@@ -253,19 +282,20 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			uploadedTime = OffsetDateTime.now(),
 			RScore = r
 		)
-		if(old == null) {
-			playRecordC.insertOne(new)
-		} else {
-			if(old.score < new.score) { // should not update if score equals, in order to keep the time order.
-				playRecordC.updateOneById(old._id, new)
-			}
-		}
-		logger.info("Updated PlayRecord: $old => $new")
+		playRecordC.insertOne(new)
+		logger.info("Updated PlayRecord: $new")
 		return new
 	}
 
 	fun MongoUser.updatePlayerRValue() = apply {
-		R = getUserRecord(_id, 20, 0, RecordSort.SCORE).sumByDouble { it.RScore ?: 0.0 }.roundToInt()
+		R = playRecordC.aggregate<MongoRecord>(
+			match(MongoRecord::playerId eq _id),
+			sort(descending(MongoRecord::RScore)),
+			group(MongoRecord::chartId, Accumulators.first("data", ThisDocument)),
+			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
+			limit(20)
+		).sumByDouble { it.RScore ?: 0.0 }.roundToInt()
+
 		updateUser(this)
 	}
 
@@ -362,12 +392,22 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	private val aggregateRanking =
 		Aggregates.setWindowFields(null, MongoRecordRanked::score eq -1, WindowedComputations.rank("ranking"))
 
+	private val aggregateGroup = Aggregates.group(MongoRecord::playerId, Accumulators.first("data", ThisDocument))
+
+	private data class PlayRecordGroupingAggregationMiddleObject(
+		val data: MongoRecord
+	)
+
+	private fun <TExpression> replaceWith(value: TExpression): Bson = Aggregates.replaceWith(value)
+
 	override fun MongoUser.getPlayRankSelf(chartId: String): PlayRecordWithRank? {
-		val playerId = this._id
 		return playRecordC.aggregate<MongoRecordRanked>(
 			match(MongoRecordRanked::chartId eq chartId),
+			sort(descending(MongoRecordRanked::playerId, MongoRecordRanked::score)),
+			aggregateGroup,
+			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
 			aggregateRanking,
-			match(MongoRecordRanked::playerId eq playerId)
+			match(MongoRecordRanked::playerId eq _id)
 		).map { (_, _, _, score, detail, time, _, ranking) ->
 			val (perfect, good, miss) = detail
 			PlayRecordWithRank(this.shrink, PlayMod.Default, ranking, score, perfect, good, miss, time)
@@ -376,7 +416,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	override fun getPlayRank(chartId: String, limit: Int, skip: Int): List<PlayRecordWithRank> {
 		return playRecordC.aggregate<MongoRecordRanked>(
-			match(MongoRecordRanked::chartId eq chartId), aggregateRanking, skip(skip), limit(limit)
+			match(MongoRecordRanked::chartId eq chartId),
+			sort(descending(MongoRecordRanked::playerId, MongoRecordRanked::score)),
+			aggregateGroup,
+			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
+			aggregateRanking,
+			skip(skip),
+			limit(limit)
 		).map { (_, uid, _, score, detail, time, _, ranking) ->
 			val (perfect, good, miss) = detail
 			val user = getUser(uid) ?: error("Invalid user: $uid")
@@ -397,6 +443,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 	}
 
+	// TODO: Make Compatible with v1.2 Record Change
 	override fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<BombPlayRecordOfUser> {
 		return playRecordC.aggregate<MongoRecordRanked>(
 			aggregateRanking,
@@ -424,6 +471,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		//                like this 6c4mcbcvwiw0ayniuze90000.
 		//                And the actual chart ID need fixing ending up as 4 zeros as well.
 		val fixedChartId = if(config.applyUnencryptedFixes) chartId + "0000" else chartId
+
+		// check existance of the chart, in order to prevent the self-imported charts data infection.
+		checkNotNull(getChart(fixedChartId)) { "Invalid ChartId: $fixedChartId" }
+
 		val p = PlayingData(randomId(), fixedChartId, ppCost)
 		playingDataCache[p.randomId] = p
 		logger.info(

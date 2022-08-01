@@ -20,7 +20,7 @@ interface IBlowReadOnly {
 	fun getUserByToken(token: String): MongoUser?
 	fun getUserRecord(userId: String, limit: Int, skip: Int, sort: RecordSort): Iterable<MongoRecord>
 	fun getChartRecord(chartId: String, limit: Int, skip: Int, sort: RecordSort): Iterable<MongoRecord>
-	fun getUserChartRecord(userId: String, chartId: String, limit: Int, skip: Int, sort: RecordSort): Iterable<MongoRecord>
+	fun getUserChartRecord(userId: String, chartId: String, limit: Int, skip: Int, sort: RecordSort, duplicate: Boolean = false): Iterable<MongoRecord>
 
 	fun getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel>
 	fun getAssessmentRank(
