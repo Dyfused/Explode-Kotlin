@@ -70,6 +70,8 @@ fun Application.bombModule(
 				bombUserCrud(acc)
 
 				bombSetCrud(acc)
+
+				bombChartCrud(acc)
 			}
 		}
 	}
@@ -81,3 +83,13 @@ data class PostReviewSet(
 	val accepted: Boolean,
 	val rejectMessage: String? = null
 )
+
+internal fun <T> T.onNull(block: () -> Unit): T? {
+	if(this == null) { block() }
+	return this
+}
+
+internal fun <T> T.onNotNull(block: () -> Unit): T? {
+	if(this != null) { block() }
+	return this
+}

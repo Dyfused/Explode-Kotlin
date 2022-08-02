@@ -15,3 +15,16 @@ data class MongoRecord(
 	val uploadedTime: OffsetDateTime,
 	val RScore: Double?
 )
+
+@Serializable
+data class MongoRecordRanked(
+	val _id: String,
+	val playerId: String,
+	val chartId: String,
+	val score: Int,
+	val scoreDetail: ScoreDetail,
+	@Contextual
+	val uploadedTime: OffsetDateTime,
+	val RScore: Double?,
+	val ranking: Int
+)

@@ -8,8 +8,6 @@ import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.*
 import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.database.*
-import explode.dataprovider.model.extend.BombPlayRecordOfUser
-import explode.dataprovider.model.extend.BombPlayRecordResult
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
@@ -377,19 +375,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return null
 	}
 
-	@Serializable
-	private data class MongoRecordRanked(
-		val _id: String,
-		val playerId: String,
-		val chartId: String,
-		val score: Int,
-		val scoreDetail: ScoreDetail,
-		@Contextual
-		val uploadedTime: OffsetDateTime,
-		val RScore: Double?,
-		val ranking: Int
-	)
-
 	private val aggregateRanking =
 		Aggregates.setWindowFields(null, MongoRecordRanked::score eq -1, WindowedComputations.rank("ranking"))
 
@@ -431,31 +416,25 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}.toList()
 	}
 
-	override fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<BombPlayRecordOfUser> {
+	override fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked> {
 		return playRecordC.aggregate<MongoRecordRanked>(
 			aggregateRanking,
 			match(MongoRecordRanked::playerId eq _id),
 			sort(descending(MongoRecordRanked::uploadedTime)),
 			limit(limit),
 			skip(skip)
-		).map { (_, _, cid, score, detail, time, R, ranking) ->
-			val (perfect, good, miss) = detail
-			BombPlayRecordOfUser(cid, BombPlayRecordResult(score, perfect, good, miss, ranking), time, R)
-		}
+		)
 	}
 
 	// TODO: Make Compatible with v1.2 Record Change
-	override fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<BombPlayRecordOfUser> {
-		return playRecordC.aggregate<MongoRecordRanked>(
+	override fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked> {
+		return playRecordC.aggregate(
 			aggregateRanking,
 			match(MongoRecordRanked::playerId eq _id),
 			sort(descending(MongoRecordRanked::score)),
 			limit(limit),
 			skip(skip)
-		).map { (_, _, cid, score, detail, time, R, ranking) ->
-			val (perfect, good, miss) = detail
-			BombPlayRecordOfUser(cid, BombPlayRecordResult(score, perfect, good, miss, ranking), time, R)
-		}
+		)
 	}
 
 	override fun MongoUser.submitBeforeAssessment(assessmentId: String, medal: Int): BeforePlaySubmitModel {

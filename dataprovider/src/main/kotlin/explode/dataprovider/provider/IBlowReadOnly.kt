@@ -1,7 +1,6 @@
 package explode.dataprovider.provider
 
 import explode.dataprovider.model.database.*
-import explode.dataprovider.model.extend.BombPlayRecordOfUser
 import explode.dataprovider.model.game.*
 
 interface IBlowReadOnly {
@@ -35,8 +34,8 @@ interface IBlowReadOnly {
 		medalLevel: Int
 	): AssessmentRecordWithRankModel?
 	fun MongoUser.getPlayRankSelf(chartId: String): PlayRecordWithRank?
-	fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<BombPlayRecordOfUser>
-	fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<BombPlayRecordOfUser>
+	fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked>
+	fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked>
 
 	// transformers
 	val MongoUser.tunerize: UserModel

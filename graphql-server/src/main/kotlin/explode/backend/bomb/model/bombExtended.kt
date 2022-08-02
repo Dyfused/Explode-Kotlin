@@ -1,5 +1,6 @@
-package explode.dataprovider.model.extend
+package explode.backend.bomb.model
 
+import explode.dataprovider.model.database.SetStatus
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.OffsetDateTime
@@ -22,4 +23,15 @@ data class BombPlayRecordOfUser(
 	val result: BombPlayRecordResult,
 	@Contextual val uploaded: OffsetDateTime,
 	val R: Double?
+)
+
+@Serializable
+data class BombPayloadSetPatch(
+	val musicName: String? = null,
+	val composerName: String? = null,
+	val noterId: String? = null,
+	val introduction: String? = null,
+	val price: Int? = null,
+	val status: SetStatus? = null,
+	val charts: List<String>? = null
 )
