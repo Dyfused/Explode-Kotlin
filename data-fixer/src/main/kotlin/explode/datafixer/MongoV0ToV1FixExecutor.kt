@@ -10,12 +10,13 @@ import java.time.OffsetDateTime
 
 object MongoV0ToV1FixExecutor : FixExecutor {
 
-	private lateinit var db: MongoDatabase
+	private lateinit var dbOld: MongoDatabase
+	private lateinit var dbNew: MongoDatabase
 
 	override fun fix() {
 		println("[MongoV0ToV1FixExecutor] Upgrading MongoDB.")
 
-		prepareDatabase()
+		prepare()
 
 		fixUsers()
 		fixChartsAndSets()
@@ -25,13 +26,14 @@ object MongoV0ToV1FixExecutor : FixExecutor {
 	override val versionBeforeFix: Int = 0
 	override val versionAfterFix: Int = 1
 
-	private fun prepareDatabase() {
+	override fun prepare() {
 		print("Database URI (mongodb://localhost:27017): ")
 		val dbUri = readLine()?.takeIf { it.isNotEmpty() } ?: "mongodb://localhost:27017"
 		print("Database Name (Explode): ")
 		val dbName = readLine()?.takeIf { it.isNotEmpty() } ?: "Explode"
 		val cli = KMongo.createClient(dbUri)
-		db = cli.getDatabase(dbName)
+		dbOld = cli.getDatabase(dbName)
+		dbNew = cli.getDatabase(dbName+"_NEW")
 	}
 
 	private fun fixUsers() {
@@ -39,10 +41,10 @@ object MongoV0ToV1FixExecutor : FixExecutor {
 		@Serializable
 		class IdAndPassword(val _id: String, val password: String)
 
-		val oldColl = db.getCollection<UserModel>("User")
-		val newColl = db.getCollection<MongoUser>("User")
+		val oldColl = dbOld.getCollection<UserModel>("User")
+		val newColl = dbNew.getCollection<MongoUser>("User")
 
-		val oldPasswordColl = db.getCollection<IdAndPassword>("UserLogin")
+		val oldPasswordColl = dbOld.getCollection<IdAndPassword>("UserLogin")
 
 		oldColl.find().forEach {
 			val id = it._id
@@ -73,14 +75,14 @@ object MongoV0ToV1FixExecutor : FixExecutor {
 	}
 
 	// use afer [fixUsers] done.
-	private val users by lazy { db.getCollection<MongoUser>("User") }
+	private val users by lazy { dbNew.getCollection<MongoUser>("User") }
 
 	private fun fixChartsAndSets() {
-		val oldSetColl = db.getCollection<SetModel>("ChartSet")
-		val newSetColl = db.getCollection<MongoSet>("ChartSet")
+		val oldSetColl = dbOld.getCollection<SetModel>("ChartSet")
+		val newSetColl = dbNew.getCollection<MongoSet>("ChartSet")
 
-		val oldChartColl = db.getCollection<DetailedChartModel>("Chart")
-		val newChartColl = db.getCollection<MongoChart>("Chart")
+		val oldChartColl = dbOld.getCollection<DetailedChartModel>("Chart")
+		val newChartColl = dbNew.getCollection<MongoChart>("Chart")
 
 		oldSetColl.find().forEach { s ->
 			val id = s._id
@@ -133,8 +135,8 @@ object MongoV0ToV1FixExecutor : FixExecutor {
 			val currentR: Double?
 		)
 
-		val oldColl = db.getCollection<PlayRecordData>("PlayRecord")
-		val newColl = db.getCollection<MongoRecord>("PlayRecord")
+		val oldColl = dbOld.getCollection<PlayRecordData>("PlayRecord")
+		val newColl = dbNew.getCollection<MongoRecord>("PlayRecord")
 
 		oldColl.find().forEach {
 			val id = it._id

@@ -31,6 +31,7 @@ fun main() {
 
 interface FixExecutor {
 	fun fix()
+	fun prepare()
 	val versionBeforeFix: Int
 	val versionAfterFix: Int
 }
