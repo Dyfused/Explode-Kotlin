@@ -42,6 +42,17 @@ fun Route.bombUserCrud(acc: IBlowAccessor) {
 			}
 		}
 
+		post("register") {
+			val d = payload<BombPostLogin>()
+			kotlin.runCatching {
+				acc.registerUser(d.username, d.password)
+			}.onSuccess {
+				call.respondJson(OkResult(it))
+			}.onFailure {
+				call.respondJson(BadResult(it.message.orEmpty()), HttpStatusCode.BadRequest)
+			}
+		}
+
 		route("{userId}") {
 			get {
 				val uid = call.parameters["userId"] ?: return@get call.respondJson(

@@ -321,6 +321,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	override fun registerUser(username: String, password: String): MongoUser {
+		if(getUserByName(username) != null) error("Username exists.")
 		return createUser(username, password).apply {
 			logger.info("New User(name=$username, token=$token, password=$password) created.")
 		}
