@@ -2,7 +2,12 @@
 
 package explode.dataprovider.provider.mongo
 
+import TConfig.Configuration
+import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
+import explode.dataprovider.model.database.MongoSet
+import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.pack.v0.*
+import org.litote.kmongo.*
 import java.io.File
 import javax.swing.JOptionPane
 
@@ -16,6 +21,8 @@ fun main(args: Array<String>) {
 		export()
 	} else if("inspect" in args) {
 		inspect()
+	} else if("renewId" in args) {
+		renewId()
 	} else {
 		JOptionPane.showMessageDialog(null, "Invalid Operation")
 	}
@@ -192,4 +199,67 @@ private fun inspect() {
 	""".trimIndent()
 	println(message)
 	JOptionPane.showMessageDialog(null, message)
+}
+
+private fun renewId() {
+
+	val config = Configuration(File("./provider.cfg")).explode().toMongo()
+	val cli = KMongo.createClient(config.connectionString)
+	val old = cli.getDatabase(config.databaseName)
+	val new = cli.getDatabase(config.databaseName + "_ID_REPLACE")
+
+	val oldSets = old.getCollection<MongoSet>("ChartSet")
+	val newSets = new.getCollection<MongoSet>("ChartSet")
+
+	val metaPath = JOptionPane.showInputDialog("Pack Meta Path: ")
+	if(metaPath == null) {
+		JOptionPane.showMessageDialog(null, "We cannot help you if you don't give us the PackMeta.")
+		return
+	}
+	val metaFile = File(metaPath)
+	if(!metaFile.exists() || !metaFile.isFile) {
+		JOptionPane.showMessageDialog(null, "Invalid PackMeta file as it can be non-regular file or just missing.")
+		return
+	}
+
+	val packMeta = runCatching { MetaReader.readPackMetaJson(metaFile) }.onFailure {
+		JOptionPane.showMessageDialog(
+			null, "Error occurred when parsing PackMeta file: ${it.message}"
+		)
+	}.getOrThrow()
+
+	val warnings = mutableListOf<String>()
+	val count = packMeta.sets.count { set ->
+		val newId = set.id
+		val musicName = set.musicName
+
+		if(newId == null) {
+			println("Error: No ID presents for $musicName in pack metadata.")
+		} else {
+			val iter = oldSets.find(MongoSet::musicName eq musicName).toList()
+			warnings += if(iter.size > 1) {
+				println("Warning: ${set.musicName} matches multiple sets ${iter.map(MongoSet::_id)}. Skipped.")
+				"Warning: ${set.musicName} matches multiple sets ${iter.map(MongoSet::_id)}."
+			} else if(iter.isEmpty()) {
+				println("Warning: ${set.musicName} matches nothing. Skipped.")
+				"Warning: ${set.musicName} matches nothing."
+			} else {
+				val dbSet = iter.first()
+				val oldId = dbSet._id
+				val newSet = dbSet.copy(_id = newId)
+				newSets.insertOne(newSet)
+				println("${set.musicName} matched and updated $oldId to $newId.")
+				return@count true
+			}
+		}
+		false
+	}
+
+	val message = "Updated $count sets with ${warnings.size} error: "+warnings.joinToString("\n", "- ")
+	if(warnings.isNotEmpty()) {
+		File("warnings.txt").writeText(message)
+	}
+	println(message)
+	JOptionPane.showMessageDialog(null, message)
+
 }

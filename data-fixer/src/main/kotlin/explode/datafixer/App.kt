@@ -29,13 +29,18 @@ fun main() {
 	println("Done (${Duration.between(startTiming, LocalDateTime.now()).toMillis()}ms)")
 }
 
-interface FixExecutor {
+interface DataFixer {
 	fun fix()
 	fun prepare()
+}
+
+interface VersionedDataFixer : DataFixer {
+	override fun fix()
+	override fun prepare()
 	val versionBeforeFix: Int
 	val versionAfterFix: Int
 }
 
-enum class NamedDataFixer(private val fixer: FixExecutor) : FixExecutor by fixer {
-	MongoV0ToV1(MongoV0ToV1FixExecutor)
+enum class NamedDataFixer(private val fixer: VersionedDataFixer) : DataFixer by fixer {
+	MongoV0ToV1(MongoV0ToV1DataFixer)
 }

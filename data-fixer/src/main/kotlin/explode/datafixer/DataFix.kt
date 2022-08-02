@@ -2,7 +2,7 @@ package explode.datafixer
 
 import java.io.File
 
-class DataFixer(
+class DataFix(
 	private val versionNumberFile: File,
 	var compatibleVersion: Int
 ) {
@@ -19,7 +19,7 @@ class DataFixer(
 
 	companion object {
 		val FixExecutors = mutableMapOf(
-			0 to MongoV0ToV1FixExecutor
+			0 to MongoV0ToV1DataFixer
 		)
 	}
 

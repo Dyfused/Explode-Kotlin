@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import org.litote.kmongo.*
 import java.time.OffsetDateTime
 
-object MongoV0ToV1FixExecutor : FixExecutor {
+object MongoV0ToV1DataFixer : VersionedDataFixer {
 
 	private lateinit var dbOld: MongoDatabase
 	private lateinit var dbNew: MongoDatabase
