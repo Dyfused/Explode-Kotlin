@@ -43,10 +43,10 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 			limit!!.value,
 			skip!!.value,
 			musicTitle!!,
-			isHidden == 1,
-			isOfficial == 1,
 			isRanked == 1,
-			isRanked == -1,
+			isOfficial == 1,
+			false,
+			isHidden == 1,
 			playCountOrder == -1,
 			publishTimeOrder == -1
 		).map { it.tunerize }

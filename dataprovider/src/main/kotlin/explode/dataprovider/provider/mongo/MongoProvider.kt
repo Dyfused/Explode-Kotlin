@@ -186,7 +186,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		showUnranked: Boolean,
 		showReview: Boolean
 	): List<MongoSet> {
-		// logger.info("$limit, $skip, $searchedName, $showHidden, $showOfficial, $showRanked, $showUnranked")
 		return if(searchedName.isNotEmpty()) {
 			chartSetC.find((MongoSet::musicName).regex(searchedName, "i")).limit(limit).skip(skip).toList()
 			// chartSetC.find("""{ "musicName": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
