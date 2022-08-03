@@ -5,6 +5,7 @@ package explode.dataprovider.provider.mongo
 import TConfig.Configuration
 import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.database.MongoSet
+import explode.dataprovider.model.database.SetStatus
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.pack.v0.*
 import org.litote.kmongo.*
@@ -23,6 +24,8 @@ fun main(args: Array<String>) {
 		inspect()
 	} else if("renewId" in args) {
 		renewId()
+	} else if("updateStatusByD" in args) {
+		updateStatusByD()
 	} else {
 		JOptionPane.showMessageDialog(null, "Invalid Operation")
 	}
@@ -262,4 +265,23 @@ private fun renewId() {
 	println(message)
 	JOptionPane.showMessageDialog(null, message)
 
+}
+
+private fun updateStatusByD() {
+
+	val mp = MongoProvider()
+
+	val successCount = mp.getAllSets().count { set ->
+		val dExistanceCount = set.charts.mapNotNull { chartId -> mp.getChart(chartId) }.count { chart -> chart.D != null }
+		if(dExistanceCount == set.charts.size) { // all charts exist and have D value.
+			set.status = SetStatus.RANKED
+			mp.updateSet(set)
+			true
+		} else {
+			println("Warning: ${set.musicName}(${set._id}) has multiple charts missing or with no D value.")
+			false
+		}
+	}
+
+	println("Successfully updated status of $successCount charts to Ranked.")
 }
