@@ -45,6 +45,13 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 		"Value for calculating the gaining coin when player finishes a chart. The Greater this is, the Smaller result is."
 	).delegateInt()
 
+	val maxGainingCoin by config.get(
+		"mongodb-coin",
+		"max-gaining-coin",
+		2000,
+		"Value for calculating the gaining coin when player finishes a chart. The maximum number of each coin gaining. 0 to disable."
+	).delegateInt()
+
 	val resourceDirectory by config.get(
 		"mongodb-resource",
 		"resource-directory",

@@ -42,6 +42,8 @@ class Detonate(private val config: MongoExplodeConfig) {
 
 	private fun finishRateFactor(rate: Float) = rate.pow(2)
 
+	private val coinCap = config.maxGainingCoin > 0
+
 	fun calcGainCoin(isRanked: Boolean, difficultyLevel: Int, record: PlayRecordInput): Int {
 		if(!config.allowUnrankedCoin && !isRanked) {
 			return 0
@@ -68,7 +70,8 @@ class Detonate(private val config: MongoExplodeConfig) {
 //			TotalFactor:      ${difficultyFactor * playModeFactor * rateFactor * ( 1F / superCoinFactor ) }
 //		""".trimIndent())
 
-		return floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * (1F / config.superCoinFactor)).roundToInt() + 1
+		val beforeGap = floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * (1F / config.superCoinFactor)).roundToInt() + 1
+		return if(coinCap) min(beforeGap, config.maxGainingCoin) else beforeGap
 	}
 
 	val resourceProvider: BlowFileResourceProvider by lazy {
