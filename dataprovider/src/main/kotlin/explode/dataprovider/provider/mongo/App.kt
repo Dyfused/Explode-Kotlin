@@ -4,8 +4,7 @@ package explode.dataprovider.provider.mongo
 
 import TConfig.Configuration
 import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
-import explode.dataprovider.model.database.MongoSet
-import explode.dataprovider.model.database.SetStatus
+import explode.dataprovider.model.database.*
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.pack.v0.*
 import org.litote.kmongo.*
@@ -26,6 +25,8 @@ fun main(args: Array<String>) {
 		renewId()
 	} else if("updateStatusByD" in args) {
 		updateStatusByD()
+	} else if("loadDFromCsv" in args) {
+		loadCsvD()
 	} else {
 		JOptionPane.showMessageDialog(null, "Invalid Operation")
 	}
@@ -258,7 +259,7 @@ private fun renewId() {
 		false
 	}
 
-	val message = "Updated $count sets with ${warnings.size} error: "+warnings.joinToString("\n", "- ")
+	val message = "Updated $count sets with ${warnings.size} error: " + warnings.joinToString("\n", "- ")
 	if(warnings.isNotEmpty()) {
 		File("warnings.txt").writeText(message)
 	}
@@ -272,7 +273,8 @@ private fun updateStatusByD() {
 	val mp = MongoProvider()
 
 	val successCount = mp.getAllSets().count { set ->
-		val dExistanceCount = set.charts.mapNotNull { chartId -> mp.getChart(chartId) }.count { chart -> chart.D != null }
+		val dExistanceCount =
+			set.charts.mapNotNull { chartId -> mp.getChart(chartId) }.count { chart -> chart.D != null }
 		if(dExistanceCount == set.charts.size) { // all charts exist and have D value.
 			set.status = SetStatus.RANKED
 			mp.updateSet(set)
@@ -284,4 +286,87 @@ private fun updateStatusByD() {
 	}
 
 	println("Successfully updated status of $successCount charts to Ranked.")
+}
+
+private fun loadCsvD() {
+
+	val mp = MongoProvider()
+
+	val csvPath = JOptionPane.showInputDialog("Csv: ")
+	val csvFile = File(csvPath)
+
+	if(!csvFile.exists()) {
+		JOptionPane.showMessageDialog(null, "Error: Csv not exists.")
+		return
+	}
+
+	var errorMessages = mutableListOf<String>()
+
+	fun errorMsg(message: String) {
+		errorMessages += message
+	}
+
+	csvFile.readLines().forEachIndexed { lineNum, line ->
+		val parts = line.split(",")
+
+		val musicName = parts.getOrNull(0) ?: return@forEachIndexed errorMsg("Music not found at line $lineNum")
+		val difficultyAndD =
+			parts.getOrNull(1) ?: return@forEachIndexed errorMsg("Difficulty and R value not found at line $lineNum")
+
+		val left = difficultyAndD.indexOf('(')
+		val right = difficultyAndD.indexOf(')')
+
+		val diffStr = difficultyAndD.substring(0, left)
+		val dStr = difficultyAndD.substring(left + 1, right)
+
+		// println(diffStr)
+		// println(rStr)
+
+		val indSpace = diffStr.indexOf(' ')
+
+		val hardLevel = diffStr.substring(0, indSpace)
+		val hardValue = diffStr.substring(indSpace + 1)
+
+		val diffClass = when(hardLevel) {
+			"CASUAL" -> 1
+			"NORMAL" -> 2
+			"HARD" -> 3
+			"MEGA" -> 4
+			"GIGA" -> 5
+			else -> 0
+		}
+		val diffValue = hardValue.toIntOrNull()
+			?: return@forEachIndexed errorMsg("Invalid difficulty number $hardLevel at line $lineNum")
+		val d = dStr.toDoubleOrNull() ?: return@forEachIndexed errorMsg("Invalid R value $dStr at line $lineNum")
+
+		val sets = mp.getSetByName(musicName).toList()
+		if(sets.isEmpty()) {
+			errorMsg("No matched set found for name $musicName at line $lineNum")
+		}
+
+		val matchedChart = mutableListOf<MongoChart>()
+		sets.flatMap { set -> set.charts.mapNotNull { chart -> mp.getChart(chart) } }.forEach {
+			if(it.difficultyClass == diffClass && it.difficultyValue == diffValue) {
+				matchedChart += it
+			}
+		}
+
+		if(matchedChart.isEmpty()) {
+			errorMsg("No matched chart found for $musicName class  $diffClass and value $diffValue at line $lineNum")
+		} else if(matchedChart.size > 1) {
+			errorMsg("Too many matched chart found for $musicName class $diffClass and value $diffValue at line $lineNum, they are:")
+			matchedChart.forEach {
+				errorMsg("- ${it._id}")
+			}
+		} else {
+			val c = matchedChart[0]
+			c.D = d
+			println("Updated D of ${c._id} to $d")
+		}
+
+	}
+
+	val errorMsg = errorMessages.joinToString("\n")
+	File("warnings.txt").writeText(errorMsg)
+	JOptionPane.showMessageDialog(null, errorMsg)
 }

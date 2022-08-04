@@ -55,6 +55,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun getSetByChartId(chartId: String) =
 		chartSetC.findOne(MongoSet::charts contains chartId)
 
+	fun getSetByName(name: String): FindIterable<MongoSet> =
+		chartSetC.find(MongoSet::musicName eq name)
+
 	override fun getUserByName(username: String) = userC.findOne(MongoUser::username eq username)
 	override fun getUserByToken(token: String) = userC.findOne(MongoUser::token eq token)
 	override fun getUserRecord(userId: String, limit: Int, skip: Int, sort: RecordSort): FindIterable<MongoRecord> =
