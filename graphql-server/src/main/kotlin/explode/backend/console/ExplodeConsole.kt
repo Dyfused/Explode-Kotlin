@@ -1,6 +1,8 @@
+@file:JvmName("Console")
 package explode.backend.console
 
 import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.mongo.MongoProvider
 import kotlin.concurrent.thread
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
@@ -9,10 +11,18 @@ import kotlin.reflect.full.findAnnotation
 @Retention(AnnotationRetention.RUNTIME)
 annotation class SubCommand(val value: String = "", val desc: String = "")
 
+fun main() {
+	val mp = MongoProvider()
+	ExplodeConsole(mp).loop()
+}
+
 class ExplodeConsole(private val acc: IBlowAccessor) {
 
 	private val validFunctions = mutableMapOf<String, KFunction<Any?>>()
 	private val commandDescs = mutableMapOf<String, String>()
+
+	private val mp = acc as? MongoProvider
+	private val mpd = mp?.DangerZone()
 
 	init {
 		ExplodeConsole::class.declaredFunctions.forEach { func ->
@@ -81,6 +91,29 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		l.forEach {
 			println("[${it.rank}] ${it.player.username} - ${it.score}(${it.perfect}/${it.good}/${it.miss})")
 		}
+		return ""
+	}
+
+	@SubCommand(desc = "(/findSet <setName>) List the set in specified name.")
+	fun findSet(sp: List<String>): Any {
+		val setName = sp.toMutableList().apply { removeAt(0) }.joinToString(" ")
+		val sets = mp?.getSetByName(setName) ?: return "Invalid parameter: setName"
+
+		sets.forEach { set ->
+			println("<${set.musicName}> ${set._id}")
+			set.charts.mapNotNull(mp::getChart).forEach { chart ->
+				println("- <${chart._id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
+			}
+		}
+		return ""
+	}
+
+	@SubCommand(desc = "(/findChart <chartId>) List the chart in specified name.")
+	fun findChart(sp: List<String>): Any {
+		val chartId = sp.getOrNull(1) ?: return "Missing parameter: chartId"
+		val chart = mp?.getChart(chartId) ?: return "Invalid parameter: chartId"
+
+		println("- <${chart._id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
 		return ""
 	}
 

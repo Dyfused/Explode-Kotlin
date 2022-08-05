@@ -576,4 +576,14 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	val MongoUser.shrink: PlayerModel
 		get() = PlayerModel(_id, username, 0, R)
+
+
+
+	inner class DangerZone {
+
+		fun deleteSetById(id: String) {
+			chartSetC.deleteOneById(id)
+		}
+
+	}
 }

@@ -3,9 +3,12 @@
 package explode.dataprovider.provider.mongo
 
 import TConfig.Configuration
+import com.mongodb.client.model.UpdateOptions
 import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.database.*
+import explode.dataprovider.provider.compareCharts
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
+import explode.dataprovider.provider.mongo.RandomUtil.randomId
 import explode.pack.v0.*
 import org.litote.kmongo.*
 import java.io.File
@@ -27,6 +30,8 @@ fun main(args: Array<String>) {
 		updateStatusByD()
 	} else if("loadDFromCsv" in args) {
 		loadCsvD()
+	} else if("updateNeedReviewToUnranked" in args) {
+		updateNeedReviewToUnRanked()
 	} else {
 		JOptionPane.showMessageDialog(null, "Invalid Operation")
 	}
@@ -209,11 +214,12 @@ private fun renewId() {
 
 	val config = Configuration(File("./provider.cfg")).explode().toMongo()
 	val cli = KMongo.createClient(config.connectionString)
-	val old = cli.getDatabase(config.databaseName)
-	val new = cli.getDatabase(config.databaseName + "_ID_REPLACE")
+	val db = cli.getDatabase(config.databaseName)
 
-	val oldSets = old.getCollection<MongoSet>("ChartSet")
-	val newSets = new.getCollection<MongoSet>("ChartSet")
+	val mp = MongoProvider()
+
+	val oldSets = db.getCollection<MongoSet>("ChartSet")
+	val newSets = db.getCollection<MongoSet>("ChartSet")
 
 	val metaPath = JOptionPane.showInputDialog("Pack Meta Path: ")
 	if(metaPath == null) {
@@ -233,26 +239,47 @@ private fun renewId() {
 	}.getOrThrow()
 
 	val warnings = mutableListOf<String>()
-	val count = packMeta.sets.count { set ->
-		val newId = set.id
-		val musicName = set.musicName
+	val count = packMeta.sets.count { packSet ->
+		val newId = packSet.id
+		val musicName = packSet.musicName
 
 		if(newId == null) {
 			println("Error: No ID presents for $musicName in pack metadata.")
 		} else {
-			val iter = oldSets.find(MongoSet::musicName eq musicName).toList()
-			warnings += if(iter.size > 1) {
-				println("Warning: ${set.musicName} matches multiple sets ${iter.map(MongoSet::_id)}. Skipped.")
-				"Warning: ${set.musicName} matches multiple sets ${iter.map(MongoSet::_id)}."
-			} else if(iter.isEmpty()) {
-				println("Warning: ${set.musicName} matches nothing. Skipped.")
-				"Warning: ${set.musicName} matches nothing."
+			println("\nMUSIC <$musicName>")
+
+			val dbSets = mp.getSetByName(musicName).toList()
+			val matchedDbSets = mutableListOf<MongoSet>()
+			dbSets.forEach { dbSet ->
+				val packCharts = packSet.charts.map { MongoChart(randomId(), it.difficultyClass, it.difficultyValue, null) }
+				val dbCharts = dbSet.charts.mapNotNull { mp.getChart(it) }
+
+				if(compareCharts(packCharts, dbCharts)) {
+					matchedDbSets += dbSets
+				} else {
+					println("Compare failed")
+					println("$packCharts\n$dbCharts")
+				}
+			}
+
+			warnings += if(matchedDbSets.size > 1) {
+				"Warning: ${packSet.musicName} matches multiple sets ${matchedDbSets.map(MongoSet::_id)}."
+			} else if(matchedDbSets.isEmpty()) {
+				"Warning: ${packSet.musicName} matches nothing."
 			} else {
-				val dbSet = iter.first()
+				val dbSet = matchedDbSets.first()
 				val oldId = dbSet._id
 				val newSet = dbSet.copy(_id = newId)
-				newSets.insertOne(newSet)
-				println("${set.musicName} matched and updated $oldId to $newId.")
+				// 删除老数据
+				oldSets.deleteOneById(oldId)
+				// 添加新数据
+				newSets.updateOne(newSet, UpdateOptions().upsert(true))
+				// 更新文件，但是谱面不变
+				mp.getMusicResource(oldId)?.let { mp.addMusicResource(newId, it) }
+				mp.getPreviewResource(oldId)?.let { mp.addPreviewResource(newId, it) }
+				mp.getSetCoverResource(oldId)?.let { mp.addSetCoverResource(newId, it) }
+				mp.getStorePreviewResource(oldId)?.let { mp.addStorePreviewResource(newId, it) }
+				println("${packSet.musicName} matched and updated $oldId to $newId.")
 				return@count true
 			}
 		}
@@ -300,13 +327,14 @@ private fun loadCsvD() {
 		return
 	}
 
-	var errorMessages = mutableListOf<String>()
+	val errorMessages = mutableListOf<String>()
 
 	fun errorMsg(message: String) {
 		errorMessages += message
 	}
 
-	csvFile.readLines().forEachIndexed { lineNum, line ->
+	csvFile.readLines().forEachIndexed { index, line ->
+		val lineNum = index + 1
 		val parts = line.split(",")
 
 		val musicName = parts.getOrNull(0) ?: return@forEachIndexed errorMsg("Music not found at line $lineNum")
@@ -316,6 +344,10 @@ private fun loadCsvD() {
 		val left = difficultyAndD.indexOf('(')
 		val right = difficultyAndD.indexOf(')')
 
+		if(left == -1 || right == -1) {
+			return@forEachIndexed errorMsg("Invalid difficulty and D [$difficultyAndD] at line $lineNum [L=$left, R=$right]")
+		}
+
 		val diffStr = difficultyAndD.substring(0, left)
 		val dStr = difficultyAndD.substring(left + 1, right)
 
@@ -323,6 +355,10 @@ private fun loadCsvD() {
 		// println(rStr)
 
 		val indSpace = diffStr.indexOf(' ')
+
+		if(indSpace == -1) {
+			return@forEachIndexed errorMsg("Invalid difficulty space [$diffStr] at line $lineNum")
+		}
 
 		val hardLevel = diffStr.substring(0, indSpace)
 		val hardValue = diffStr.substring(indSpace + 1)
@@ -336,12 +372,12 @@ private fun loadCsvD() {
 			else -> 0
 		}
 		val diffValue = hardValue.toIntOrNull()
-			?: return@forEachIndexed errorMsg("Invalid difficulty number $hardLevel at line $lineNum")
-		val d = dStr.toDoubleOrNull() ?: return@forEachIndexed errorMsg("Invalid R value $dStr at line $lineNum")
+			?: return@forEachIndexed errorMsg("Invalid difficulty number [$hardLevel] at line $lineNum")
+		val d = dStr.toDoubleOrNull() ?: return@forEachIndexed errorMsg("Invalid R value [$dStr] at line $lineNum")
 
 		val sets = mp.getSetByName(musicName).toList()
 		if(sets.isEmpty()) {
-			errorMsg("No matched set found for name $musicName at line $lineNum")
+			return@forEachIndexed errorMsg("No matched set found for name [$musicName] at line $lineNum [D=$d]")
 		}
 
 		val matchedChart = mutableListOf<MongoChart>()
@@ -352,16 +388,17 @@ private fun loadCsvD() {
 		}
 
 		if(matchedChart.isEmpty()) {
-			errorMsg("No matched chart found for $musicName class  $diffClass and value $diffValue at line $lineNum")
+			errorMsg("No matched chart found for [$musicName] class [$diffClass] and value [$diffValue] at line $lineNum [D=$d]")
 		} else if(matchedChart.size > 1) {
-			errorMsg("Too many matched chart found for $musicName class $diffClass and value $diffValue at line $lineNum, they are:")
+			errorMsg("Too many matched chart found for [$musicName] class [$diffClass] and value [$diffValue] at line $lineNum [D=$d], they are: ")
 			matchedChart.forEach {
 				errorMsg("- ${it._id}")
 			}
 		} else {
 			val c = matchedChart[0]
 			c.D = d
-			println("Updated D of ${c._id} to $d")
+			mp.updateChart(c)
+			println("Updated D of [${c._id}] to [$d]")
 		}
 
 	}
@@ -369,4 +406,16 @@ private fun loadCsvD() {
 	val errorMsg = errorMessages.joinToString("\n")
 	File("warnings.txt").writeText(errorMsg)
 	JOptionPane.showMessageDialog(null, errorMsg)
+}
+
+private fun updateNeedReviewToUnRanked() {
+	val mp = MongoProvider()
+
+	mp.getAllSets().forEach {
+		if(it.status == SetStatus.NEED_REVIEW) {
+			it.status = SetStatus.UNRANKED
+			mp.updateSet(it)
+			println("Set ${it.musicName}<${it._id}> to UnRanked.")
+		}
+	}
 }
