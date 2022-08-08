@@ -96,6 +96,21 @@ fun Route.bombUserCrud(acc: IBlowAccessor) {
 				}
 			}
 
+			get("best20r") {
+				val uid = call.parameters["userId"] ?: return@get call.respondJson(
+					BadResult("Undefined userId."),
+					HttpStatusCode.BadRequest
+				)
+				acc.getUser(uid) ?: return@get call.respondJson(
+					BadResult("Requested user not found."),
+					HttpStatusCode.NotFound
+				)
+				with(acc) {
+					val d = (this as? MongoProvider)?.getUserBestR20(uid)?.toList() ?: emptyList()
+					call.respondJson(OkResult(d))
+				}
+			}
+
 			post("update-r") {
 				val uid = call.parameters["userId"] ?: return@post call.respondJson(
 					BadResult("Undefined userId."),

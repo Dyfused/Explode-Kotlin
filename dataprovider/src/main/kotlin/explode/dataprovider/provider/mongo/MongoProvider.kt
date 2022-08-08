@@ -199,7 +199,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		} else if(showOfficial) {
 			chartSetC.find(MongoSet::status eq SetStatus.OFFICIAL).limit(limit).skip(skip).toList()
 		} else if(showRanked) {
-			chartSetC.find(or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL)).limit(limit).skip(skip).toList()
+			chartSetC.find(or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL))
+				.limit(limit).skip(skip).toList()
 		} else if(showUnranked) {
 			chartSetC.find(MongoSet::status eq SetStatus.UNRANKED).limit(limit).skip(skip).toList()
 		} else {
@@ -287,14 +288,18 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return new
 	}
 
-	fun MongoUser.updatePlayerRValue() = apply {
-		R = playRecordC.aggregate<MongoRecord>(
-			match(MongoRecord::playerId eq _id),
+	fun getUserBestR20(userId: String) =
+		playRecordC.aggregate<MongoRecord>(
+			match(MongoRecord::playerId eq userId),
 			sort(descending(MongoRecord::RScore)),
 			group(MongoRecord::chartId, Accumulators.first("data", ThisDocument)),
 			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
+			sort(descending(MongoRecord::RScore)),
 			limit(20)
-		).sumByDouble { it.RScore ?: 0.0 }.roundToInt()
+		)
+
+	fun MongoUser.updatePlayerRValue() = apply {
+		R = getUserBestR20(_id).sumByDouble { it.RScore ?: 0.0 }.roundToInt()
 
 		updateUser(this)
 	}
@@ -503,11 +508,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		)
 	}
 
-	override fun MongoUser.reviewSet(set: MongoSet, accepted: Boolean, rejectMessage: String?) {
+	override fun reviewSet(set: MongoSet, user: MongoUser, accepted: Boolean, rejectMessage: String?) {
 		if(set.status == SetStatus.NEED_REVIEW) {
 			set.reviews = set.reviews ?: mutableListOf()
 			set.reviews!! += ReviewResult(
-				this._id,
+				user._id,
 				accepted,
 				rejectMessage
 			)
@@ -576,7 +581,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	val MongoUser.shrink: PlayerModel
 		get() = PlayerModel(_id, username, 0, R)
-
 
 
 	inner class DangerZone {

@@ -35,3 +35,7 @@ data class BombPayloadSetPatch(
 	val status: SetStatus? = null,
 	val charts: List<String>? = null
 )
+
+data class BombPayloadReview(
+	val review: String
+)

@@ -99,7 +99,7 @@ fun Application.dynamiteResourceModule(blowResource: IBlowResourceProvider) {
 				}
 			}
 			get("/cover/480x270_jpg/{setId}") {
-				val id = this.call.parameters["chartId"]
+				val id = this.call.parameters["setId"]
 				val f = blowResource.getStorePreviewResource(id)
 				if(f != null) {
 					call.respondBytes(f)

@@ -13,7 +13,7 @@ import kotlinx.serialization.decodeFromString
 
 fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) {
 
-	post<PostSetAndChartMeta>("upload") {
+	post("upload") {
 		try { // fast-fail
 
 			lateinit var meta: PostSetAndChartMeta

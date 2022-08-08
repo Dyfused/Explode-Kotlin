@@ -70,6 +70,10 @@ fun Route.bombSetCrud(acc: IBlowAccessor) {
 					call.respondJson(BadResultWithData(errorMessages.joinToString("\n"), set))
 				}
 			}
+
+			post("review") {
+				TODO("The logic of reviewing the set.")
+			}
 		}
 	}
 }
