@@ -1,4 +1,4 @@
-package explode.dataprovider.provider.mongo
+package explode.dataprovider.serializers
 
 import kotlinx.serialization.*
 import kotlinx.serialization.encoding.Decoder
@@ -7,7 +7,7 @@ import java.io.File
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializer(File::class)
-class KFileSerializer : KSerializer<File> {
+object KFileSerializer : KSerializer<File> {
 
 	override fun deserialize(decoder: Decoder): File {
 		return File(decoder.decodeString())

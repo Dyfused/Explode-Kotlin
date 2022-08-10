@@ -1,0 +1,188 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Bomb",
+    "description": "The backend of Explode for bot developers.",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:10443",
+      "description": "Localhost"
+    }
+  ],
+  "paths": {
+    "/bomb/upload": {
+      "post": {
+        "summary": "Upload a full chart set with file and meta info.",
+        "description": "Receive a Multipart data with a part named 'chart-data' with serialized meta. Required files are named in meta.",
+        "responses": {
+          "200": {
+            "description": "Successful created the new chart set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mongo_set"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Required data or files are not received or processed properly."
+          }
+        }
+      }
+    },
+    "/bomb/user/{userId}": {
+      "get": {
+        "summary": "Get user info.",
+        "parameters": [{
+          "name": "userId",
+          "in": "path",
+          "description": "The ID of the specific user.",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "example": "f6fe9c4d-98e6-450a-937c-d64848eacc40"
+        }],
+        "responses": {
+          "200": {
+            "description": "Successfully found the user and respond with it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mongo_user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bomb/user/{userId}/best20": {
+      "get": {
+        "summary": "Get the best 20 record of the specific user.",
+        "parameters": [{
+          "name": "userId",
+          "in": "path",
+          "description": "The ID of the specific user.",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "example": "f6fe9c4d-98e6-450a-937c-d64848eacc40"
+        }]
+        
+      }
+    },
+    "/bomb/user/{userId}/best20r": {
+      "get": {
+        "summary": "Get the best 20 R record of the specific user.",
+        "parameters": [{
+          "name": "userId",
+          "in": "path",
+          "description": "The ID of the specific user.",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "example": "f6fe9c4d-98e6-450a-937c-d64848eacc40"
+        }]
+      }
+    },
+    "/bomb/user/{userId}/last20": {
+      "get": {
+        "summary": "Get the last 20 record of the specific user.",
+        "parameters": [{
+          "name": "userId",
+          "in": "path",
+          "description": "The ID of the specific user.",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "example": "f6fe9c4d-98e6-450a-937c-d64848eacc40"
+        }]
+      }
+    },
+    "/bomb/user/{userId}/update-r": {
+      "post": {
+        "summary": "Refresh the R value of the specific user.",
+        "responses": {
+          "200": {
+            "description": "Successfully found the user and respond with it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mongo_user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bomb/user/search/{username}": {
+      "post": {
+        "summary": "Search the user by name.",
+        "responses": {
+          "200": {
+            "description": "Successfully found the specific user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mongo_user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bomb/user/login": {
+      "post": {
+        "summary": "Login the username and password.",
+        "responses": {
+          "200": {
+            "description": "Successfully logined.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mongo_user"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bomb/user/register": {
+      "post": {
+        "summary": "Register the username and password.",
+        "responses": {
+          "200": {
+            "description": "Successfully registered the user with specific username and password.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mongo_user"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "mongo_set": {
+        "type": "object"
+      },
+      "mongo_user": {
+        "type": "object"
+      }
+    }
+  }
+}

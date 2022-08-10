@@ -8,7 +8,6 @@ import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.database.*
 import explode.dataprovider.provider.compareCharts
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
-import explode.dataprovider.provider.mongo.RandomUtil.randomId
 import explode.pack.v0.*
 import org.litote.kmongo.*
 import java.io.File

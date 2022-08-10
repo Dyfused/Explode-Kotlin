@@ -7,7 +7,8 @@ import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
 import explode.datafixer.DataFix
-import explode.dataprovider.provider.*
+import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.IBlowResourceProvider
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.utils.Config
@@ -52,23 +53,13 @@ fun main(args: Array<String>) {
 	// prepare data
 	val m = MongoProvider()
 
-	@Suppress("DEPRECATION") // no warning to set
-	run {
-		blow = m
-		blowAccess = m
-		blowResource = m
-	}
-
 	val operation = args.getOrNull(0)
-
-	Json {
-		ignoreUnknownKeys = true
-	}
 
 	ExplodeConsole(m).loop()
 
 	when(operation) {
 		"backend", null -> startKtorServer(m, m)
+		"console" -> { /* Console Only */ }
 		else -> println("Unknown subcommand: $operation")
 	}
 
@@ -89,7 +80,6 @@ private fun disableGraphQLLogging() {
 }
 
 private fun startKtorServer(dataProvider: IBlowAccessor, resourceProvider: IBlowResourceProvider) {
-	// EngineMain.main(args) // deprecated since it is not allowed to modify the port in the code.
 	mainLogger.info("Backend Port: ${explodeConfig.port}")
 	mainLogger.info("GraphQl PlayGround: ${explodeConfig.enablePlayground}")
 	mainLogger.info("Done! (${Duration.between(theVeryBeginningTime, LocalDateTime.now()).toMillis()}ms)")
@@ -117,26 +107,11 @@ val globalJson = Json {
 	}
 }
 
-/**
- * set to 'true' for following behaviors:
- *   - print every GraphQL request body
- */
-const val DebugMode = true
-
 const val GameVersion = 81
 
 /**
- * This field is used to construct the Schema.
+ * Read the prepared data in resource.
  */
-@Deprecated("Legacy")
-lateinit var blow: IBlowAccessor
-
-@Deprecated("Legacy")
-lateinit var blowAccess: IBlowReadOnly
-
-@Deprecated("Legacy")
-lateinit var blowResource: IBlowResourceProvider
-
 private val ExplodeInfo by lazy {
 	val cl = object {}.javaClass.classLoader
 	val jsonContent = cl.getResource("explode.json")?.readText() ?: "{}"

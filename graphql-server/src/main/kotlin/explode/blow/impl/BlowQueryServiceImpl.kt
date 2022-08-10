@@ -5,6 +5,7 @@ import explode.blow.*
 import explode.blow.BlowUtils.soudayo
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.fail
 import graphql.schema.DataFetchingEnvironment
 
 class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
@@ -79,7 +80,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 	}
 
 	override suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel = with(p) {
-		return p.getSet(_id!!)?.tunerize ?: error("Invalid setId: $_id")
+		return p.getSet(_id!!)?.tunerize ?: fail("Invalid setId: $_id")
 	}
 
 	override suspend fun userByUsername(env: DataFetchingEnvironment, username: String?): UserModel? = with(p) {

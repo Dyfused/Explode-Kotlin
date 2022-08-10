@@ -1,9 +1,8 @@
-package explode.dataprovider.provider.mongo
+package explode.dataprovider.detonate
 
-import explode.dataprovider.detonate.RCalculator
 import thirdparty.crazy_bull.CrazyBullRCalculator
 
-enum class RCalcAlgorithms : RCalculator {
+enum class RCalculators : RCalculator {
 	Simple {
 		override fun calculateRScore(D: Double, perfect: Int, good: Int, miss: Int): Double {
 			val acc = (perfect + (good / 2)) / (perfect + good + miss)

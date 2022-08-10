@@ -2,6 +2,7 @@ package explode.dataprovider.provider.mongo
 
 import TConfig.Configuration
 import explode.dataprovider.detonate.ExplodeConfig
+import explode.dataprovider.detonate.RCalculators
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateBoolean
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateInt
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateString
@@ -25,7 +26,7 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 	val allowUnrankedCoin by config.get(
 		"mongodb-coin",
 		"allow-unranked-coin",
-		true,
+		false, // some charts leveling with insane number can cause coin to overflow.
 		"True to enable coin gaining when player finishes a Unranked chart."
 	).delegateBoolean()
 
@@ -83,8 +84,8 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 	val rScoreAlgorithm by config.get(
 		"mongo-r",
 		"r-score-algorithm",
-		RCalcAlgorithms.CrazyBull.name,
-		"The algorithm to calculate the R score. ${RCalcAlgorithms.values().map(RCalcAlgorithms::name)}"
+		RCalculators.CrazyBull.name,
+		"The algorithm to calculate the R score. ${RCalculators.values().map(RCalculators::name)}"
 	).delegateString()
 
 	init {

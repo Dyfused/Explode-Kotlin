@@ -21,9 +21,6 @@ object DifficultyUtils {
 	fun Int.toDifficultyClassStr() = DifficultyIntStringMapping.getOrElse(this) { "unknown" }
 }
 
-internal fun String.toFuzzySearch() =
-	"{ \$regex: \"$this\", \$options: \"\$i\" }"
-
 enum class RecordSort(val prop: KProperty<*>) {
 	TIME(MongoRecord::uploadedTime),
 	SCORE(MongoRecord::score);

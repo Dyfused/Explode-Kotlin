@@ -11,8 +11,6 @@ import explode.dataprovider.model.database.*
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
-import explode.dataprovider.provider.mongo.RandomUtil.randomId
-import explode.dataprovider.provider.mongo.RandomUtil.randomIdUncrypted
 import kotlinx.serialization.*
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
@@ -317,16 +315,16 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override val gameSetting = GameSettingModel(81)
 
 	override fun loginUser(username: String, password: String): MongoUser {
-		val u = getUserByName(username) ?: error("Invalid username.")
+		val u = getUserByName(username) ?: fail("Invalid username.")
 		return if(u.password == password) {
 			u
 		} else {
-			error("Invalid password.")
+			fail("Invalid password.")
 		}
 	}
 
 	override fun registerUser(username: String, password: String): MongoUser {
-		if(getUserByName(username) != null) error("Username exists.")
+		if(getUserByName(username) != null) fail("Username exists.")
 		return createUser(username, password).apply {
 			logger.info("New User(name=$username, token=$token, password=$password) created.")
 		}
@@ -358,7 +356,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	fun getAllSets(): FindIterable<MongoSet> = chartSetC.find()
 
 	override fun MongoUser.buySet(id: String): ExchangeSetModel {
-		val s = getSet(id) ?: error("Invalid set: $id")
+		val s = getSet(id) ?: fail("Invalid set: $id")
 
 		// already bought
 		if(id in ownedSets) return ExchangeSetModel(this.coin)
@@ -372,7 +370,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			logger.info("User[${this.username}] bought ChartSet[${s.musicName}](${s._id}) cost ${s.price} remaining ${coin}.")
 			return ExchangeSetModel(this.coin)
 		} else {
-			error("You lack money!")
+			fail("You lack of money!")
 		}
 	}
 
@@ -418,13 +416,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			limit(limit)
 		).map { (_, uid, _, score, detail, time, _, ranking) ->
 			val (perfect, good, miss) = detail
-			val user = getUser(uid) ?: error("Invalid user: $uid")
+			val user = getUser(uid) ?: fail("Invalid user: $uid")
 			PlayRecordWithRank(user.shrink, PlayMod.Default, ranking, score, perfect, good, miss, time)
 		}.toList()
 	}
 
 	override fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked> {
-		return playRecordC.aggregate<MongoRecordRanked>(
+		return playRecordC.aggregate(
 			aggregateRanking,
 			match(MongoRecordRanked::playerId eq _id),
 			sort(descending(MongoRecordRanked::uploadedTime)),
@@ -464,12 +462,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 		val p = PlayingData(randomId(), fixedChartId, ppCost)
 		playingDataCache[p.randomId] = p
+		val expireTime = p.createTime + Duration.ofHours(1)
 		logger.info(
-			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires at ${
-				p.createTime + Duration.ofHours(
-					1
-				)
-			}. [${p.randomId}]"
+			"User[${this.username}] submited a play request of ChartSet[id=$chartId], expires at ${expireTime}. [${p.randomId}]"
 		)
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(p.randomId))
 	}
@@ -481,7 +476,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	override fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel {
-		val p = playingDataCache[randomId] ?: error("Invalid randomId($randomId)")
+		val p = playingDataCache[randomId] ?: fail("Invalid randomId($randomId)")
 
 		val chartId = p.chartId
 
@@ -497,8 +492,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val needUpdate = before == null || before.rank != after!!.rank
 
 		// get coins
-		val chartSet = getSetByChartId(chartId) ?: error("Invalid Chart: cannot find the set by chart($chartId)")
-		val chart = getChart(chartId) ?: error("Invalid chart: cannot find chart($chartId)")
+		val chartSet = getSetByChartId(chartId) ?: fail("Invalid Chart: cannot find the set by chart($chartId)")
+		val chart = getChart(chartId) ?: fail("Invalid chart: cannot find chart($chartId)")
 		val coinDiff = detonate.calcGainCoin(chartSet.status.isRanked, chart.difficultyValue, record)
 		this.coin = this.coin + coinDiff
 		updateUser(this)
@@ -518,7 +513,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			)
 			updateSet(set)
 		} else {
-			error("Invalid status of set: ${set._id}, NEED_REVIEW required.")
+			fail("Invalid status of set: ${set._id}, NEED_REVIEW required.")
 		}
 	}
 
@@ -542,7 +537,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	override val MongoChart.tunerize: DetailedChartModel
 		get() {
-			val s = getSetByChartId(_id) ?: error("Invalid chart($_id): not included in a set.")
+			val s = getSetByChartId(_id) ?: fail("Invalid chart($_id): not included in a set.")
 			return DetailedChartModel(
 				_id = _id,
 				charter = (getUser(s.noterId) ?: serverUser).tunerize,

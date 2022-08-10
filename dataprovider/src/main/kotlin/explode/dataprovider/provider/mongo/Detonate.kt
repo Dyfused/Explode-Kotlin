@@ -1,6 +1,7 @@
 package explode.dataprovider.provider.mongo
 
 import explode.dataprovider.detonate.RCalculator
+import explode.dataprovider.detonate.RCalculators
 import explode.dataprovider.model.game.PlayRecordInput
 import explode.dataprovider.provider.BlowFileResourceProvider
 import org.slf4j.LoggerFactory
@@ -29,9 +30,9 @@ class Detonate(private val config: MongoExplodeConfig) {
 	private val rCalc: RCalculator
 
 	init {
-		rCalc = runCatching { RCalcAlgorithms.valueOf(config.rScoreAlgorithm) }.getOrElse {
+		rCalc = runCatching { RCalculators.valueOf(config.rScoreAlgorithm) }.getOrElse {
 			logger.warn("Cannot find R-Calc-Algorithm: ${config.rScoreAlgorithm}, fallback to 'Simple'.")
-			RCalcAlgorithms.Simple
+			RCalculators.Simple
 		}
 	}
 
@@ -60,15 +61,6 @@ class Detonate(private val config: MongoExplodeConfig) {
 		val rateFactor = finishRateFactor(rate)
 		val difficultyFactor = levelFactor(difficultyLevel)
 		val playModeFactor = playModeFactor(record.mod?.isBleed, record.mod?.isMirror)
-
-//		println("""
-//			Basic:            $basicCoin
-//			DifficultyFactor: $difficultyFactor
-//			PlayModeFactor:   $playModeFactor
-//			FinishRateFactor: $rateFactor
-//			SuperFactor:      ${ 1F / superCoinFactor }
-//			TotalFactor:      ${difficultyFactor * playModeFactor * rateFactor * ( 1F / superCoinFactor ) }
-//		""".trimIndent())
 
 		val beforeGap = floor(basicCoin * difficultyFactor * playModeFactor * rateFactor * (1F / config.superCoinFactor)).roundToInt() + 1
 		return if(coinCap) min(beforeGap, config.maxGainingCoin) else beforeGap
