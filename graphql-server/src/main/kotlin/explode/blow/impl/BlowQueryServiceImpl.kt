@@ -84,7 +84,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 	}
 
 	override suspend fun userByUsername(env: DataFetchingEnvironment, username: String?): UserModel? = with(p) {
-		return p.getUser(username!!)?.tunerize
+		return p.getUserByName(username!!)?.tunerize
 	}
 
 	override suspend fun playRank(env: DataFetchingEnvironment, chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank> {
