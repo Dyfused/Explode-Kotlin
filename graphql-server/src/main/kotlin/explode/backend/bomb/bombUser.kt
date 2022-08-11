@@ -2,17 +2,20 @@ package explode.backend.bomb
 
 import explode.backend.payload
 import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.IBlowResourceProvider
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.globalJson
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 
-fun Route.bombUserCrud(acc: IBlowAccessor) {
+fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 
 	@Serializable
 	data class BombPostLogin(val username: String, val password: String)
@@ -127,6 +130,29 @@ fun Route.bombUserCrud(acc: IBlowAccessor) {
 					}
 				} else {
 					call.respondJson(BadResult("Unsupported operation."), HttpStatusCode.ServiceUnavailable)
+				}
+			}
+
+			post("avatar") {
+				val uid = call.parameters["userId"] ?: return@post call.respondJson(
+					BadResult("Undefined userId."),
+					HttpStatusCode.BadRequest
+				)
+				acc.getUser(uid) ?: return@post call.respondJson(
+					BadResult("Requested user not found."),
+					HttpStatusCode.NotFound
+				)
+				var success = false
+				call.receiveMultipart().forEachPart {
+					if(it.name == "avatar" && it is PartData.FileItem) {
+						res.addUserAvatarResource(uid, it.provider().readBytes())
+						success = true
+					}
+				}
+				if(success) {
+					call.respondJson(OkResult("Done."))
+				} else {
+					call.respondJson(BadResult("Avatar not found."), HttpStatusCode.BadRequest)
 				}
 			}
 

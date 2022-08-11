@@ -44,10 +44,11 @@
 			</form>
 		</div>
 	</body>
+	<script src="js/bomb.js"></script>
 	<script>
 		$("#btn-submit").on("click", () => {
 			$.ajax({
-				url: "http://localhost:10443/bomb/user/register",
+				url: `${BOMB.endpoint}/bomb/user/register`,
                 method: 'post',
 				data: JSON.stringify({
 					username: $("#username").val(),

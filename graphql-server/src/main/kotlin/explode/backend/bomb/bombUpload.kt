@@ -3,6 +3,7 @@ package explode.backend.bomb
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.IBlowResourceProvider
 import explode.globalJson
+import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -67,9 +68,9 @@ fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) {
 					?.let { res.addStorePreviewResource(_id, it) }
 			}
 
-			call.respondJson(mapOf("data" to s))
+			call.respondJson(OkResult(s))
 		} catch(ex: IllegalStateException) {
-			call.respondJson(mapOf("error" to ex.message))
+			call.respondJson(BadResult(ex.message.orEmpty()), HttpStatusCode.BadRequest)
 		}
 	}
 

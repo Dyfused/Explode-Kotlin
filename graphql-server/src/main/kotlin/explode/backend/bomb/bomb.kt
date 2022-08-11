@@ -67,7 +67,7 @@ fun Application.bombModule(
 				// /bomb/upload - POST
 				bombUpload(acc, res)
 
-				bombUserCrud(acc)
+				bombUserCrud(acc, res)
 
 				bombSetCrud(acc)
 
