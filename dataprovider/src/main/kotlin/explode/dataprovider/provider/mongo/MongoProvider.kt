@@ -187,23 +187,24 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		showUnranked: Boolean,
 		showReview: Boolean
 	): List<MongoSet> {
-		return if(searchedName.isNotEmpty()) {
-			chartSetC.find((MongoSet::musicName).regex(searchedName, "i")).limit(limit).skip(skip).toList()
-			// chartSetC.find("""{ "musicName": ${searchedName.toFuzzySearch()} }""").limit(limit).skip(skip).toList()
-		} else if(showHidden) {
-			chartSetC.find(MongoSet::status eq SetStatus.HIDDEN).limit(limit).skip(skip).toList()
-		} else if(showReview) {
-			chartSetC.find(MongoSet::status eq SetStatus.NEED_REVIEW).limit(limit).skip(skip).toList()
-		} else if(showOfficial) {
-			chartSetC.find(MongoSet::status eq SetStatus.OFFICIAL).limit(limit).skip(skip).toList()
-		} else if(showRanked) {
-			chartSetC.find(or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL))
-				.limit(limit).skip(skip).toList()
-		} else if(showUnranked) {
-			chartSetC.find(MongoSet::status eq SetStatus.UNRANKED).limit(limit).skip(skip).toList()
-		} else {
-			listOf()
+		var filters = arrayOf<Bson>()
+		if(searchedName.isNotEmpty()) {
+			filters += (MongoSet::musicName).regex(searchedName, "i")
 		}
+		if(showHidden) {
+			filters += MongoSet::status eq SetStatus.HIDDEN
+		} else if(showReview) {
+			filters += MongoSet::status eq SetStatus.NEED_REVIEW
+		} else if(showOfficial) {
+			filters += MongoSet::status eq SetStatus.OFFICIAL
+		} else if(showRanked) {
+			filters += or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL)
+		} else if(showUnranked) {
+			filters += MongoSet::status eq SetStatus.UNRANKED
+		}
+		chartSetC.find(MongoSet::status eq SetStatus.UNRANKED, MongoSet::status eq SetStatus.HIDDEN)
+
+		return chartSetC.find(*filters).limit(limit).skip(skip).toList()
 	}
 
 	fun getSetList(
