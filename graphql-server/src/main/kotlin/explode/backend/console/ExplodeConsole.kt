@@ -22,7 +22,7 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 	private val commandDescs = mutableMapOf<String, String>()
 
 	private val mp = acc as? MongoProvider
-	private val mpd = mp?.DangerZone()
+	private val mpd = mp?.dz
 
 	init {
 		ExplodeConsole::class.declaredFunctions.forEach { func ->

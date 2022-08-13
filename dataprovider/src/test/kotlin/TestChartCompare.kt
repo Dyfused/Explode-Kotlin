@@ -1,6 +1,6 @@
 import explode.dataprovider.model.database.MongoChart
 import explode.dataprovider.provider.compareCharts
-import explode.dataprovider.provider.mongo.RandomUtil.randomId
+import explode.dataprovider.provider.mongo.randomId
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
 

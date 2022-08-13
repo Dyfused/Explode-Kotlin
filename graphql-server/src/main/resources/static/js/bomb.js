@@ -1,3 +1,3 @@
 const BOMB = {
-    'endpoint': 'http://localhost:10443'
+    'endpoint': '/'
 }

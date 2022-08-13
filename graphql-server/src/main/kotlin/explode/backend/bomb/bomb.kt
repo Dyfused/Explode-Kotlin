@@ -53,24 +53,23 @@ fun Application.bombModule(
 
 	routing {
 
-		if(explodeConfig.enableBombFrontend && explodeConfig.enableBombBackend) {
-			static(explodeConfig.bombFrontendPath) {
-				staticBasePackage = "static"
-				resources(".")
-				defaultResource("index.html")
-			}
-		}
-
 		if(explodeConfig.enableBombBackend) {
 			route("bomb") {
+				if(explodeConfig.enableBombFrontend) {
+					static("/") {
+						staticBasePackage = "static"
+						resources(".")
+						defaultResource("index.html")
+					}
+				}
 
-				// /bomb/upload - POST
+				get {
+					call.respondRedirect("bomb/", true)
+				}
+
 				bombUpload(acc, res)
-
 				bombUserCrud(acc, res)
-
 				bombSetCrud(acc)
-
 				bombChartCrud(acc)
 			}
 		}

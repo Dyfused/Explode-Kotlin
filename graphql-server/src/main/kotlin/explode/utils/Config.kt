@@ -54,12 +54,6 @@ class Config(file: File) {
 		false,
 		"True if enable Bomb frontend."
 	).delegateBoolean()
-	val bombFrontendPath by config.get(
-		"bomb",
-		"bomb-frontend-path",
-		"/",
-		"Path of Bomb frontend."
-	).delegateString()
 
 	val dataVersionPath by config.get(
 		"data",
