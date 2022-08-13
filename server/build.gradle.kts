@@ -19,8 +19,7 @@ val logbackVersion: String by project
 val kotlinCoroutineVersion: String by project
 
 dependencies {
-    implementation(project(":dataprovider"))
-    implementation(project(":data-fixer"))
+    implementation(project(":data"))
 
     implementation("com.expediagroup", "graphql-kotlin-server", "6.0.0-alpha.4")
     implementation("com.graphql-java", "graphql-java-extended-scalars", "18.1")

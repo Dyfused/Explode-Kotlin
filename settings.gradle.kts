@@ -1,7 +1,7 @@
 
 rootProject.name = "explode"
-include("graphql-server")
-include("dataprovider")
+include("server")
+include("data")
 //include("composer-client")
-include("datacollector")
+include("pack")
 include("data-fixer")

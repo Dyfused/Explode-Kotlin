@@ -6,7 +6,6 @@ import explode.backend.bomb.bombModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
-import explode.datafixer.DataFix
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.IBlowResourceProvider
 import explode.dataprovider.provider.mongo.MongoProvider
@@ -42,13 +41,6 @@ fun main(args: Array<String>) {
 	}
 
 	mainLogger.info("Explode ${ExplodeInfo["version"]} ($GameVersion)")
-
-	// check data
-	val df = DataFix(File(explodeConfig.dataVersionPath), 1)
-	if(df.shouldUpdate) {
-		mainLogger.warn("Old data structure version: ${df.currentVersion}, need to update to ${df.compatibleVersion}.")
-		df.executeUpdate()
-	}
 
 	// prepare data
 	val m = MongoProvider()

@@ -1,7 +1,7 @@
 plugins {
 	kotlin("jvm")
 	kotlin("plugin.serialization") version "1.7.0"
-
+	`maven-publish`
 }
 
 version = "1.0"
@@ -9,8 +9,8 @@ version = "1.0"
 dependencies {
 	implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.2")
 
-	testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.2")
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }
 
 tasks.withType<JavaCompile> {
@@ -24,4 +24,16 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 tasks.test {
 	useJUnitPlatform()
+}
+
+publishing {
+	publications {
+		create<MavenPublication>("maven") {
+			groupId = "com.github.dyfused"
+			artifactId = "explode-pack"
+			version = "1.0"
+
+			from(components["java"])
+		}
+	}
 }
