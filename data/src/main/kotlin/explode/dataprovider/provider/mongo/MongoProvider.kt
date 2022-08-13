@@ -119,7 +119,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun updateSet(mongoSet: MongoSet): MongoSet = mongoSet.upsert(chartSetC)
 
 	// non-null getters
-	private fun MongoChart.getParentSet(): MongoSet = getSetByChartId(_id) ?: run {
+	fun MongoChart.getParentSet(): MongoSet = getSetByChartId(_id) ?: run {
 		fixHeadlessChart(this)
 		fail("Unable to get the Set of a Headless Chart.")
 	}
