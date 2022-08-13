@@ -1,8 +1,10 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization") version "1.7.0"
+    `maven-publish`
 }
 
+group = "explode"
 version = "1.2"
 
 val logbackVersion: String by project
@@ -29,4 +31,16 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.github.dyfused"
+            artifactId = "explode-data"
+            version = "1.2"
+
+            from(components["java"])
+        }
+    }
 }

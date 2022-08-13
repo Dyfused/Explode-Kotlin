@@ -8,6 +8,7 @@ plugins {
     kotlin("plugin.serialization") version "1.7.0"
     id("application")
     id("com.github.johnrengelman.shadow")
+    `maven-publish`
 }
 
 group = "taskeren.explode"
@@ -76,5 +77,17 @@ tasks.jar {
 tasks.processResources {
     filesMatching("**/explode.json") {
         expand("version" to gitHash)
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "com.github.dyfused"
+            artifactId = "explode-server"
+            version = "1.2"
+
+            from(components["java"])
+        }
     }
 }
