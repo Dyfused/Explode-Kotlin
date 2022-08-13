@@ -7,8 +7,8 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 
 object FindSetCommand : SimpleCommand(
-	ExplodeMiraiPlugin, "FindSet", "set",
-	description = "/FindSet <曲目名称> | /FindSet #<曲目ID>"
+	ExplodeMiraiPlugin, "find-set", "set",
+	description = "/find-set <曲目名称> | /find-set #<曲目ID>"
 ) {
 
 	@Handler

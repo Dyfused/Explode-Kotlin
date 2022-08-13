@@ -1,16 +1,18 @@
 package explode.mirai.command
 
 import explode.mirai.ExplodeMiraiPlugin
+import explode.mirai.logger
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
+import net.mamoe.mirai.contact.User
 import thirdparty.crazy_bull.CrazyBullRCalculator
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 object RCalcCommand : SimpleCommand(
-	ExplodeMiraiPlugin, "CalcR",
-	"DyR", "r",
-	description = "/calcR <D> <Acc> | /CalcR <D> <perfect> <good> <miss>"
+	ExplodeMiraiPlugin, "calc-r",
+	"dy-r", "r",
+	description = "/calc-r <D> <Acc> | /calc-r <D> <perfect> <good> <miss>"
 ) {
 
 	init {
@@ -33,4 +35,16 @@ object RCalcCommand : SimpleCommand(
 		handleAcc(d, acc)
 	}
 
+}
+
+object SendMessageToCommand : SimpleCommand(
+	ExplodeMiraiPlugin,
+	"send-message",
+	description = "/send-message @user <Message>"
+) {
+	@Handler
+	suspend fun CommandSender.sendTo(target: User, message: String) {
+		logger.info("Matched, sending private message!")
+		target.sendMessage(message)
+	}
 }

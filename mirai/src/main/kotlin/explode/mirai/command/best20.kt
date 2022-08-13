@@ -9,7 +9,7 @@ object Best20Command : SimpleCommand(
 	ExplodeMiraiPlugin,
 	"Best20",
 	"b20", "best20r",
-	description = "/Best20 <用户名称>"
+	description = "/best20 <用户名称>"
 ) {
 
 	@Handler

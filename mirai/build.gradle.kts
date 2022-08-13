@@ -6,7 +6,7 @@ plugins {
     id("com.github.johnrengelman.shadow")
 }
 
-val miraiVersion = "2.12.1"
+val miraiVersion = "2.11.0-M1"
 
 group = "explode"
 version = "1.0"
