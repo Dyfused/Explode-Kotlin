@@ -1,3 +1,3 @@
 const BOMB = {
-    'endpoint': '/'
+    'endpoint': location.origin
 }
