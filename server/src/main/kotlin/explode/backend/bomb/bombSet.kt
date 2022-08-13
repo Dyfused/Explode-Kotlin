@@ -17,6 +17,18 @@ fun Route.bombSetCrud(acc: IBlowAccessor) {
 			call.respondJson(OkResult(acc.getSets(lim, skip).toList()))
 		}
 
+		post("by-chart/{chartId}") {
+			val cid = call.parameters["chartId"] ?: return@post call.respondJson(
+				BadResult("Bad Request: Missing ID."),
+				HttpStatusCode.BadRequest
+			)
+			val set = acc.getSetByChartId(cid) ?: return@post call.respondJson(
+				BadResult("Bad Request: Invalid ID."),
+				HttpStatusCode.NotFound
+			)
+			call.respondJson(OkResult(set))
+		}
+
 		route("{id}") {
 			get {
 				val sid = call.parameters["id"] ?: return@get call.respondJson(
