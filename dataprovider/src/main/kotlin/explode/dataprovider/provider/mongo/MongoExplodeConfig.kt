@@ -88,6 +88,34 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 		"The algorithm to calculate the R score. ${RCalculators.values().map(RCalculators::name)}"
 	).delegateString()
 
+	val errorHandlingStrategy by config.get(
+		"error-handling",
+		"strategy",
+		MongoProvider.ErrorHandlingStrategy.Coward.name,
+		"The strategy of handling errors."
+	).delegateString()
+
+	val allowInvalidPlaySubmission by config.get(
+		"client",
+		"invalid-play-submission",
+		false,
+		"True to allow the invalid play submission. The server will respond with fake data."
+	).delegateBoolean()
+
+	val latestClientVersion by config.get(
+		"client",
+		"latest-version",
+		81,
+		"The lastest game version."
+	).delegateInt()
+
+	val invalidUsernameAsRegister by config.get(
+		"client",
+		"invalid-username-as-register",
+		false,
+		"True to allow the registration on invalid username when login."
+	).delegateBoolean()
+
 	init {
 		config.save()
 	}

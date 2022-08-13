@@ -1,4 +1,4 @@
-@file:Suppress("MemberVisibilityCanBePrivate", "MemberVisibilityCanBePrivate")
+@file:Suppress("MemberVisibilityCanBePrivate")
 
 package explode.dataprovider.provider.mongo
 
@@ -10,8 +10,10 @@ import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.database.*
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.*
+import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassStr
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import kotlinx.serialization.*
+import org.bson.Document
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
@@ -35,6 +37,14 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		logger.info("Database: ${config.databaseName} at ${config.connectionString}")
 		logger.info("Resource: ${config.resourceDirectory}")
 		logger.info("Unencrypted: ${config.applyUnencryptedFixes}")
+		logger.info("ErrorHandlingStrategy: ${config.errorHandlingStrategy}")
+	}
+
+	// get the error handling strategy, Coward by default
+	private val errorHandlingStrategy = runCatching { ErrorHandlingStrategy.valueOf(config.errorHandlingStrategy) }.getOrDefault(ErrorHandlingStrategy.Coward)
+
+	companion object {
+		const val InvalidSubmissionRandomId = "Invalid"
 	}
 
 	// ACTUAL DATA ACCESSING
@@ -108,6 +118,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun updateChart(mongoChart: MongoChart): MongoChart = mongoChart.upsert(chartC)
 	override fun updateSet(mongoSet: MongoSet): MongoSet = mongoSet.upsert(chartSetC)
 
+	// non-null getters
+	private fun MongoChart.getParentSet(): MongoSet = getSetByChartId(_id) ?: run {
+		fixHeadlessChart(this)
+		fail("Unable to get the Set of a Headless Chart.")
+	}
 
 	/**
 	 * Used for inserting or updating new data.
@@ -116,6 +131,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		coll.updateOne(this, UpdateOptions().upsert(true))
 	}
 
+	/**
+	 * The default user of the server.
+	 */
 	override val serverUser: MongoUser = MongoUser(
 		_id = "f6fe9c4d-98e6-450a-937c-d64848eacc40",
 		"official",
@@ -313,14 +331,20 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return emptyList()
 	}
 
-	override val gameSetting = GameSettingModel(81)
+	override val gameSetting = GameSettingModel(config.latestClientVersion)
 
 	override fun loginUser(username: String, password: String): MongoUser {
-		val u = getUserByName(username) ?: fail("Invalid username.")
+		val u = getUserByName(username)
+			// register on invalid username
+			?: if(config.invalidUsernameAsRegister) {
+				return registerUser(username, password)
+			} else {
+				fail("Invalid Username.")
+			}
 		return if(u.password == password) {
 			u
 		} else {
-			fail("Invalid password.")
+			fail("Invalid Password.")
 		}
 	}
 
@@ -459,7 +483,15 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val fixedChartId = if(config.applyUnencryptedFixes) chartId + "0000" else chartId
 
 		// check existance of the chart, in order to prevent the self-imported charts data infection.
-		checkNotNull(getChart(fixedChartId)) { "Invalid ChartId: $fixedChartId" }
+		val chart = getChart(fixedChartId)
+			// allow invalid submission mode
+			?: if(config.allowInvalidPlaySubmission) {
+				return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(InvalidSubmissionRandomId))
+			} else {
+				fail("Invalid ChartId: $fixedChartId")
+			}
+
+		if(!isOwned(chart)) { fail("Not Owned Chart: $chartId") }
 
 		val p = PlayingData(randomId(), fixedChartId, ppCost)
 		playingDataCache[p.randomId] = p
@@ -477,7 +509,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	override fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel {
-		val p = playingDataCache[randomId] ?: fail("Invalid randomId($randomId)")
+		// allow invalid submission mode
+		if(randomId == InvalidSubmissionRandomId) {
+			// respond with fake data
+			return AfterPlaySubmitModel(RankingModel(false, RankModel(1)), R, coin, diamond)
+		}
+
+		val p = playingDataCache[randomId] ?: fail("Invalid RandomId: $randomId")
 
 		val chartId = p.chartId
 
@@ -493,14 +531,14 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val needUpdate = before == null || before.rank != after!!.rank
 
 		// get coins
-		val chartSet = getSetByChartId(chartId) ?: fail("Invalid Chart: cannot find the set by chart($chartId)")
 		val chart = getChart(chartId) ?: fail("Invalid chart: cannot find chart($chartId)")
+		val chartSet = chart.getParentSet()
 		val coinDiff = detonate.calcGainCoin(chartSet.status.isRanked, chart.difficultyValue, record)
-		this.coin = this.coin + coinDiff
+		coin += coinDiff
 		updateUser(this)
 		logger.info("User[${this.username}] submited a record of ChartSet[${chartSet.musicName}] score ${record.score}(${record.perfect}/${record.good}/${record.miss}). [$randomId]")
 		return AfterPlaySubmitModel(
-			RankingModel(needUpdate, RankModel(after!!.rank)), R, this.coin, this.diamond
+			RankingModel(needUpdate, RankModel(after!!.rank)), R, coin, diamond
 		)
 	}
 
@@ -518,7 +556,92 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 	}
 
+	enum class ErrorHandlingStrategy {
+		/**
+		 * Cowardly report to the console, and wait for administrators to fix the problem.
+		 * Before the fix take place, the error message can be dumped many times.
+		 */
+		Coward,
+
+		/**
+		 * Directly fix the problem and report to the console.
+		 * This is destructive option.
+		 */
+		Destructive
+	}
+
+	// ERROR DUMPERS
+	private fun MongoChart.dump() =
+		"""
+			[ChartDetails]
+				ID:               $_id
+				D Value:          $D
+				DifficultyClass:  ${difficultyClass.toDifficultyClassStr()}(${difficultyClass})
+				DifficultyNumber: $difficultyValue
+		""".trimIndent()
+
+	private fun MongoSet.dump() =
+		"""
+			[SetDetails]
+				ID: $_id
+				MusicName: $musicName
+				MusicAuthor(ComposerName): $composerName
+				NoterId: $noterId
+				&Noter:
+					${getUser(noterId)?.dump() ?: "~ERROR: Cannot find the author~"}
+				Introduction: $introduction
+				PriceCoin: $price
+				Status: ${status.humanizedName}
+				Charts: $charts
+				&Charts:
+					${charts.mapNotNull(::getChart).joinToString(separator = "\n") { it.dump() }}
+		""".trimIndent()
+
+	private fun MongoUser.dump() =
+		"""
+			[UserDetails]
+				ID:   $_id
+				Name: $username
+				OwnedSets:   $ownedSets
+				OwnedCharts: $ownedCharts
+				Coin:    $coin
+				Diamond: $diamond
+				PPTime:  $ppTime
+				Token:   $token
+				R: $R
+				Permission:
+					Review: ${permission.review}
+		""".trimIndent()
+
+	// DATA FIXINGS
+
+	/**
+	 * Invoked when a [MongoChart] is not included in any [MongoSet].
+	 * Destructive Solution is to directly delete the chart.
+	 *
+	 * @see getParentSet the caller
+	 */
+	private fun fixHeadlessChart(chart: MongoChart) {
+		when(errorHandlingStrategy) {
+			ErrorHandlingStrategy.Coward -> {
+				logger.error("[Headless Chart Alert] Chart(${chart._id}) has no existent parent set. This log only warns the administrator but do nothing.")
+			}
+
+			ErrorHandlingStrategy.Destructive -> {
+				dz.deleteChartById(chart._id)
+				println(chart.dump())
+				logger.error("[Headless Chart Alert] Chart(${chart._id}) has no existent parent set. The broken chart has been deleted, and details are dumped above.")
+			}
+		}
+	}
+
 	// UTILITIES
+
+	fun MongoUser.isOwned(chart: MongoChart): Boolean {
+		val set = chart.getParentSet()
+		return set._id in ownedSets && chart._id in ownedCharts
+	}
+
 	override val MongoUser.tunerize: UserModel
 		get() = UserModel(
 			_id = _id,
@@ -538,7 +661,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	override val MongoChart.tunerize: DetailedChartModel
 		get() {
-			val s = getSetByChartId(_id) ?: fail("Invalid chart($_id): not included in a set.")
+			val s = getParentSet()
 			return DetailedChartModel(
 				_id = _id,
 				charter = (getUser(s.noterId) ?: serverUser).tunerize,
@@ -578,11 +701,58 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	val MongoUser.shrink: PlayerModel
 		get() = PlayerModel(_id, username, 0, R)
 
+	fun MongoSet.getCharts(): List<MongoChart> {
+		return this.charts.mapNotNull {
+			getChart(it).apply {
+				if(this == null) {
+					logger.warn("Cannot find Chart($it), which is bound to Set(${this@getCharts._id}), removing from the set.")
+				}
+			}
+		}
+	}
 
-	inner class DangerZone {
+	val dz by lazy { DangerZone() }
 
+	inner class DangerZone internal constructor() {
+
+		/**
+		 * To delete an existent set and its charts, the related records and own status.
+		 */
 		fun deleteSetById(id: String) {
-			chartSetC.deleteOneById(id)
+			val set = getSet(id) ?: return logger.warn("Unable to delete a non-existent set.")
+			// delete charts
+			set.charts.forEach(::deleteChartById)
+			// remove the set from user
+			userC.updateMany(Document(), pull(MongoUser::ownedSets, set._id))
+			// remove the set
+			chartSetC.deleteOneById(set._id)
+			logger.info("Deleted Set(${set._id}): $set")
+		}
+
+		/**
+		 * To delete an existent chart and the related records.
+		 */
+		fun deleteChartById(id: String) {
+			val chart = getChart(id) ?: return logger.warn("Unable to delete a non-existent chart.")
+			// remove playing records
+			playRecordC.deleteMany(MongoRecord::chartId eq chart._id)
+			// remove the chart from user
+			userC.updateMany(Document(), pull(MongoUser::ownedCharts, chart._id))
+			// remove the chart
+			chartC.deleteOneById(chart._id)
+			logger.info("Deleted Chart(${id}): $chart")
+		}
+
+		/**
+		 * To delete an existent user and re-bind its sets to [default user][serverUser].
+		 */
+		fun deleteUserById(id: String) {
+			val user = getUser(id) ?: return logger.warn("Unable to delete a non-existent user.")
+			// replace the noterId to the default user.
+			chartSetC.updateMany(MongoSet::noterId eq user._id, MongoSet::noterId setTo serverUser._id)
+			// remove user
+			userC.deleteOneById(user._id)
+			logger.info("Deleted User(${user._id}): $user")
 		}
 
 	}
