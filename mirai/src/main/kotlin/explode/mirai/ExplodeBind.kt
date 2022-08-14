@@ -1,6 +1,7 @@
 package explode.mirai
 
 import explode.dataprovider.model.database.MongoUser
+import net.mamoe.mirai.console.command.CommandSender
 import explode.mirai.ExplodeMiraiData.idBinding as binding
 
 object ExplodeBind {
@@ -20,7 +21,9 @@ object ExplodeBind {
 	fun getDyId(qqId: Long) = binding[qqId]
 	fun getQQId(dyId: String) = binding.entries.firstOrNull { it.value == dyId }?.key
 
-	fun getMongoUserOrNull(qqId: Long): MongoUser? = getDyId(qqId)?.let(Explode::getUser)
+	fun getMongoUserOrNull(qqId: Long?): MongoUser? = qqId?.let(::getDyId)?.let(Explode::getUser)
+
+	fun getMongoUserOrNull(sender: CommandSender): MongoUser? = getMongoUserOrNull(sender.user?.id)
 }
 
 var MongoUser.qqId: Long?

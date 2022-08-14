@@ -3,6 +3,7 @@ package explode.mirai.command
 import explode.dataprovider.model.database.MongoUser
 import explode.mirai.*
 import net.mamoe.mirai.console.command.*
+import kotlin.math.roundToInt
 
 object Best20Command : SimpleCommand(
 	ExplodeMiraiPlugin,
@@ -34,12 +35,26 @@ object Best20Command : SimpleCommand(
 	private suspend fun CommandSender.sendBest20(u: MongoUser) {
 		val b20 = Explode.getUserBestR20(u._id)
 		val b20Message = b20.joinToString(separator = "\n") {
-			val musicName = with(Explode) {
-				getChart(it.chartId)?.getParentSet()?.musicName
-					?: "未知曲目，这是一个错误的结果，请汇报给管理员。(chartId=${it.chartId})"
+			val songInfo = with(Explode) {
+				val ch = getChart(it.chartId)
+				if(ch == null) {
+					"未知曲目，这是一个错误的结果，请汇报给管理员。(chartId=${it.chartId})"
+				} else {
+					val musicName = ch.getParentSet().musicName
+					val hardnessLevel = when(ch.difficultyClass) {
+						1 -> "C"
+						2 -> "N"
+						3 -> "H"
+						4 -> "M"
+						5 -> "G"
+						6 -> "T"
+						else -> "U"
+					}
+					"<$musicName>@$hardnessLevel${ch.difficultyValue}"
+				}
 			}
 			val (perfect, good, miss) = it.scoreDetail
-			"$musicName：${it.RScore} (${perfect}/${good}/${miss})"
+			"$songInfo：${it.RScore?.roundToInt()}【${perfect}/${good}/${miss}】"
 		}
 		sendMessage("<${u.username}> 的生涯最佳\n$b20Message")
 	}

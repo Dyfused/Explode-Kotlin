@@ -2,21 +2,20 @@ package explode.mirai.command
 
 import explode.dataprovider.model.database.MongoSet
 import explode.dataprovider.model.database.SetStatus
-import explode.mirai.Explode
-import explode.mirai.ExplodeMiraiPlugin
+import explode.mirai.*
 import net.mamoe.mirai.console.command.CommandSender
-import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.command.SimpleCommand
 import java.lang.ref.WeakReference
 
-object FindSetCommand : CompositeCommand(
+private val lastFind = mutableMapOf<Long?, WeakReference<MongoSet>>()
+
+object FindSetCommand : SimpleCommand(
 	ExplodeMiraiPlugin, "set",
-	description = "管理曲目：/set <find|set> <曲目信息> [其他参数...]"
+	description = "查询曲目：/set <曲目信息>"
 ) {
 
-	private val lastFind = mutableMapOf<Long?, WeakReference<MongoSet>>()
-
-	@SubCommand("find")
-	suspend fun CommandSender.find(searchInfo: String) {
+	@Handler
+	suspend fun CommandSender.handle(searchInfo: String) {
 		val sets = getSetListBySearchInfo(searchInfo)
 
 		when(sets.size) {
@@ -51,8 +50,16 @@ object FindSetCommand : CompositeCommand(
 		}
 	}
 
-	@SubCommand("set")
-	suspend fun CommandSender.set(searchInfo: String, propertyName: String, propertyValue: String) {
+}
+
+object ManageSetCommand : SimpleCommand(
+	ExplodeMiraiPlugin,
+	"set-manage", "set-m",
+	description = "管理曲目：/set-manage <曲目信息> <修改字段：coin/status> <新值>"
+) {
+
+	@Handler
+	suspend fun CommandSender.handle(searchInfo: String, propertyName: String, propertyValue: String) {
 		val sets = getSetListBySearchInfo(searchInfo)
 
 		when(sets.size) {
@@ -62,6 +69,12 @@ object FindSetCommand : CompositeCommand(
 
 			1 -> {
 				val set = sets.single()
+				val usr = ExplodeBind.getMongoUserOrNull(this)
+
+				if(usr == null) {
+					sendMessage("请先绑定用户")
+					return
+				}
 
 				when(propertyName.lowercase()) {
 					"coin", "price" -> {
@@ -98,36 +111,35 @@ object FindSetCommand : CompositeCommand(
 			}
 		}
 	}
+}
 
-	private fun CommandSender.getSetListBySearchInfo(searchInfo: String): List<MongoSet> =
-		if(searchInfo.startsWith("#")) {
-			val id = searchInfo.substring(1)
-			listOfNotNull(Explode.getSet(id))
-		} else if(searchInfo == "$") {
-			listOfNotNull(lastFind[user?.id]?.get())
-		} else {
-			Explode.getSetByName(searchInfo).toList()
-		}
-
-	private fun getPriceText(price: Int): String = when(price) {
-		0 -> "免费"
-		else -> "$price 金币"
+private fun CommandSender.getSetListBySearchInfo(searchInfo: String): List<MongoSet> =
+	if(searchInfo.startsWith("#")) {
+		val id = searchInfo.substring(1)
+		listOfNotNull(Explode.getSet(id))
+	} else if(searchInfo == "$") {
+		listOfNotNull(lastFind[user?.id]?.get())
+	} else {
+		Explode.getSetByName(searchInfo).toList()
 	}
 
-	private fun getHardLevelText(level: Int): String = when(level) {
-		1 -> "CASUAL"
-		2 -> "NORMAL"
-		3 -> "HARD"
-		4 -> "MEGA"
-		5 -> "GIGA"
-		else -> "UNKNOWN"
-	}
+private fun getPriceText(price: Int): String = when(price) {
+	0 -> "免费"
+	else -> "$price 金币"
+}
 
-	private fun MongoSet.getChartsSummary(): String = with(Explode) {
-		val charts = getCharts()
-		return charts.joinToString(separator = "，") {
-			"${getHardLevelText(it.difficultyClass)} ${it.difficultyValue}"
-		}
-	}
+private fun getHardLevelText(level: Int): String = when(level) {
+	1 -> "CASUAL"
+	2 -> "NORMAL"
+	3 -> "HARD"
+	4 -> "MEGA"
+	5 -> "GIGA"
+	else -> "UNKNOWN"
+}
 
+private fun MongoSet.getChartsSummary(): String = with(Explode) {
+	val charts = getCharts()
+	return charts.joinToString(separator = "，") {
+		"${getHardLevelText(it.difficultyClass)} ${it.difficultyValue}"
+	}
 }

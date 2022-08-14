@@ -22,6 +22,7 @@ object ExplodeMiraiPlugin : KotlinPlugin(
 
 		RCalcCommand.register()
 		FindSetCommand.register()
+		ManageSetCommand.register()
 		Best20Command.register()
 		BindingCommand.register()
 		ReviewCommand.register()
