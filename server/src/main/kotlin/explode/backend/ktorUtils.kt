@@ -3,6 +3,7 @@ package explode.backend
 import explode.backend.bomb.BadResult
 import explode.backend.bomb.respondJson
 import explode.dataprovider.model.database.MongoUser
+import explode.dataprovider.provider.fail
 import explode.globalJson
 import explode.utils.TypedResult
 import io.ktor.http.*
@@ -12,8 +13,15 @@ import io.ktor.server.request.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.decodeFromString
 
-suspend inline fun <reified T> PipelineContext<Unit, ApplicationCall>.payload() =
-	globalJson.decodeFromString<T>(call.receiveText())
+suspend inline fun <reified T> PipelineContext<Unit, ApplicationCall>.payload(): T {
+	return runCatching {
+		globalJson.decodeFromString<T>(call.receiveText())
+	}.onFailure { // response before throw
+		call.respondJson(BadResult("Serialization failure: "+it.message.orEmpty()), HttpStatusCode.BadRequest)
+	}.getOrElse { // throw a console-friendly exception
+		fail(it.message)
+	}
+}
 
 suspend fun PipelineContext<Unit, ApplicationCall>.checkAuthentication(
 	userProvider: (token: String) -> MongoUser?

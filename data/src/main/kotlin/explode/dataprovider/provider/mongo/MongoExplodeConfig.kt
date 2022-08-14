@@ -4,6 +4,7 @@ import TConfig.Configuration
 import explode.dataprovider.detonate.ExplodeConfig
 import explode.dataprovider.detonate.RCalculators
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateBoolean
+import explode.dataprovider.util.ConfigPropertyDelegates.delegateDouble
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateInt
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateString
 
@@ -115,6 +116,27 @@ class MongoExplodeConfig(override val config: Configuration) : ExplodeConfig {
 		false,
 		"True to allow the registration on invalid username when login."
 	).delegateBoolean()
+
+	val autoEndReview by config.get(
+		"review",
+		"auto-end-review",
+		false,
+		"True to enable Auto Review Ending."
+	).delegateBoolean()
+
+	val autoEndReviewCountReviewer by config.get(
+		"review",
+		"auto-end-review-reviewer-count",
+		3,
+		"The requested reviewer count for a chart."
+	).delegateInt()
+
+	val autoEndReviewAcceptPercentage by config.get(
+		"review",
+		"auto-end-review-accept-percentage",
+		1.0,
+		"The percentage of acceptance on ending a review."
+	).delegateDouble()
 
 	init {
 		config.save()

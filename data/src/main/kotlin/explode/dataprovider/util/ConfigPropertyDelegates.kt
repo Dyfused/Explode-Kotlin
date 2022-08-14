@@ -34,4 +34,14 @@ object ConfigPropertyDelegates {
 			this@delegateInt.setValue(value)
 		}
 	}
+
+	fun Property.delegateDouble() = object : ReadWriteProperty<Any?, Double> {
+		override fun getValue(thisRef: Any?, property: KProperty<*>): Double {
+			return this@delegateDouble.double
+		}
+
+		override fun setValue(thisRef: Any?, property: KProperty<*>, value: Double) {
+			this@delegateDouble.setValue(value)
+		}
+	}
 }

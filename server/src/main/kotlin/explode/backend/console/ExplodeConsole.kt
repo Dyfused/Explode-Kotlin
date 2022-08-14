@@ -1,6 +1,10 @@
 @file:JvmName("Console")
+
 package explode.backend.console
 
+import explode.dataprovider.model.database.MongoReviewResult
+import explode.dataprovider.model.database.SetStatus
+import explode.dataprovider.provider.BlowException
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.mongo.MongoProvider
 import kotlin.concurrent.thread
@@ -46,7 +50,14 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		while(true) {
 			val input = readLine() ?: continue
 			val sp = input.split(' ')
-			validFunctions[sp.getOrNull(0)]?.call(this, sp)?.let(::println)
+			runCatching {
+				validFunctions[sp.getOrNull(0)]?.call(this, sp)?.let(::println)
+			}.onFailure {
+				when(it) {
+					is BlowException, is IllegalStateException -> println(it.message)
+					else -> it.printStackTrace()
+				}
+			}
 		}
 	}
 
@@ -115,6 +126,66 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 
 		println("- <${chart._id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
 		return ""
+	}
+
+	@SubCommand(desc = "(/addReview <setId> <status: true/false> [message]) Review the specified set.")
+	fun addReview(sp: List<String>): Any {
+		val setId = sp.getOrNull(1) ?: return "Missing parameter: setId"
+		val status = sp.getOrNull(2)?.toBooleanStrictOrNull() ?: return "Invalid parameter: status"
+		val message = sp.getOrNull(3).orEmpty()
+		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
+
+		with(mp) {
+			set.addReviewResult(MongoReviewResult(serverUser._id, status, message))
+		}
+
+		return "Done"
+	}
+
+	@SubCommand(desc = "(/listReview <setId>) Get the review info of specified set.")
+	fun listReview(sp: List<String>): Any {
+		val setId = sp.getOrNull(1) ?: return "Missing parameter: setId"
+		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
+
+		val r = with(mp) { set.getReview() }
+		if(r == null) {
+			return "No ongoing Review."
+		} else {
+			val size = r.reviews.size
+			println("Ongoing review $size: ")
+			r.reviews.forEach {
+				val u = mp.getUser(it.reviewerId)
+				println(" - ${u?.username ?: it.reviewerId}(${it.status}) ${it.evaluation}")
+			}
+		}
+		return ""
+	}
+
+	@SubCommand(desc = "(/endReview <setId> [status=true]) End the review of the specified set.")
+	fun endReview(sp: List<String>): Any {
+		val setId = sp.getOrNull(1) ?: return "Missing parameter: setId"
+		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
+		val status = sp.getOrNull(2)?.toBooleanStrictOrNull() ?: true
+
+		with(mp) {
+			set.getReview() ?: return "No ongoing review for <${set.musicName}>(${set._id})"
+			set.endReview(status)
+		}
+
+		return ""
+	}
+
+	@SubCommand(desc = "(/startReview <setId> [expectStatus: RANKED/UNRANKED/OFFICIAL]) Start a review on a NEED_REVIEW set.")
+	fun startReview(sp: List<String>): Any {
+		val setId = sp.getOrNull(1) ?: return "Missing parameter: setId"
+		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
+		val status = sp.getOrNull(2)?.run { SetStatus.values().firstOrNull { it.name.lowercase() == this.lowercase() } } ?: return "Invalid parameter: expectStatus"
+
+		with(mp) {
+			set.startReview(status)
+		}
+
+		return "Done"
 	}
 
 }

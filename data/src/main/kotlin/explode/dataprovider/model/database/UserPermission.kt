@@ -8,5 +8,6 @@ data class UserPermission(
 ) {
 	companion object {
 		val Default = UserPermission(false)
+		val Administrator = UserPermission(true)
 	}
 }

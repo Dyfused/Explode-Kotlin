@@ -52,6 +52,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	private val chartC = db.getCollection<MongoChart>("Chart")
 	private val chartSetC = db.getCollection<MongoSet>("ChartSet")
 	private val playRecordC = db.getCollection<MongoRecord>("PlayRecord")
+	private val reviewC = db.getCollection<MongoReview>("Review")
 
 	// getters
 	override fun getUser(userId: String) = userC.findOneById(userId)
@@ -142,11 +143,16 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		mutableListOf(),
 		Int.MIN_VALUE,
 		Int.MIN_VALUE,
-		ppTime = OffsetDateTime.MIN,
+		ppTime = OffsetDateTime.now(),
 		token = "f6fe9c4d-98e6-450a-937c-d64848eacc40",
 		R = Int.MIN_VALUE,
-		permission = UserPermission.Default
+		permission = UserPermission.Administrator
 	)
+
+	init {
+		// ensure that the server user is in the database
+		serverUser.upsert(userC)
+	}
 
 	override fun createUser(username: String, password: String): MongoUser {
 		logger.info("Creating user with parameters [username=$username, password=$password]")
@@ -542,17 +548,83 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		)
 	}
 
-	override fun reviewSet(set: MongoSet, user: MongoUser, accepted: Boolean, rejectMessage: String?) {
-		if(set.status == SetStatus.NEED_REVIEW) {
-			set.reviews = set.reviews ?: mutableListOf()
-			set.reviews!! += ReviewResult(
-				user._id,
-				accepted,
-				rejectMessage
-			)
-			updateSet(set)
-		} else {
-			fail("Invalid status of set: ${set._id}, NEED_REVIEW required.")
+	override fun MongoSet.addReviewResult(review: MongoReviewResult) {
+		// check before insertion
+
+		// user must be existent and with reviewer permission
+		val u = getUser(review.reviewerId) ?: fail("Invalid Reviewer ID: ${review.reviewerId}")
+		if(!u.permission.review) fail("Not Reviewer: ${u.username}")
+
+		// set must be existent and with NEED_REVIEW status
+		if(status != SetStatus.NEED_REVIEW) fail("Invalid Reviewed Set: No Need Reviewing")
+
+		// evaluation message must not be empty on Reject
+		if(!review.status && review.evaluation.isEmpty()) fail("Must provide evaluation on Reject")
+
+		// no duplicated review
+		if(reviewC.findOne(MongoReview::reviews elemMatch (MongoReviewResult::reviewerId eq review.reviewerId)) != null)
+			fail("Duplicated Review")
+
+		val r = getReview() ?: fail("Set Review Data Lost: $_id")
+		r.reviews += review
+		r.upsert(reviewC)
+
+		// reviewC.updateOneById(r.id, push(MongoReview::reviews, review))
+
+		checkAutoEndReview(r) // auto check
+	}
+
+	override fun MongoSet.getReview(): MongoReview? {
+		return reviewC.findOne(MongoReview::reviewedSet eq _id)
+	}
+
+	override fun MongoSet.startReview(expectStatus: SetStatus) {
+		// update status to Need Review
+		status = SetStatus.NEED_REVIEW
+		updateSet(this)
+
+		// create and insert the review data
+		val r = MongoReview(_id, expectStatus)
+		r.upsert(reviewC)
+
+		logger.info("Started a Review on Set($_id).")
+	}
+
+	override fun MongoSet.endReview(pass: Boolean) {
+		// get the review data
+		val r = getReview() ?: fail("Set Review Data Lost: $_id")
+
+		// update status
+		status = if(pass) { r.expectStatus } else { SetStatus.HIDDEN }
+		updateSet(this)
+
+		// remove review data
+		reviewC.deleteOneById(r.id)
+
+		logger.info("Ended a Review on Set($musicName, #$_id), new status is $status.")
+	}
+
+	private fun MongoSet.checkAutoEndReview(review: MongoReview) {
+		if(!config.autoEndReview) return
+
+		// pass the reviewer count
+		if(review.reviews.size >= config.autoEndReviewCountReviewer) {
+			val rejectReviews = review.reviews.filter { !it.status }
+			val acceptPercentage = (review.reviews.size - rejectReviews.size).toDouble() / review.reviews.size
+			if(acceptPercentage >= config.autoEndReviewAcceptPercentage) { // pass
+				endReview(true)
+
+				logger.info("Auto ACCEPTED a review on Set<$musicName>($_id).")
+			} else {
+				endReview(false)
+
+				// dump reject messages
+				val rejectMessages = rejectReviews.joinToString(separator = "\n") { it.evaluation }
+				introduction += "\n[Rejected Charts]\n$rejectMessages"
+				updateSet(this)
+
+				logger.info("Auto REJECTED a review on Set<$musicName>($_id).")
+			}
 		}
 	}
 

@@ -163,8 +163,14 @@ interface IBlowAccessor : IBlowReadOnly {
 
 	fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel
 
-	fun MongoUser.reviewSet(set: MongoSet, accepted: Boolean, rejectMessage: String? = null) =
-		reviewSet(set, this, accepted, rejectMessage)
+	fun MongoSet.addReviewResult(review: MongoReviewResult)
 
-	fun reviewSet(set: MongoSet, user: MongoUser, accepted: Boolean, rejectMessage: String? = null)
+	fun MongoSet.getReview(): MongoReview?
+
+	fun MongoSet.startReview(expectStatus: SetStatus)
+
+	/**
+	 * End a review on the specific Set.
+	 */
+	fun MongoSet.endReview(pass: Boolean)
 }

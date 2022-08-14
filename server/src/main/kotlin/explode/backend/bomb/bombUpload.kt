@@ -1,8 +1,10 @@
 package explode.backend.bomb
 
 import explode.backend.checkAuthentication
-import explode.dataprovider.provider.IBlowAccessor
-import explode.dataprovider.provider.IBlowResourceProvider
+import explode.backend.payload
+import explode.dataprovider.model.database.MongoReviewResult
+import explode.dataprovider.model.database.SetStatus
+import explode.dataprovider.provider.*
 import explode.globalJson
 import explode.utils.getOrThrow
 import io.ktor.http.*
@@ -84,10 +86,44 @@ fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) = authenti
 					?.let { res.addStorePreviewResource(_id, it) }
 			}
 
+			// start a review on the fresh uploaded charts
+			with(data) {
+				// TODO: Add the Expect option
+				s.startReview(SetStatus.UNRANKED)
+			}
+
 			call.respondJson(OkResult(s))
 			logger.info("Successfully uploaded Set<${s.musicName}>(${s._id}) with ${s.charts.size} charts.")
 		} catch(ex: IllegalStateException) {
 			call.respondJson(BadResult(ex.message.orEmpty()), HttpStatusCode.BadRequest)
+		}
+	}
+
+	post("review") {
+		val auth = checkAuthentication(data::getUserByToken)
+
+		if(!auth.isSuccess) {
+			// invalid token
+			return@post
+		}
+
+		val user = auth.getOrThrow()
+		logger.info("Received review request from User(${user.username}, #${user._id}): ${user.token}")
+
+		val rd = payload<PostReviewData>()
+
+		runCatching {
+			val set = data.getSet(rd.reviewedSet) ?: fail("Invalid set: ${rd.reviewedSet}")
+			with(data) {
+				set.addReviewResult(MongoReviewResult(
+					reviewerId = user._id,
+					status = rd.status,
+					evaluation = rd.reviewMessage
+				))
+				call.respondJson(OkResult("Done"))
+			}
+		}.onFailure {
+			call.respondJson(BadResult(it.message.orEmpty()), HttpStatusCode.BadRequest)
 		}
 	}
 
@@ -111,4 +147,11 @@ data class PostChartData(
 	val chartFileName: String,
 	val chartDifficultyClass: Int,
 	val chartDifficultyValue: Int
+)
+
+@Serializable
+internal data class PostReviewData(
+	val status: Boolean,
+	val reviewedSet: String,
+	val reviewMessage: String = ""
 )
