@@ -7,7 +7,7 @@ import net.mamoe.mirai.console.command.SimpleCommand
 
 object Best20Command : SimpleCommand(
 	ExplodeMiraiPlugin,
-	"Best20",
+	"best20",
 	"b20", "best20r",
 	description = "/best20 <用户名称>"
 ) {

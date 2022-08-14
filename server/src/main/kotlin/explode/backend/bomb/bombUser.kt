@@ -1,6 +1,8 @@
 package explode.backend.bomb
 
 import explode.backend.payload
+import explode.dataprovider.model.database.MongoUser
+import explode.dataprovider.model.database.UserPermission
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.IBlowResourceProvider
 import explode.dataprovider.provider.mongo.MongoProvider
@@ -20,6 +22,20 @@ fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 	@Serializable
 	data class BombPostLogin(val username: String, val password: String)
 
+	@Serializable
+	data class ShrinkedMongoUser(
+		val _id: String,
+		val username: String,
+		val coin: Int,
+		val diamond: Int,
+		val R: Int,
+		val permission: UserPermission
+	) {
+		constructor(user: MongoUser) : this(user._id, user.username, user.coin, user.diamond, user.R, user.permission)
+	}
+
+	fun MongoUser.shrink() = ShrinkedMongoUser(this)
+
 	route("user") {
 
 		post("search/{username}") {
@@ -31,7 +47,7 @@ fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 				BadResult("Not Found: Request User."),
 				HttpStatusCode.NotFound
 			)
-			call.respondJson(OkResult(user))
+			call.respondJson(OkResult(user.shrink()))
 		}
 
 		post("login") {
@@ -39,7 +55,7 @@ fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 			kotlin.runCatching {
 				acc.loginUser(d.username, d.password)
 			}.onSuccess {
-				call.respondJson(OkResult(it))
+				call.respondJson(OkResult(it.shrink()))
 			}.onFailure {
 				call.respondJson(BadResult(it.message.orEmpty()), HttpStatusCode.BadRequest)
 			}
@@ -50,7 +66,7 @@ fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 			kotlin.runCatching {
 				acc.registerUser(d.username, d.password)
 			}.onSuccess {
-				call.respondJson(OkResult(it))
+				call.respondJson(OkResult(it.shrink()))
 			}.onFailure {
 				call.respondJson(BadResult(it.message.orEmpty()), HttpStatusCode.BadRequest)
 			}
@@ -66,7 +82,7 @@ fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 					BadResult("Requested user not found."),
 					HttpStatusCode.NotFound
 				)
-				call.respondJson(OkResult(user))
+				call.respondJson(OkResult(user.shrink()))
 			}
 
 			get("last20") {
@@ -126,7 +142,7 @@ fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 				if(acc is MongoProvider) {
 					with(acc) {
 						user.updatePlayerRValue()
-						call.respondJson(OkResult(user))
+						call.respondJson(OkResult(user.shrink()))
 					}
 				} else {
 					call.respondJson(BadResult("Unsupported operation."), HttpStatusCode.ServiceUnavailable)
@@ -174,7 +190,7 @@ fun Route.bombUserCrud(acc: IBlowAccessor, res: IBlowResourceProvider) {
 
 				acc.updateUser(user)
 
-				call.respondJson(OkResult(user))
+				call.respondJson(OkResult(user.shrink()))
 			}
 		}
 	}
