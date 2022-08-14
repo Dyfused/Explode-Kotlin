@@ -628,6 +628,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 	}
 
+	override fun getReviewList(): FindIterable<MongoReview> = reviewC.find()
+
 	enum class ErrorHandlingStrategy {
 		/**
 		 * Cowardly report to the console, and wait for administrators to fix the problem.

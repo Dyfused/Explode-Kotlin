@@ -1,7 +1,6 @@
 package explode.mirai
 
 import explode.mirai.command.*
-import net.mamoe.mirai.console.command.CommandManager
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
@@ -19,11 +18,13 @@ object ExplodeMiraiPlugin : KotlinPlugin(
 	override fun onEnable() {
 		logger.info("Explode Mirai Enabled.")
 
-		CommandManager.INSTANCE
+		ExplodeMiraiData.reload()
 
 		RCalcCommand.register()
 		FindSetCommand.register()
 		Best20Command.register()
+		BindingCommand.register()
+		ReviewCommand.register()
 	}
 
 }

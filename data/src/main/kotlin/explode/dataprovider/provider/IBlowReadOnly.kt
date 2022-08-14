@@ -1,5 +1,6 @@
 package explode.dataprovider.provider
 
+import com.mongodb.client.FindIterable
 import explode.dataprovider.model.database.*
 import explode.dataprovider.model.game.*
 
@@ -36,6 +37,8 @@ interface IBlowReadOnly {
 	fun MongoUser.getPlayRankSelf(chartId: String): PlayRecordWithRank?
 	fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked>
 	fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked>
+
+	fun getReviewList(): FindIterable<MongoReview>
 
 	// transformers
 	val MongoUser.tunerize: UserModel
