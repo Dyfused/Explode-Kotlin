@@ -6,6 +6,7 @@ import explode.explodeConfig
 import explode.globalJson
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.http.content.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
@@ -51,6 +52,18 @@ fun Application.bombModule(
 		allowHeader(HttpHeaders.AccessControlAllowOrigin)
 	}
 
+	install(Authentication) {
+		basic {
+			realm = "Access"
+			validate {
+				runCatching {
+					val tok = acc.loginUser(it.name, it.password).token
+					UserIdPrincipal(tok)
+				}.getOrNull()
+			}
+		}
+	}
+
 	routing {
 
 		if(explodeConfig.enableBombBackend) {
@@ -71,6 +84,21 @@ fun Application.bombModule(
 				bombUserCrud(acc, res)
 				bombSetCrud(acc)
 				bombChartCrud(acc)
+
+				authenticate {
+					get("auth") {
+						val principal = call.authentication.principal
+						if(principal != null) {
+							if(principal is UserIdPrincipal) {
+								call.respondJson(OkResult(principal.name))
+							} else {
+								call.respondJson(OkResult("User principal found but not supported."))
+							}
+						} else {
+							call.respondJson(BadResult("No authentication provided."), HttpStatusCode.Unauthorized)
+						}
+					}
+				}
 			}
 		}
 	}

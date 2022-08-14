@@ -28,13 +28,11 @@ const BOMBDATA = {
     "gen_set_model": (
         musicTitle,
         composerName,
-        noterName,
         charts
     ) => {
         return {
             "title": musicTitle,
             "composerName": composerName,
-            "noterName": noterName,
             "chartMeta": charts,
             "musicFileName": "music-file",
             "coverFileName": "cover-file",
@@ -71,7 +69,6 @@ $("#upload_btn").on('click', () => {
     let setModel = BOMBDATA.gen_set_model(
         $("#music_name").val(),
         $("#composer_name").val(),
-        $("#noter_name").val(),
         findCharts
     )
 

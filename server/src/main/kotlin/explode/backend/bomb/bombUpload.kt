@@ -1,20 +1,36 @@
 package explode.backend.bomb
 
+import explode.backend.checkAuthentication
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.IBlowResourceProvider
 import explode.globalJson
+import explode.utils.getOrThrow
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import org.slf4j.LoggerFactory
 
-fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) {
+private val logger = LoggerFactory.getLogger("Bomb-Uploader")
+
+fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) = authenticate {
 
 	post("upload") {
+		val auth = checkAuthentication(data::getUserByToken)
+
+		if(!auth.isSuccess) {
+			// invalid token
+			return@post
+		} else {
+			val u = auth.getOrThrow()
+			logger.info("Received upload request from User(${u.username}, #${u._id}): ${u.token}")
+		}
+
 		try { // fast-fail
 
 			lateinit var meta: PostSetAndChartMeta
@@ -46,7 +62,7 @@ fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) {
 			val s = data.buildChartSet(
 				setTitle = meta.title,
 				composerName = meta.composerName,
-				noterUser = data.getUserByName(meta.noterName) ?: data.serverUser,
+				noterUser = auth.getOrThrow(),
 				isRanked = false,
 				coinPrice = 0,
 				introduction = "",
@@ -69,6 +85,7 @@ fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) {
 			}
 
 			call.respondJson(OkResult(s))
+			logger.info("Successfully uploaded Set<${s.musicName}>(${s._id}) with ${s.charts.size} charts.")
 		} catch(ex: IllegalStateException) {
 			call.respondJson(BadResult(ex.message.orEmpty()), HttpStatusCode.BadRequest)
 		}
@@ -80,7 +97,6 @@ fun Route.bombUpload(data: IBlowAccessor, res: IBlowResourceProvider) {
 data class PostSetAndChartMeta(
 	val title: String,
 	val composerName: String,
-	val noterName: String,
 
 	val chartMeta: List<PostChartData>,
 	val musicFileName: String,
