@@ -21,11 +21,22 @@ object ExplodeMiraiPlugin : KotlinPlugin(
 		ExplodeMiraiData.reload()
 
 		RCalcCommand.register()
+
 		FindSetCommand.register()
 		ManageSetCommand.register()
+
+		FindChartCommand.register()
+		ManageChartCommand.register()
+
 		Best20Command.register()
+
+		MeCommand.register()
 		BindingCommand.register()
+
 		ReviewCommand.register()
+
+		ContextSetCommand.register()
+		ContextPeekCommand.register()
 	}
 
 }

@@ -29,3 +29,29 @@ object BindingCommand : SimpleCommand(
 	}
 
 }
+
+object MeCommand : SimpleCommand(
+	ExplodeMiraiPlugin,
+	"me",
+	"我",
+	description = "查询绑定的游戏账号"
+) {
+
+	@Handler
+	suspend fun CommandSender.handle() {
+		val usr = ExplodeBind.getMongoUserOrNull(this)
+		if(usr == null) {
+			sendMessage("尚未绑定账号")
+		} else {
+			val message = """
+				${usr.username}
+				（${usr._id}）
+				R：${usr.R}
+				金币：${usr.coin}
+			""".trimIndent()
+			sendMessage(message)
+			putContext(usr)
+		}
+	}
+
+}

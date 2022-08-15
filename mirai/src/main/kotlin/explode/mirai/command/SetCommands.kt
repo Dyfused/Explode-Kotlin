@@ -5,9 +5,6 @@ import explode.dataprovider.model.database.SetStatus
 import explode.mirai.*
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
-import java.lang.ref.WeakReference
-
-private val lastFind = mutableMapOf<Long?, WeakReference<MongoSet>>()
 
 object FindSetCommand : SimpleCommand(
 	ExplodeMiraiPlugin, "set",
@@ -38,7 +35,7 @@ object FindSetCommand : SimpleCommand(
 						拥有难度：${set.getChartsSummary()}
 					""".trimIndent() + "\n$introText"
 				sendMessage(message)
-				lastFind[user?.id] = WeakReference(set)
+				putContext(set)
 			}
 
 			else -> {
@@ -46,6 +43,7 @@ object FindSetCommand : SimpleCommand(
 					"<${it._id}>：${it.getChartsSummary()}"
 				}
 				sendMessage(message)
+				putContext(sets)
 			}
 		}
 	}
@@ -87,8 +85,10 @@ object ManageSetCommand : SimpleCommand(
 						Explode.updateSet(set)
 						sendMessage("操作成功")
 					}
+
 					"status" -> {
-						val newStatus = SetStatus.values().firstOrNull { it.name.lowercase() == propertyValue.lowercase() }
+						val newStatus =
+							SetStatus.values().firstOrNull { it.name.lowercase() == propertyValue.lowercase() }
 						if(newStatus == null) {
 							sendMessage("无效的值：${propertyValue}")
 							return
@@ -97,6 +97,7 @@ object ManageSetCommand : SimpleCommand(
 						Explode.updateSet(set)
 						sendMessage("操作成功")
 					}
+
 					else -> {
 						sendMessage("无效的字段：${propertyName}")
 					}
@@ -114,32 +115,14 @@ object ManageSetCommand : SimpleCommand(
 }
 
 private fun CommandSender.getSetListBySearchInfo(searchInfo: String): List<MongoSet> =
-	if(searchInfo.startsWith("#")) {
-		val id = searchInfo.substring(1)
-		listOfNotNull(Explode.getSet(id))
-	} else if(searchInfo == "$") {
-		listOfNotNull(lastFind[user?.id]?.get())
-	} else {
-		Explode.getSetByName(searchInfo).toList()
-	}
+	parseContext(searchInfo).toActual(Explode::getSet, Explode::getSetByNameList)
 
 private fun getPriceText(price: Int): String = when(price) {
 	0 -> "免费"
 	else -> "$price 金币"
 }
 
-private fun getHardLevelText(level: Int): String = when(level) {
-	1 -> "CASUAL"
-	2 -> "NORMAL"
-	3 -> "HARD"
-	4 -> "MEGA"
-	5 -> "GIGA"
-	else -> "UNKNOWN"
-}
-
 private fun MongoSet.getChartsSummary(): String = with(Explode) {
 	val charts = getCharts()
-	return charts.joinToString(separator = "，") {
-		"${getHardLevelText(it.difficultyClass)} ${it.difficultyValue}"
-	}
+	return charts.joinToString(separator = "，") { StringifyHelper.getSimpleHardness(it) }
 }
