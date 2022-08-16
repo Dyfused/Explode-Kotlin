@@ -24,7 +24,8 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
-class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowAccessor,
+class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detonate = Detonate(config)) : IBlowOmni,
+	IBlowAccessor,
 	IBlowResourceProvider by detonate.resourceProvider {
 
 	constructor() : this(Configuration(File("./provider.cfg")).explode().toMongo())
@@ -41,7 +42,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	// get the error handling strategy, Coward by default
-	private val errorHandlingStrategy = runCatching { ErrorHandlingStrategy.valueOf(config.errorHandlingStrategy) }.getOrDefault(ErrorHandlingStrategy.Coward)
+	private val errorHandlingStrategy =
+		runCatching { ErrorHandlingStrategy.valueOf(config.errorHandlingStrategy) }.getOrDefault(ErrorHandlingStrategy.Coward)
 
 	companion object {
 		const val InvalidSubmissionRandomId = "Invalid"
@@ -343,7 +345,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	override fun loginUser(username: String, password: String): MongoUser {
 		val u = getUserByName(username)
-			// register on invalid username
+		// register on invalid username
 			?: if(config.invalidUsernameAsRegister) {
 				return registerUser(username, password)
 			} else {
@@ -492,14 +494,16 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 		// check existance of the chart, in order to prevent the self-imported charts data infection.
 		val chart = getChart(fixedChartId)
-			// allow invalid submission mode
+		// allow invalid submission mode
 			?: if(config.allowInvalidPlaySubmission) {
 				return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(InvalidSubmissionRandomId))
 			} else {
 				fail("Invalid ChartId: $fixedChartId")
 			}
 
-		if(!isOwned(chart)) { fail("Not Owned Chart: $chartId") }
+		if(!isOwned(chart)) {
+			fail("Not Owned Chart: $chartId")
+		}
 
 		val p = PlayingData(randomId(), fixedChartId, ppCost)
 		playingDataCache[p.randomId] = p
@@ -597,7 +601,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val r = getReview() ?: fail("Set Review Data Lost: $_id")
 
 		// update status
-		status = if(pass) { r.expectStatus } else { SetStatus.HIDDEN }
+		status = if(pass) {
+			r.expectStatus
+		} else {
+			SetStatus.HIDDEN
+		}
 		updateSet(this)
 
 		// remove review data

@@ -37,6 +37,9 @@ object ExplodeMiraiPlugin : KotlinPlugin(
 
 		ContextSetCommand.register()
 		ContextPeekCommand.register()
+
+		// call for init
+		OmniHelper.onBotInit()
 	}
 
 }

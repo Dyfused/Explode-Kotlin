@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/data" />
             <option value="$PROJECT_DIR$/data-fixer" />
             <option value="$PROJECT_DIR$/mirai" />
+            <option value="$PROJECT_DIR$/omni" />
             <option value="$PROJECT_DIR$/pack" />
             <option value="$PROJECT_DIR$/server" />
           </set>

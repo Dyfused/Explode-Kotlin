@@ -1,18 +1,19 @@
 plugins {
     kotlin("jvm")
     application
-    // id("net.mamoe.mirai-console") version "2.12.1"
     kotlin("plugin.serialization") version "1.7.0"
     id("com.github.johnrengelman.shadow")
 }
 
-val miraiVersion = "2.11.0-M1"
+val miraiVersion: String by project
+val logbackVersion: String by project
 
 group = "explode"
-version = "1.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
+    maven("https://repo.mirai.mamoe.net/snapshots/")
 }
 
 dependencies {
@@ -21,6 +22,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.6.2")
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.2")
+
+    implementation("ch.qos.logback", "logback-classic", logbackVersion)
 
     implementation("net.mamoe:mirai-core:$miraiVersion")
     implementation("net.mamoe:mirai-console:$miraiVersion")

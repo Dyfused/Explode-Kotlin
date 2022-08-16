@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "explode"
-version = "1.2"
+version = "1.2.1"
 
 val logbackVersion: String by project
 

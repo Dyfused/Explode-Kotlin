@@ -6,8 +6,7 @@ import explode.backend.bomb.bombModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
-import explode.dataprovider.provider.IBlowAccessor
-import explode.dataprovider.provider.IBlowResourceProvider
+import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.utils.Config
@@ -28,8 +27,25 @@ val explodeConfig = Config(File("explode.cfg")).also { it.save() }
 
 private val theVeryBeginningTime = LocalDateTime.now()
 
-fun main(args: Array<String>) {
+fun main() {
+	// configure loggers and dump info
+	configureLogger()
+	mainLogger.info("Explode ${ExplodeInfo["version"]} ($GameVersion)")
+	bootstrap(MongoProvider())
+	mainLogger.info("Exploded.")
+}
 
+fun bootstrap(omni: IBlowOmni) = bootstrap(omni, omni)
+
+fun bootstrap(
+	acc: IBlowAccessor,
+	res: IBlowResourceProvider
+) {
+	startServer(acc, res)
+	startConsole(acc)
+}
+
+private fun configureLogger() {
 	if(!explodeConfig.mongoLogging) {
 		disableMongoLogging()
 	}
@@ -39,23 +55,14 @@ fun main(args: Array<String>) {
 	if(!explodeConfig.graphQLLogging) {
 		disableGraphQLLogging()
 	}
+}
 
-	mainLogger.info("Explode ${ExplodeInfo["version"]} ($GameVersion)")
+fun startServer(acc: IBlowAccessor, res: IBlowResourceProvider) {
+	startKtorServer(acc, res)
+}
 
-	// prepare data
-	val m = MongoProvider()
-
-	val operation = args.getOrNull(0)
-
-	ExplodeConsole(m).loop()
-
-	when(operation) {
-		"backend", null -> startKtorServer(m, m)
-		"console" -> { /* Console Only */ }
-		else -> println("Unknown subcommand: $operation")
-	}
-
-	mainLogger.info("Exploded.")
+fun startConsole(acc: IBlowAccessor) {
+	ExplodeConsole(acc).loop()
 }
 
 private fun disableMongoLogging() {
