@@ -173,4 +173,9 @@ interface IBlowAccessor : IBlowReadOnly {
 	 * End a review on the specific Set.
 	 */
 	fun MongoSet.endReview(pass: Boolean)
+
+//	fun addAssessmentGroup(
+//		name: String,
+//		assessmentCharts: List<String>
+//	)
 }

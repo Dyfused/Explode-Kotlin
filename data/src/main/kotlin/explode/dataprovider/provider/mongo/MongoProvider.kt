@@ -18,6 +18,8 @@ import org.bson.conversions.Bson
 import org.litote.kmongo.*
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.time.Duration
 import java.time.OffsetDateTime
 import java.util.*
@@ -124,7 +126,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun updateSet(mongoSet: MongoSet): MongoSet = mongoSet.upsert(chartSetC)
 
 	// non-null getters
-	fun MongoChart.getParentSet(): MongoSet = getSetByChartId(_id) ?: run {
+	override fun MongoChart.getParentSet(): MongoSet = getSetByChartId(_id) ?: run {
 		fixHeadlessChart(this)
 		fail("Unable to get the Set of a Headless Chart.")
 	}
@@ -269,7 +271,16 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		@Contextual val createTime: OffsetDateTime = OffsetDateTime.now()
 	)
 
+	@Serializable
+	data class PlayingAssessmentData(
+		@SerialName("_id") val randomId: String,
+		val assessmentId: String,
+		val medalLevel: Int,
+		@Contextual val createTime: OffsetDateTime = OffsetDateTime.now()
+	)
+
 	private val playingDataCache = mutableMapOf<String, PlayingData>()
+	private val playingAssessmentDataCache = mutableMapOf<String, PlayingAssessmentData>()
 
 	init {
 		thread(name = "PlayingDataGC", isDaemon = true) {
@@ -331,14 +342,91 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		updateUser(this)
 	}
 
-	override fun getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel> {
-		return emptyList()
+	private val assessmentGroupC = db.getCollection<MongoAssessmentGroup>("AssessmentGroup")
+	private val assessmentC = db.getCollection<MongoAssessment>("Assessment")
+	private val assessmentRecordC = db.getCollection<MongoAssessmentRecord>("AssessmentRecord")
+
+	override fun MongoUser.getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel> {
+		return assessmentGroupC.find().limit(limit).skip(skip).map { group ->
+			AssessmentGroupModel(
+				group.id,
+				group.name,
+				group.assessments.mapNotNull { (medalLevel, _) -> getTunerizedAssessment(group.id, medalLevel, _id) }
+			)
+		}.toList()
+	}
+
+	private fun MongoAssessmentGroup.getAssessments() =
+		assessments.mapNotNull { assessmentC.findOneById(it.value) }
+
+	private fun getTunerizedAssessment(assessmentGroupId: String, medalLevel: Int, userId: String): AssessmentModel {
+		val usr = getUser(userId) ?: fail("Invalid user: $userId")
+		val ass = getAssessmentByGroupAndMedal(assessmentGroupId, medalLevel)
+			?: fail("Invalid assessment: Medal $medalLevel of Group $assessmentGroupId")
+
+		return AssessmentModel(
+			ass.id,
+			medalLevel,
+			ass.lifeBarLength,
+			ass.normalPassAcc,
+			ass.goldenPassAcc,
+			ass.exMiss,
+			ass.getAssessmentCharts(),
+			listOf(
+				usr.getSelfBestAssessmentRecord(ass.id)?.let { assRec ->
+					val records = assRec.records.map {
+						val (perfect, good, miss) = it.scoreDetail
+						AssessmentPlayRecordModel(perfect, good, miss, it.score)
+					}
+					AssessmentRecordsModel(assRec.accuracy, true, records)
+				} ?: AssessmentRecordsModel(0.0, true, listOf())
+			)
+		)
+	}
+
+	private fun MongoAssessment.getAssessmentCharts() =
+		charts.mapNotNull { getChart(it) }.associateWith { it.getParentSet() }.map { (chart, set) ->
+			AssessmentChartModel(chart._id, set.tunerize)
+		}
+
+	fun getAssessmentByGroupAndMedal(assessmentGroupId: String, medalLevel: Int): MongoAssessment? {
+		return assessmentC.findOneById(
+			assessmentGroupC.findOneById(assessmentGroupId)?.assessments?.get(medalLevel) ?: return null
+		)
 	}
 
 	override fun getAssessmentRank(
 		assessmentGroupId: String, medalLevel: Int, limit: Int, skip: Int
 	): List<AssessmentRecordWithRankModel> {
-		return emptyList()
+		val ass = getAssessmentByGroupAndMedal(assessmentGroupId, medalLevel) ?: return emptyList()
+
+		return assessmentRecordC.aggregate<MongoAssessmentRecordRanked>(
+			match(MongoAssessmentRecordRanked::assessmentId eq ass.id),
+			sort(descending(MongoAssessmentRecordRanked::playerId, MongoAssessmentRecordRanked::totalScore)),
+			aggregateGroup,
+			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
+			aggregateRanking,
+			skip(skip),
+			limit(limit)
+		).map {
+			val player = getUser(it.playerId) ?: fail("Invalid user: ${it.playerId}")
+			AssessmentRecordWithRankModel(player.shrink, it.ranking, it.accuracy, it.result, it.time)
+		}.toList()
+	}
+
+	private fun MongoUser.getSelfAssessmentRecord(assessmentId: String): FindIterable<MongoAssessmentRecord> {
+		return assessmentRecordC.find(
+			and(
+				MongoAssessmentRecord::assessmentId eq assessmentId,
+				MongoAssessmentRecord::playerId eq _id
+			)
+		)
+	}
+
+	private fun MongoUser.getSelfBestAssessmentRecord(assessmentId: String): MongoAssessmentRecord? {
+		return getSelfAssessmentRecord(assessmentId).maxByOrNull {
+			it.records.sumOf(MongoAssessmentRecordEntry::score) + (it.exRecord?.score ?: 0)
+		}
 	}
 
 	override val gameSetting = GameSettingModel(config.latestClientVersion)
@@ -412,7 +500,18 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun MongoUser.getAssessmentRankSelf(
 		assessmentGroupId: String, medalLevel: Int
 	): AssessmentRecordWithRankModel? {
-		return null
+		val ass = getAssessmentByGroupAndMedal(assessmentGroupId, medalLevel)
+			?: fail("Invalid assessment: Medal $medalLevel of Group $assessmentGroupId")
+		return assessmentRecordC.aggregate<MongoAssessmentRecordRanked>(
+			match(MongoAssessmentRecordRanked::assessmentId eq ass.id),
+			sort(descending(MongoAssessmentRecordRanked::playerId, MongoAssessmentRecordRanked::totalScore)),
+			aggregateGroup,
+			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
+			aggregateRanking,
+			match(MongoAssessmentRecordRanked::playerId eq _id)
+		).map { (_, _, result, _, _, _, accuracy, time, _, ranking) ->
+			AssessmentRecordWithRankModel(this.shrink, ranking, accuracy, result, time)
+		}.firstOrNull()
 	}
 
 	private val aggregateRanking =
@@ -478,7 +577,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	override fun MongoUser.submitBeforeAssessment(assessmentId: String, medal: Int): BeforePlaySubmitModel {
-		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel("0"))
+		val data = PlayingAssessmentData(randomId(), assessmentId, medal, OffsetDateTime.now())
+		playingAssessmentDataCache[data.randomId] = data
+		return BeforePlaySubmitModel(data.createTime, PlayingRecordModel(data.randomId))
 	}
 
 	override fun MongoUser.submitBeforePlay(
@@ -514,10 +615,82 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return BeforePlaySubmitModel(OffsetDateTime.now(), PlayingRecordModel(p.randomId))
 	}
 
+	private val decimalFormat = DecimalFormat("#.##").also { it.roundingMode = RoundingMode.HALF_DOWN }
+
 	override fun MongoUser.submitAfterAssessment(
 		records: List<PlayRecordInput>, randomId: String
 	): AfterAssessmentModel {
-		return AfterAssessmentModel(1, R, this.coin, this.diamond)
+		val data = playingAssessmentDataCache[randomId] ?: fail("Invalid RandomId: $randomId")
+
+		playingAssessmentDataCache -= randomId
+
+		val medal = data.medalLevel
+		val ass = getAssessmentByGroupAndMedal(data.assessmentId, medal)
+			?: fail("Invalid assessment: Medal $medal of Group ${data.assessmentId}")
+
+		data class SafePlayRecordInput(
+			val score: Int,
+			val perf: Int,
+			val good: Int,
+			val miss: Int
+		)
+
+		fun calcAccuracy(perf: Int, good: Int, total: Int): Double {
+			val acc =  ((perf * 100000L + good * 50000L) / total) / 1000.0
+			return decimalFormat.format(acc).toDouble()
+		}
+
+		val recs = records.map {
+
+			val perf = it.perfect!!
+			val good = it.good!!
+			val miss = it.miss!!
+
+			MongoAssessmentRecordEntry(
+				it.score!!,
+				ScoreDetail(it.perfect, it.good, it.miss),
+				calcAccuracy(perf, good, perf+good+miss)
+			)
+		}.toList()
+
+		val recsWithoutEx = recs.toMutableList()
+
+		// only if the uploaded chart count equals to the expected chart count
+		val exRec = if(records.size == ass.charts.size) {
+			recsWithoutEx.removeLast()
+		} else {
+			null
+		}
+
+		val avgAcc = recsWithoutEx.map(MongoAssessmentRecordEntry::accuracy).average() + (exRec?.accuracy ?: 0.0)
+		val totalScore = recsWithoutEx.sumOf { it.score } + (exRec?.score ?: 0)
+
+		val result = when {
+			avgAcc >= ass.goldenPassAcc -> 2
+			avgAcc >= ass.normalPassAcc -> 1
+			else -> 0
+		}
+
+		val r = MongoAssessmentRecord(
+			_id,
+			ass.id,
+			result,
+			recs,
+			exRec,
+			totalScore,
+			avgAcc,
+			data.createTime
+		)
+
+		println(r)
+
+		r.upsert(assessmentRecordC)
+		if(result == 2 && (this.highestGoldenMedal ?: 0) < medal) {
+			highestGoldenMedal = medal
+			this.upsert(userC)
+		}
+
+		return AfterAssessmentModel(result, R, this.coin, this.diamond)
 	}
 
 	override fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel {
@@ -739,7 +912,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			PPTime = ppTime,
 			token = token,
 			RThisMonth = R,
-			highestGoldenMedal = null,
+			highestGoldenMedal = highestGoldenMedal,
 			access = AccessData(permission.review)
 		)
 
@@ -783,7 +956,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	val MongoUser.shrink: PlayerModel
-		get() = PlayerModel(_id, username, 0, R)
+		get() = PlayerModel(_id, username, highestGoldenMedal ?: 0, R)
 
 	fun MongoSet.getCharts(): List<MongoChart> {
 		return this.charts.mapNotNull {
