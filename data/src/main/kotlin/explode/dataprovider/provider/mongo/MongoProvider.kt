@@ -402,7 +402,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 		return assessmentRecordC.aggregate<MongoAssessmentRecordRanked>(
 			match(MongoAssessmentRecordRanked::assessmentId eq ass.id),
-			sort(descending(MongoAssessmentRecordRanked::playerId, MongoAssessmentRecordRanked::totalScore)),
+			sort(descending(MongoAssessmentRecordRanked::playerId, MongoAssessmentRecordRanked::accuracy)),
 			aggregateGroup,
 			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
 			aggregateRanking,
@@ -424,9 +424,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	}
 
 	private fun MongoUser.getSelfBestAssessmentRecord(assessmentId: String): MongoAssessmentRecord? {
-		return getSelfAssessmentRecord(assessmentId).maxByOrNull {
-			it.records.sumOf(MongoAssessmentRecordEntry::score) + (it.exRecord?.score ?: 0)
-		}
+		return getSelfAssessmentRecord(assessmentId).sort(descending(MongoAssessmentRecord::accuracy)).firstOrNull()
 	}
 
 	override val gameSetting = GameSettingModel(config.latestClientVersion)
