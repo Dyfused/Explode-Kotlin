@@ -934,7 +934,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			_id = _id,
 			introduction = introduction ?: "",
 			coinPrice = price,
-			noter = NoterModel(getUser(noterId)?.username ?: "unknown"),
+			noter = NoterModel(noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown"),
 			musicTitle = musicName,
 			composerName = composerName,
 			playCount = 0,
