@@ -2,6 +2,7 @@ package explode.backend.bomb.v1
 
 import explode.dataprovider.model.database.*
 import explode.dataprovider.provider.IBlowReadOnly
+import kotlinx.serialization.json.*
 import kotlin.reflect.KProperty1
 
 /*
@@ -13,99 +14,84 @@ These functions should be named by `bombify`.
 
  */
 
-private fun <T> doBombify(any: T, vararg fields: KProperty1<T, *>) =
-	buildMap {
-		fields.forEach {
-			this[it.name.camelCaseToSnakeCase()] = it.get(any)
-		}
-	}
-
-context(MutableMap<String, Any?>)
-private fun <T> T.property(property: KProperty1<T, *>) {
-	put(property.name.camelCaseToSnakeCase(), property.get(this))
-}
-
-context(MutableMap<String, Any?>)
-private fun <T> T.properties(vararg properties: KProperty1<T, *>) = properties.forEach { property(it) }
-
 // from: https://stackoverflow.com/questions/60010298/how-can-i-convert-a-camel-case-string-to-snake-case-and-back-in-idiomatic-kotlin
 private val camelRegex = "(?<=[a-zA-Z])[A-Z]".toRegex()
 // convert camel cases to snake case like 'chartId' to 'chart-id'
 private fun String.camelCaseToSnakeCase() = camelRegex.replace(this) { "-${it.value}" }.lowercase()
 
 fun MongoUser.bombify() =
-	buildMap {
-		properties(
-			MongoUser::id,
-			MongoUser::username,
-			MongoUser::R,
-			MongoUser::coin,
-			MongoUser::diamond,
-			MongoUser::highestGoldenMedal
-		)
+	buildJsonObject {
+		put("id", id)
+		put("username", username)
+		put("r", R)
+		put("coin", coin)
+		put("diamond", diamond)
+		put("highest-golden-medal", highestGoldenMedal)
 	}
 
 context(IBlowReadOnly)
 fun MongoSet.bombify() =
-	buildMap {
-		properties(
-			MongoSet::id,
-			MongoSet::musicName,
-			MongoSet::composerName,
-			MongoSet::introduction,
-			MongoSet::price,
-			MongoSet::status,
-			MongoSet::charts,
-		)
-		// to replace the [noterId] and [noterDisplayOverride]
-		this["display-noter-name"] = noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown"
+	buildJsonObject {
+		put("id", id)
+		put("music-name", musicName)
+		put("music-composer", composerName)
+		put("introduction", introduction)
+		put("price", price)
+		put("status", status.name)
+		put("noter-name", noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown")
+		putJsonArray("charts") {
+			charts.forEach {
+				add(it)
+			}
+		}
 	}
 
 context(IBlowReadOnly)
 fun MongoChart.bombify() =
-	buildMap {
-		properties(
-			MongoChart::id,
-			MongoChart::difficultyClass,
-			MongoChart::difficultyValue,
-			MongoChart::D
-		)
-		this["included-in"] = getSetByChartId(id)?.id
+	buildJsonObject {
+		put("id", id)
+		put("difficulty-class", difficultyClass)
+		put("difficulty-value", difficultyValue)
+		put("d", D)
+		put("included-in", getSetByChartId(id)?.id)
 	}
 
 fun MongoRecord.bombify() =
-	buildMap {
-		properties(
-			MongoRecord::chartId,
-			MongoRecord::score,
-			MongoRecord::RScore,
-			MongoRecord::uploadedTime
-		)
-		// unwrap [scoreDetail]
-		this["perfect"] = scoreDetail.perfect
-		this["good"] = scoreDetail.good
-		this["miss"] = scoreDetail.miss
+	buildJsonObject {
+		put("chart-id", chartId)
+		put("score", score)
+		put("perfect", scoreDetail.perfect)
+		put("good", scoreDetail.good)
+		put("miss", scoreDetail.miss)
+		put("r", RScore)
 	}
 
 fun MongoRecordRanked.bombify() =
-	doBombify(
-		this,
-		MongoRecordRanked::chartId,
-		MongoRecordRanked::score,
-		MongoRecordRanked::scoreDetail,
-		MongoRecordRanked::RScore,
-		MongoRecordRanked::ranking,
-		MongoRecordRanked::uploadedTime
-	)
+	buildJsonObject {
+		put("chart-id", chartId)
+		put("score", score)
+		put("perfect", scoreDetail.perfect)
+		put("good", scoreDetail.good)
+		put("miss", scoreDetail.miss)
+		put("r", RScore)
+		put("ranking", ranking)
+	}
 
 fun MongoReview.bombify() =
-	buildMap {
-		properties(
-			MongoReview::id,
-			MongoReview::reviewedSet,
-			MongoReview::reviews,
-			MongoReview::expectStatus
-		)
+	buildJsonObject {
+		put("id", id)
+		put("set-id", reviewedSet)
+		put("expect-status", expectStatus.name)
+		putJsonArray("reviews") {
+			reviews.forEach {
+				add(buildJsonObject {
+					put("id", it.id)
+					put("status", it.status)
+					put("evaluation", it.evaluation)
+					put("reviewer-id", it.reviewerId)
+				})
+			}
+		}
 	}
 
 /**

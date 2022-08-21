@@ -2,8 +2,7 @@ package explode.backend.bomb.v1
 
 import explode.backend.bomb.v0.respondJson
 import explode.dataprovider.model.database.*
-import explode.dataprovider.provider.BlowException
-import explode.dataprovider.provider.IBlowOmni
+import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoProvider
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -14,6 +13,9 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.*
 import java.io.File
 import explode.backend.bomb.v1.BombConfiguration as Conf
 
@@ -27,7 +29,6 @@ private val callouts = listOf(
 	"Light", "Love", "Pyramid", "Savathûn", "Scorn", "Stop", "Tower", "Traveller", "Witness", "Worm", "Worship"
 )
 
-context(IBlowOmni)
 class Bomb(private val omni: IBlowOmni) {
 
 	fun Application.bombModule() = with(omni) {
@@ -35,6 +36,7 @@ class Bomb(private val omni: IBlowOmni) {
 		install(CORS) {
 			anyHost()
 			allowHeader(HttpHeaders.AccessControlAllowOrigin)
+			allowHeader(HttpHeaders.Authorization)
 		}
 
 		install(Authentication) {
@@ -61,7 +63,40 @@ class Bomb(private val omni: IBlowOmni) {
 			}
 
 			exception<UnauthorizedException> { call, cause ->
-				call.respondJson("error" to cause.message, HttpStatusCode.Unauthorized)
+				call.respondJson(
+					buildMap {
+						this["error"] = cause.message
+					},
+					HttpStatusCode.Unauthorized
+				)
+			}
+
+			exception<SerializationException> { call, cause ->
+				call.respondJson(
+					buildMap {
+						this["error"] = cause.message ?: cause.javaClass.simpleName
+						this["trace"] = cause.stackTraceToString()
+					},
+					HttpStatusCode.InternalServerError
+				)
+			}
+
+			exception<BadRequestException> { call, cause ->
+				call.respondJson(
+					buildMap {
+						this["error"] = cause.message.orEmpty()
+					},
+					HttpStatusCode.BadRequest
+				)
+			}
+
+			exception<NotFoundException> { call, cause ->
+				call.respondJson(
+					buildMap {
+						this["error"] = cause.message.orEmpty()
+					},
+					HttpStatusCode.BadRequest
+				)
 			}
 
 //			exception<Throwable> { call, cause ->
@@ -131,18 +166,6 @@ class Bomb(private val omni: IBlowOmni) {
 
 						// set
 						route("set") {
-							// get [/management/set/by-name/{name}] - return the set with the provided name
-							get("by-name/{name}") {
-								checkAdmin()
-								respOk(omni.getSetsByName(getParam("name")).toList().throwNotFoundIfEmpty())
-							}
-
-							// get [/management/set/by-chart/{id}] - return the set including the provided chart
-							get("by-chart/{id}") {
-								checkAdmin()
-								respOk(omni.getSetByChartId(getParam("id")) ?: throw NotFoundException())
-							}
-
 							route("{id}") {
 								// get [/management/set/{id}] - return the full set data
 								get {
@@ -209,10 +232,15 @@ class Bomb(private val omni: IBlowOmni) {
 						respOk(omni.registerUser(username, password).bombify())
 					}
 
+					// get [/user/by-name/{name}] - return the summary user data
+					post("by-name") {
+						respOk(omni.getUserByName(receive())?.bombify() ?: throw NotFoundException())
+					}
+
 					route("{id}") {
 						// get [/user/{id}] - return the summary user data
 						get {
-							respOk(getParamUser())
+							respOk(getParamUser().bombify())
 						}
 
 						// post [/user/{id}/buy-invitation] - return an invitation code if the user can afford
@@ -249,6 +277,17 @@ class Bomb(private val omni: IBlowOmni) {
 				}
 
 				route("set") {
+
+					// post [/set/by-name] - return the set with the provided name
+					post("by-name") {
+						respOk(omni.getSetsByName(receive()).toList().throwNotFoundIfEmpty())
+					}
+
+					// post [/set/by-chart] - return the set including the provided chart
+					post("by-chart") {
+						respOk(omni.getSetByChartId(receive()) ?: throw NotFoundException())
+					}
+
 					route("{id}") {
 						// get [/set/{id}] - return the summary set data
 						get {
@@ -298,18 +337,18 @@ class Bomb(private val omni: IBlowOmni) {
 									val set = getParamSet()
 									val review = getParamReview()
 
-									val data = receive<Map<String, String>>()
-									val force = runCatching { // get the pass-in value
-										data["status"]?.toBooleanStrict()
-									}.onFailure { // throw if convert failed
-										throw ParameterConversionException("status", "Boolean", it)
-									}.getOrNull() ?: if(omni is MongoProvider) { // if the provider is MongoProvider then auto calculate the result
-										with(omni) { review.peekAutoReviewResult() }
-									} else { // otherwise use the default value
-										true
-									}
+									val data = receive<JsonObject>()
 
-									set.endReview(force)
+									val dataValue = data["status"]
+									val status =
+										(dataValue is JsonPrimitive && dataValue.booleanOrNull == true) || // if status has value
+												if(omni is MongoProvider) { // else use auto review
+													with(omni) { review.peekAutoReviewResult() }
+												} else {
+													true // fallback to default value
+												}
+
+									set.endReview(status)
 
 									respOk("OK")
 								}
@@ -317,10 +356,12 @@ class Bomb(private val omni: IBlowOmni) {
 						}
 					}
 
-					// get [/set/reviews] - return the list of reviews
-					get("reviews") {
-						checkReviewer()
-						respOk(getReviewList().toList().map(MongoReview::bombify))
+					authenticate {
+						// get [/set/reviews] - return the list of reviews
+						get("reviews") {
+							checkReviewer()
+							respOk(getReviewList().toList().map(MongoReview::bombify))
+						}
 					}
 				}
 
@@ -387,18 +428,20 @@ class Bomb(private val omni: IBlowOmni) {
 		return omni.getChart(getParam("id")) ?: throw NotFoundException()
 	}
 
-	private fun TheCall.getParamReview(): MongoReview {
+	context(IBlowAccessor) private fun TheCall.getParamReview(): MongoReview {
 		return getParamSet().getReview() ?: throw NotFoundException()
 	}
 
 	// region: body param accessor
 
-	private suspend inline fun <reified T : Any> TheCall.receive(): T =
-		call.receiveOrNull() ?: throw BadRequestException("Request body content is missing")
+	private suspend inline fun <reified T : Any> TheCall.receive(): T {
+		return Json.decodeFromString(call.receiveText())
+		// return call.receiveOrNull() ?: throw BadRequestException("Request body content is missing")
+	}
 
 	// region: responding
 
-	private suspend fun TheCall.respOk(data: Any?) {
+	private suspend inline fun <reified T> TheCall.respOk(data: T?) {
 		call.respondJson(data, HttpStatusCode.OK)
 	}
 

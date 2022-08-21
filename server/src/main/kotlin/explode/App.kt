@@ -2,11 +2,12 @@ package explode
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
-import explode.backend.bomb.v0.bombModule
+import explode.backend.bomb.v1.Bomb
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
-import explode.dataprovider.provider.*
+import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.IBlowOmni
 import explode.dataprovider.provider.mongo.MongoProvider
 import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.utils.Config
@@ -37,14 +38,9 @@ fun main() {
 	mainLogger.info("Exploded.")
 }
 
-fun bootstrap(omni: IBlowOmni) = bootstrap(omni, omni)
-
-fun bootstrap(
-	acc: IBlowAccessor,
-	res: IBlowResourceProvider
-) {
-	startServer(acc, res)
-	startConsole(acc)
+fun bootstrap(omni: IBlowOmni) {
+	startServer(omni)
+	startConsole(omni)
 }
 
 private fun configureLogger() {
@@ -59,8 +55,8 @@ private fun configureLogger() {
 	}
 }
 
-fun startServer(acc: IBlowAccessor, res: IBlowResourceProvider) {
-	startKtorServer(acc, res)
+fun startServer(omni: IBlowOmni) {
+	startKtorServer(omni)
 }
 
 fun startConsole(acc: IBlowAccessor) {
@@ -80,7 +76,7 @@ private fun disableGraphQLLogging() {
 		Level.ERROR
 }
 
-private fun startKtorServer(dataProvider: IBlowAccessor, resourceProvider: IBlowResourceProvider) {
+private fun startKtorServer(omni: IBlowOmni) {
 	mainLogger.info("Backend Port: ${explodeConfig.port}")
 	mainLogger.info("GraphQl PlayGround: ${explodeConfig.enablePlayground}")
 	mainLogger.info("Done! (${Duration.between(theVeryBeginningTime, LocalDateTime.now()).toMillis()}ms)")
@@ -89,9 +85,10 @@ private fun startKtorServer(dataProvider: IBlowAccessor, resourceProvider: IBlow
 		Netty,
 		environment = applicationEngineEnvironment {
 			module {
-				graphQLModule(dataProvider, explodeConfig.enablePlayground)
-				dynamiteResourceModule(resourceProvider)
-				bombModule(dataProvider, resourceProvider)
+				graphQLModule(omni, explodeConfig.enablePlayground)
+				dynamiteResourceModule(omni)
+				// bombModule(dataProvider, resourceProvider)
+				with(Bomb(omni)) { bombModule() }
 			}
 
 			connector {
