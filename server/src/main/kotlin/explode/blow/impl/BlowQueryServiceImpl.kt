@@ -93,7 +93,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 
 	override suspend fun refreshSet(env: DataFetchingEnvironment, setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set> = with(p) {
 		return setVersion.mapNotNull { getSet(it.setId) }.map {
-			ClassifiedModels.Set(it._id, it.status.isRanked, it.introduction ?: "", getUser(it.noterId)?.username ?: "unknown", it.musicName)
+			ClassifiedModels.Set(it.id, it.status.isRanked, it.introduction ?: "", getUser(it.noterId)?.username ?: "unknown", it.musicName)
 		}
 	}
 }

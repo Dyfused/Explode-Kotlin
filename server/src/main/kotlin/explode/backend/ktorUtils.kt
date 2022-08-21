@@ -1,7 +1,7 @@
 package explode.backend
 
-import explode.backend.bomb.BadResult
-import explode.backend.bomb.respondJson
+import explode.backend.bomb.v0.BadResult
+import explode.backend.bomb.v0.respondJson
 import explode.dataprovider.model.database.MongoUser
 import explode.dataprovider.provider.fail
 import explode.globalJson

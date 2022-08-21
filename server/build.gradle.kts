@@ -28,6 +28,7 @@ dependencies {
     implementation("io.ktor", "ktor-server-netty", ktorVersion)
     implementation("io.ktor", "ktor-server-cors", ktorVersion)
     implementation("io.ktor", "ktor-server-auth", ktorVersion)
+    implementation("io.ktor", "ktor-server-status-pages", ktorVersion)
     implementation("io.ktor", "ktor-server-content-negotiation", ktorVersion)
     implementation("io.ktor", "ktor-serialization-kotlinx-json", ktorVersion)
     implementation("ch.qos.logback", "logback-classic", logbackVersion)
@@ -38,7 +39,7 @@ dependencies {
     implementation("com.github.taskeren", "tconfig", "1.0")
     testImplementation(kotlin("test"))
     testImplementation("com.squareup.okhttp3:okhttp:4.10.0")
-    testImplementation("io.ktor", "ktor-server-test-host", ktorVersion)
+    // testImplementation("io.ktor", "ktor-server-test-host", ktorVersion)
 }
 
 tasks.test {
@@ -47,6 +48,7 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.freeCompilerArgs = listOf("-Xcontext-receivers")
 }
 
 application {

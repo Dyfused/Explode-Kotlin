@@ -25,10 +25,10 @@ object FindChartCommand : SimpleCommand(
 				val set = with(Explode) { chart.getParentSet() }
 				val message = """
 					谱面
-					（${chart._id}）
+					（${chart.id}）
 					难度：${StringifyHelper.getSimpleHardness(chart)}
 					定值：${chart.D}
-					包含于：《${set.musicName}》（${set._id}）
+					包含于：《${set.musicName}》（${set.id}）
 				""".trimIndent()
 				sendMessage(message)
 				putContext(chart)
@@ -36,7 +36,7 @@ object FindChartCommand : SimpleCommand(
 
 			else -> {
 				val message = "匹配到多个谱面\n" + charts.joinToString(separator = "\n") {
-					"<${it._id}> ${StringifyHelper.getSimpleHardness(it)}"
+					"<${it.id}> ${StringifyHelper.getSimpleHardness(it)}"
 				}
 				sendMessage(message)
 				putContext(charts)
@@ -90,7 +90,7 @@ object ManageChartCommand : SimpleCommand(
 
 			else -> { // 不太可能发生的东西
 				val message = "匹配到多个谱面\n" + charts.joinToString(separator = "\n") {
-					"<${it._id}> ${StringifyHelper.getSimpleHardness(it)}"
+					"<${it.id}> ${StringifyHelper.getSimpleHardness(it)}"
 				}
 				sendMessage(message)
 			}

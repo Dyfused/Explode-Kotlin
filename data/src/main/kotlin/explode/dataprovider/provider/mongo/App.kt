@@ -82,17 +82,17 @@ private fun import() {
 			) {
 				set.charts.forEach { chart ->
 					addChart(chart.difficultyClass, chart.difficultyValue, chart.DValue, chart.id).apply {
-						mp.addChartResource(_id, packFolder.resolve(chart.chartPath).readBytes())
+						mp.addChartResource(id, packFolder.resolve(chart.chartPath).readBytes())
 					}
 					chartCount++
 				}
 			}.apply {
-				mp.addMusicResource(_id, packFolder.resolve(set.musicPath).readBytes())
-				mp.addPreviewResource(_id, packFolder.resolve(set.previewMusicPath).readBytes())
-				mp.addSetCoverResource(_id, packFolder.resolve(set.coverPicturePath).readBytes())
-				set.storePreviewPicturePath?.let { mp.addStorePreviewResource(_id, packFolder.resolve(it).readBytes()) }
+				mp.addMusicResource(id, packFolder.resolve(set.musicPath).readBytes())
+				mp.addPreviewResource(id, packFolder.resolve(set.previewMusicPath).readBytes())
+				mp.addSetCoverResource(id, packFolder.resolve(set.coverPicturePath).readBytes())
+				set.storePreviewPicturePath?.let { mp.addStorePreviewResource(id, packFolder.resolve(it).readBytes()) }
 
-				println(_id)
+				println(id)
 			}
 			setCount++
 		}.onFailure {
@@ -124,7 +124,7 @@ private fun export() {
 	}
 
 	val setMeta = mp.getAllSets().map { set ->
-		val sid = set._id
+		val sid = set.id
 
 		val musicPath = "${sid}/${sid}.mp3"
 		val previewMusicPath = "${sid}/${sid}_preview.mp3"
@@ -144,7 +144,7 @@ private fun export() {
 			null
 		}
 
-		SetMeta(id = set._id,
+		SetMeta(id = set.id,
 			musicName = set.musicName,
 			composerName = set.composerName,
 			noterName = mp.getUser(set.noterId)?.username ?: "unknown",
@@ -160,9 +160,9 @@ private fun export() {
 					difficultyClass = c.difficultyClass,
 					difficultyValue = c.difficultyValue,
 					DValue = c.D,
-					chartPath = "${set._id}/${set._id}_${MetaUtil.parseHardnessClassInt2String(c.difficultyClass)}.xml",
+					chartPath = "${set.id}/${set.id}_${MetaUtil.parseHardnessClassInt2String(c.difficultyClass)}.xml",
 				).apply {
-					outFolder.resolve(chartPath).writeBytes(mp.getChartResource(c._id)!!)
+					outFolder.resolve(chartPath).writeBytes(mp.getChartResource(c.id)!!)
 				}
 			})
 	}
@@ -247,7 +247,7 @@ private fun renewId() {
 		} else {
 			println("\nMUSIC <$musicName>")
 
-			val dbSets = mp.getSetByName(musicName).toList()
+			val dbSets = mp.getSetsByName(musicName).toList()
 			val matchedDbSets = mutableListOf<MongoSet>()
 			dbSets.forEach { dbSet ->
 				val packCharts = packSet.charts.map { MongoChart(randomId(), it.difficultyClass, it.difficultyValue, null) }
@@ -262,13 +262,13 @@ private fun renewId() {
 			}
 
 			warnings += if(matchedDbSets.size > 1) {
-				"Warning: ${packSet.musicName} matches multiple sets ${matchedDbSets.map(MongoSet::_id)}."
+				"Warning: ${packSet.musicName} matches multiple sets ${matchedDbSets.map(MongoSet::id)}."
 			} else if(matchedDbSets.isEmpty()) {
 				"Warning: ${packSet.musicName} matches nothing."
 			} else {
 				val dbSet = matchedDbSets.first()
-				val oldId = dbSet._id
-				val newSet = dbSet.copy(_id = newId)
+				val oldId = dbSet.id
+				val newSet = dbSet.copy(id = newId)
 				// 删除老数据
 				oldSets.deleteOneById(oldId)
 				// 添加新数据
@@ -306,7 +306,7 @@ private fun updateStatusByD() {
 			mp.updateSet(set)
 			true
 		} else {
-			println("Warning: ${set.musicName}(${set._id}) has multiple charts missing or with no D value.")
+			println("Warning: ${set.musicName}(${set.id}) has multiple charts missing or with no D value.")
 			false
 		}
 	}
@@ -374,7 +374,7 @@ private fun loadCsvD() {
 			?: return@forEachIndexed errorMsg("Invalid difficulty number [$hardLevel] at line $lineNum")
 		val d = dStr.toDoubleOrNull() ?: return@forEachIndexed errorMsg("Invalid R value [$dStr] at line $lineNum")
 
-		val sets = mp.getSetByName(musicName).toList()
+		val sets = mp.getSetsByName(musicName).toList()
 		if(sets.isEmpty()) {
 			return@forEachIndexed errorMsg("No matched set found for name [$musicName] at line $lineNum [D=$d]")
 		}
@@ -391,13 +391,13 @@ private fun loadCsvD() {
 		} else if(matchedChart.size > 1) {
 			errorMsg("Too many matched chart found for [$musicName] class [$diffClass] and value [$diffValue] at line $lineNum [D=$d], they are: ")
 			matchedChart.forEach {
-				errorMsg("- ${it._id}")
+				errorMsg("- ${it.id}")
 			}
 		} else {
 			val c = matchedChart[0]
 			c.D = d
 			mp.updateChart(c)
-			println("Updated D of [${c._id}] to [$d]")
+			println("Updated D of [${c.id}] to [$d]")
 		}
 
 	}
@@ -414,7 +414,7 @@ private fun updateNeedReviewToUnRanked() {
 		if(it.status == SetStatus.NEED_REVIEW) {
 			it.status = SetStatus.UNRANKED
 			mp.updateSet(it)
-			println("Set ${it.musicName}<${it._id}> to UnRanked.")
+			println("Set ${it.musicName}<${it.id}> to UnRanked.")
 		}
 	}
 }

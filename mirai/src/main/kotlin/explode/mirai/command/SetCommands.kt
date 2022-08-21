@@ -29,7 +29,7 @@ object FindSetCommand : SimpleCommand(
 				} ?: "无谱面介绍"
 				val message = """
 						《${set.musicName}》
-						（${set._id}）
+						（${set.id}）
 						状态：${set.status.humanizedName}
 						价格：${getPriceText(set.price)}
 						作者名称：$noterName
@@ -41,7 +41,7 @@ object FindSetCommand : SimpleCommand(
 
 			else -> {
 				val message = "匹配到多条曲目\n" + sets.joinToString(separator = "\n") {
-					"<${it._id}>：${it.getChartsSummary()}"
+					"<${it.id}>：${it.getChartsSummary()}"
 				}
 				sendMessage(message)
 				putContext(sets)
@@ -107,7 +107,7 @@ object ManageSetCommand : SimpleCommand(
 
 			else -> {
 				val message = "匹配到多条曲目\n" + sets.joinToString(separator = "\n") {
-					"<${it._id}>：${it.getChartsSummary()}"
+					"<${it.id}>：${it.getChartsSummary()}"
 				}
 				sendMessage(message)
 			}
@@ -116,7 +116,7 @@ object ManageSetCommand : SimpleCommand(
 }
 
 private fun CommandSender.getSetListBySearchInfo(searchInfo: String): List<MongoSet> =
-	parseContext(searchInfo).toActual(Explode::getSet, Explode::getSetByNameList)
+	parseContext(searchInfo).toActual(Explode::getSet, Explode::getSetListByName)
 
 private fun getPriceText(price: Int): String = when(price) {
 	0 -> "免费"

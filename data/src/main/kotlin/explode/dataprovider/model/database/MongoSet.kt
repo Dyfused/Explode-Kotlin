@@ -1,10 +1,12 @@
 package explode.dataprovider.model.database
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class MongoSet(
-	val _id: String,
+	@SerialName("_id")
+	val id: String,
 	var musicName: String,
 	var composerName: String,
 	var noterId: String,

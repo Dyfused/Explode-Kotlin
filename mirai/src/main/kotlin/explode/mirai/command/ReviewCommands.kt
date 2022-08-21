@@ -62,7 +62,7 @@ object ReviewCommand : CompositeCommand(
 				val evaluation = messageStr.orEmpty()
 
 				runCatching {
-					set.addReviewResult(MongoReviewResult(u._id, status, evaluation))
+					set.addReviewResult(MongoReviewResult(u.id, status, evaluation))
 				}.onSuccess {
 					sendMessage("已提交审核")
 				}.onFailure {
@@ -105,7 +105,7 @@ object ReviewCommand : CompositeCommand(
 				} ?: "无谱面介绍"
 				val setInfoText = """
 					<${set.musicName}>
-					（${set._id}）
+					（${set.id}）
 					谱面作者（上传者）：${noterName}
 					$introText
 					曲目价格：${set.price}
@@ -157,7 +157,7 @@ object ReviewCommand : CompositeCommand(
 				}
 
 				set.startReview(expectStatus)
-				sendMessage("已开启审核：${set.musicName}（${set._id}）")
+				sendMessage("已开启审核：${set.musicName}（${set.id}）")
 			}
 		}
 	}
@@ -201,7 +201,7 @@ object ReviewCommand : CompositeCommand(
 				val resultText = if(forcedReviewResult) "通过" else "拒绝"
 
 				set.endReview(forcedReviewResult)
-				sendMessage("已结束审核：${set.musicName}（${set._id}），结果为：$resultText")
+				sendMessage("已结束审核：${set.musicName}（${set.id}），结果为：$resultText")
 			}
 		}
 	}
@@ -231,7 +231,7 @@ object ReviewCommand : CompositeCommand(
 						"错误的审核信息，无法找到曲目：${it.reviewedSet}"
 					} else {
 						val n = Explode.getUser(s.noterId)?.username ?: "曲目数据错误，无效用户ID：${s.noterId}"
-						"<${s.musicName}>（${s._id}） by $n"
+						"<${s.musicName}>（${s.id}） by $n"
 					}
 				}
 			}

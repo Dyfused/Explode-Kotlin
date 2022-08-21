@@ -143,7 +143,7 @@ interface IBlowAccessor : IBlowReadOnly {
 			return accessor.createSet(
 				musicName = musicName,
 				composerName = composerName,
-				noterId = noterUser._id,
+				noterId = noterUser.id,
 				charts = charts.values.toList(),
 				id = defaultId,
 				introduction = introduction,
@@ -169,13 +169,20 @@ interface IBlowAccessor : IBlowReadOnly {
 
 	fun MongoSet.startReview(expectStatus: SetStatus)
 
+	fun MongoReview.addReview(userId: String, status: Boolean, evaluation: String)
+
 	/**
 	 * End a review on the specific Set.
 	 */
 	fun MongoSet.endReview(pass: Boolean)
 
-//	fun addAssessmentGroup(
-//		name: String,
-//		assessmentCharts: List<String>
-//	)
+	fun MongoUser.canAffordCoin(coin: Int): Boolean {
+		return this.coin >= coin
+	}
+
+	fun MongoUser.canAffordDiamond(diamond: Int): Boolean {
+		return this.diamond >= diamond
+	}
+	fun MongoUser.payCoin(coin: Int): Boolean
+	fun MongoUser.payDiamond(diamond: Int): Boolean
 }

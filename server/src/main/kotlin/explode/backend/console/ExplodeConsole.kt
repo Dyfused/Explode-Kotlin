@@ -108,12 +108,12 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 	@SubCommand(desc = "(/findSet <setName>) List the set in specified name.")
 	fun findSet(sp: List<String>): Any {
 		val setName = sp.toMutableList().apply { removeAt(0) }.joinToString(" ")
-		val sets = mp?.getSetByName(setName) ?: return "Invalid parameter: setName"
+		val sets = mp?.getSetsByName(setName) ?: return "Invalid parameter: setName"
 
 		sets.forEach { set ->
-			println("<${set.musicName}> ${set._id}")
+			println("<${set.musicName}> ${set.id}")
 			set.charts.mapNotNull(mp::getChart).forEach { chart ->
-				println("- <${chart._id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
+				println("- <${chart.id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
 			}
 		}
 		return ""
@@ -124,7 +124,7 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val chartId = sp.getOrNull(1) ?: return "Missing parameter: chartId"
 		val chart = mp?.getChart(chartId) ?: return "Invalid parameter: chartId"
 
-		println("- <${chart._id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
+		println("- <${chart.id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
 		return ""
 	}
 
@@ -136,7 +136,7 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
 
 		with(mp) {
-			set.addReviewResult(MongoReviewResult(serverUser._id, status, message))
+			set.addReviewResult(MongoReviewResult(serverUser.id, status, message))
 		}
 
 		return "Done"
@@ -168,7 +168,7 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val status = sp.getOrNull(2)?.toBooleanStrictOrNull() ?: true
 
 		with(mp) {
-			set.getReview() ?: return "No ongoing review for <${set.musicName}>(${set._id})"
+			set.getReview() ?: return "No ongoing review for <${set.musicName}>(${set.id})"
 			set.endReview(status)
 		}
 

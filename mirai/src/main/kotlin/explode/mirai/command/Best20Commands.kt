@@ -32,8 +32,8 @@ object Best20Command : SimpleCommand(
 		}
 	}
 
-	private suspend fun CommandSender.sendBest20(u: MongoUser) {
-		val b20 = Explode.getUserBestR20(u._id)
+	private suspend fun CommandSender.sendBest20(u: MongoUser) = with(Explode) {
+		val b20 = u.getBestPlayRecordsR(20, 0) // Explode.getUserBestR20(u.id)
 		val b20Message = b20.joinToString(separator = "\n") {
 			val songInfo = with(Explode) {
 				val ch = getChart(it.chartId)

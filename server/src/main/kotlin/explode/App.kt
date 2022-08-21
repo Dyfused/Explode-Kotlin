@@ -2,7 +2,7 @@ package explode
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
-import explode.backend.bomb.bombModule
+import explode.backend.bomb.v0.bombModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule

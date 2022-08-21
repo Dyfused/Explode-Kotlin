@@ -21,7 +21,7 @@ object BindingCommand : SimpleCommand(
 		if(this is AbstractUserCommandSender) {
 			val qid = user.id
 			ExplodeBind.unbind(qid)
-			ExplodeBind.bind(qid, u._id)
+			ExplodeBind.bind(qid, u.id)
 			sendMessage("绑定成功")
 		} else {
 			sendMessage("不支持的环境")
@@ -45,7 +45,7 @@ object MeCommand : SimpleCommand(
 		} else {
 			val message = """
 				${usr.username}
-				（${usr._id}）
+				（${usr.id}）
 				R：${usr.R}
 				金币：${usr.coin}
 			""".trimIndent()

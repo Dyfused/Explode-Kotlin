@@ -27,5 +27,5 @@ object ExplodeBind {
 }
 
 var MongoUser.qqId: Long?
-	get() = ExplodeBind.getQQId(_id)
-	set(value) { if(value != null) ExplodeBind.bind(value, _id) else ExplodeBind.unbind(_id) }
+	get() = ExplodeBind.getQQId(id)
+	set(value) { if(value != null) ExplodeBind.bind(value, id) else ExplodeBind.unbind(id) }
