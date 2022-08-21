@@ -12,5 +12,7 @@ data class MongoSet(
 	var price: Int,
 	var status: SetStatus,
 	val charts: MutableList<String>,
+
+	var noterDisplayOverride: String? = null
 )
 

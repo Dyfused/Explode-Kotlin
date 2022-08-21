@@ -17,5 +17,7 @@ data class MongoUser(
 	val ppTime: OffsetDateTime,
 	val token: String,
 	var R: Int,
-	val permission: UserPermission
+	val permission: UserPermission,
+
+	var highestGoldenMedal: Int? = null
 )

@@ -31,7 +31,9 @@ fun main() {
 	// configure loggers and dump info
 	configureLogger()
 	mainLogger.info("Explode ${ExplodeInfo["version"]} ($GameVersion)")
-	bootstrap(MongoProvider())
+	val p = MongoProvider()
+	ExplodeConsole(p).loop()
+	bootstrap(p)
 	mainLogger.info("Exploded.")
 }
 

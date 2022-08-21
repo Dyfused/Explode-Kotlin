@@ -18,6 +18,8 @@ data class AssessmentModel(
 	val goldenPassAcc: Double,
 	val exMiss: Double,
 	val chart: List<AssessmentChartModel>,
+	// A stupid design by Dynamite: They only read the 'best' entry but need to send a list of these shit to the client.
+	// so in Explode, we only return a one-element list.
 	val assessmentRecord: List<AssessmentRecordsModel>
 )
 
@@ -29,7 +31,7 @@ data class AssessmentChartModel(
 
 @Serializable
 data class AssessmentRecordsModel(
-	val achievementRate: Double, // 完成率
+	val achievementRate: Double, // Round in [0, 200]
 	val isBest: Boolean,
 	val playRecord: List<AssessmentPlayRecordModel>
 )

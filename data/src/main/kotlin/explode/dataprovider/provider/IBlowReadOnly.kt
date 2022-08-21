@@ -22,7 +22,9 @@ interface IBlowReadOnly {
 	fun getChartRecord(chartId: String, limit: Int, skip: Int, sort: RecordSort): Iterable<MongoRecord>
 	fun getUserChartRecord(userId: String, chartId: String, limit: Int, skip: Int, sort: RecordSort, duplicate: Boolean = false): Iterable<MongoRecord>
 
-	fun getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel>
+	fun MongoChart.getParentSet(): MongoSet
+
+	fun MongoUser.getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel>
 	fun getAssessmentRank(
 		assessmentGroupId: String,
 		medalLevel: Int,

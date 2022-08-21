@@ -66,7 +66,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 	}
 
 	override suspend fun assessmentGroup(env: DataFetchingEnvironment, limit: Int?, skip: Int?): List<AssessmentGroupModel> {
-		return listOf()
+		return with(p) { p.getUserByToken(env.soudayo)?.getAssessmentGroups(limit!!, skip!!) ?: listOf() }
 	}
 
 	override suspend fun assessmentRank(
@@ -76,7 +76,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		skip: NNInt?,
 		limit: NNInt?
 	): List<AssessmentRecordWithRankModel> {
-		return listOf()
+		return p.getAssessmentRank(assessmentGroupId!!, medalLevel!!, limit!!.value, skip!!.value)
 	}
 
 	override suspend fun setById(env: DataFetchingEnvironment, _id: String?): SetModel = with(p) {
