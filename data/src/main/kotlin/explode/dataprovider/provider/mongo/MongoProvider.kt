@@ -9,6 +9,7 @@ import com.mongodb.client.model.*
 import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.database.*
 import explode.dataprovider.model.game.*
+import explode.dataprovider.model.newUUID
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassStr
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
@@ -953,7 +954,23 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			val s = getParentSet()
 			return DetailedChartModel(
 				_id = id,
-				charter = (getUser(s.noterId) ?: serverUser).tunerize,
+				charter = when(val displayNoter = s.noterDisplayOverride) {
+					null -> (getUser(s.noterId) ?: serverUser).tunerize
+					else -> MongoUser(
+						newUUID(),
+						displayNoter,
+						"",
+						mutableListOf(),
+						mutableListOf(),
+						0,
+						0,
+						OffsetDateTime.now(),
+						newUUID(),
+						0,
+						UserPermission.Default,
+						0
+					).tunerize
+				},
 				chartName = "${s.musicName}_${difficultyClass}",
 				gcPrice = 0,
 				music = MusicModel(s.composerName),
