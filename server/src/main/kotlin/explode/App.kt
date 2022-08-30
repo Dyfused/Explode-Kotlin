@@ -2,8 +2,8 @@ package explode
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
-import explode.backend.bomb.v0.bombModule
-import explode.backend.bomb.v1.Bomb
+import explode.backend.bomb.v1.backend.Bomb
+import explode.backend.bomb.v1.frontend.bombFrontendModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
@@ -88,8 +88,9 @@ private fun startKtorServer(omni: IBlowOmni) {
 			module {
 				graphQLModule(omni, explodeConfig.enablePlayground)
 				dynamiteResourceModule(omni)
-				bombModule(omni, omni)
+				// bombModule(omni, omni)
 				with(Bomb(omni)) { bombModule() }
+				bombFrontendModule()
 			}
 
 			connector {

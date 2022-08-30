@@ -9,7 +9,6 @@ import com.mongodb.client.model.*
 import explode.dataprovider.detonate.ExplodeConfig.Companion.explode
 import explode.dataprovider.model.database.*
 import explode.dataprovider.model.game.*
-import explode.dataprovider.model.newUUID
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassStr
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
@@ -36,6 +35,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	private val logger = LoggerFactory.getLogger("Mongo")
 	private val mongo = (KMongo.createClient(config.connectionString))
 	private val db = mongo.getDatabase(config.databaseName)
+
+	override val unencrypted: Boolean
+		get() = config.applyUnencryptedFixes
 
 	init {
 		logger.info("Database: ${config.databaseName} at ${config.connectionString}")
@@ -185,77 +187,42 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		composerName: String,
 		noterId: String?,
 		charts: List<MongoChart>,
-		id: String?,
+		defaultId: String?,
 		introduction: String?,
 		status: SetStatus,
-		price: Int
-	): MongoSet = MongoSet(
-		id = id ?: randomId(),
-		musicName = musicName,
-		composerName = composerName,
-		noterId = noterId ?: serverUser.id,
-		introduction = introduction,
-		price = price,
-		status = status,
-		charts = charts.map { it.id }.toMutableList()
-	).apply(::updateSet)
+		price: Int,
+		displayNoterName: String?,
 
-	override fun createChart(difficultyClass: Int, difficultyValue: Int, id: String?, D: Double?): MongoChart =
+		musicContent: ByteArray?,
+		previewMusicContent: ByteArray?,
+		setCoverContent: ByteArray?,
+		storePreviewContent: ByteArray?,
+	): MongoSet = MongoSet(
+		id = defaultId ?: randomId(),
+		musicName,
+		composerName,
+		noterId = noterId ?: serverUser.id,
+		introduction,
+		price,
+		status,
+		charts = charts.map { it.id }.toMutableList(),
+		noterDisplayOverride = displayNoterName
+	).apply(::updateSet).apply {
+		musicContent?.let { addMusicResource(id, it) }
+		previewMusicContent?.let { addPreviewResource(id, it) }
+		setCoverContent?.let { addSetCoverResource(id, it) }
+		storePreviewContent?.let { addStorePreviewResource(id, it) }
+	}
+
+	override fun createChart(difficultyClass: Int, difficultyValue: Int, defaultId: String?, D: Double?, content: ByteArray?): MongoChart =
 		MongoChart(
-			id = id ?: genNewChartId(),
+			id = defaultId ?: genNewChartId(),
 			difficultyClass = difficultyClass,
 			difficultyValue = difficultyValue,
 			D = D
-		).apply(::updateChart)
-
-	private fun getSetStoreList(
-		limit: Int,
-		skip: Int,
-		searchedName: String,
-		showHidden: Boolean,
-		showOfficial: Boolean,
-		showRanked: Boolean,
-		showUnranked: Boolean,
-		showReview: Boolean
-	): List<MongoSet> {
-		var filters = arrayOf<Bson>()
-		if(searchedName.isNotEmpty()) {
-			filters += (MongoSet::musicName).regex(searchedName, "i")
+		).apply(::updateChart).apply {
+			content?.let { addChartResource(id, it) }
 		}
-		if(showHidden) {
-			filters += MongoSet::status eq SetStatus.HIDDEN
-		} else if(showReview) {
-			filters += MongoSet::status eq SetStatus.NEED_REVIEW
-		} else if(showOfficial) {
-			filters += MongoSet::status eq SetStatus.OFFICIAL
-		} else if(showRanked) {
-			filters += or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL)
-		} else if(showUnranked) {
-			filters += MongoSet::status eq SetStatus.UNRANKED
-		}
-		chartSetC.find(MongoSet::status eq SetStatus.UNRANKED, MongoSet::status eq SetStatus.HIDDEN)
-
-		return chartSetC.find(*filters).limit(limit).skip(skip).toList()
-	}
-
-	fun getSetList(
-		limit: Int,
-		skip: Int,
-		searchedName: String? = null,
-		isHidden: Boolean? = null,
-		isOfficial: Boolean? = null,
-		isRanked: Boolean? = null,
-		isNeedReview: Boolean? = null
-	): List<MongoSet> {
-		val filter = buildList {
-			if(searchedName != null) add(MongoSet::musicName eq searchedName)
-			if(isHidden != null) if(isHidden) add(MongoSet::price eq -1) else add(MongoSet::price ne -1)
-			if(isOfficial != null) add(MongoSet::status eq SetStatus.OFFICIAL)
-			if(isRanked != null) add(or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL))
-			if(isNeedReview != null) add(MongoSet::status eq SetStatus.NEED_REVIEW)
-		}.let(::and)
-		return chartSetC.find(filter).limit(limit).skip(skip).toList()
-	}
 
 	override fun getSets(limit: Int?, skip: Int?): Iterable<MongoSet> {
 		return chartSetC.find().apply {
@@ -457,24 +424,16 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun getSets(
 		limit: Int,
 		skip: Int,
-		searchedName: String,
-		onlyRanked: Boolean,
-		onlyOfficial: Boolean,
-		onlyReview: Boolean,
-		onlyHidden: Boolean,
-		playCountOrder: Boolean,
-		publishTimeOrder: Boolean
+		filterName: String,
+		filterCategory: SetStatus,
+		filterSort: StoreSort
 	): List<MongoSet> {
-		//return getSetStoreList(limit, skip, searchedName, onlyRanked, onlyOfficial, onlyReview, onlyHidden)
-		return getSetStoreList(
-			limit, skip,
-			searchedName,
-			onlyHidden,
-			onlyOfficial,
-			onlyRanked,
-			!onlyRanked,
-			onlyReview
-		)
+		var filters = arrayOf<Bson>()
+		if(filterName.isNotEmpty()) {
+			filters += MongoSet::musicName.regex(filterName, "i")
+		}
+		filters += MongoSet::status eq filterCategory
+		return chartSetC.find(*filters).limit(limit).skip(skip).toList()
 	}
 
 	fun getAllSets(): FindIterable<MongoSet> = chartSetC.find()
@@ -628,13 +587,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val medal = data.medalLevel
 		val ass = getAssessmentByGroupAndMedal(data.assessmentId, medal)
 			?: fail("Invalid assessment: Medal $medal of Group ${data.assessmentId}")
-
-		data class SafePlayRecordInput(
-			val score: Int,
-			val perf: Int,
-			val good: Int,
-			val miss: Int
-		)
 
 		fun calcAccuracy(perf: Int, good: Int, total: Int): Double {
 			val acc = ((perf * 100000L + good * 50000L) / total) / 1000.0
@@ -954,26 +906,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			val s = getParentSet()
 			return DetailedChartModel(
 				_id = id,
-				charter = when(val displayNoter = s.noterDisplayOverride) {
-					null -> (getUser(s.noterId) ?: serverUser).tunerize
-					else -> MongoUser(
-						newUUID(),
-						displayNoter,
-						"",
-						mutableListOf(),
-						mutableListOf(),
-						0,
-						0,
-						OffsetDateTime.now(),
-						newUUID(),
-						0,
-						UserPermission.Default,
-						0
-					).tunerize
-				},
+				charter = UserWithUserNameModel(s.noterDisplayOverride ?: getUser(s.noterId)?.username ?: "unknown"),
 				chartName = "${s.musicName}_${difficultyClass}",
 				gcPrice = 0,
-				music = MusicModel(s.composerName),
+				music = MusicModel(s.musicName, MusicianModel(s.composerName)),
 				difficultyBase = difficultyClass,
 				difficultyValue = difficultyValue,
 				D = D
@@ -993,7 +929,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			isGot = false,
 			isRanked = status == SetStatus.RANKED || status == SetStatus.OFFICIAL,
 			isOfficial = status == SetStatus.OFFICIAL,
-			OverridePriceStr = "",
 			needReview = status == SetStatus.NEED_REVIEW
 		)
 

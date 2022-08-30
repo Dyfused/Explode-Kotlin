@@ -1,4 +1,4 @@
-package explode.backend.bomb.v1
+package explode.backend.bomb.v1.backend
 
 import TConfig.Configuration
 import explode.dataprovider.util.ConfigPropertyDelegates.delegateBoolean

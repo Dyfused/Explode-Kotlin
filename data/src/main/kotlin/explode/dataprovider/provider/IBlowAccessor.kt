@@ -3,6 +3,7 @@ package explode.dataprovider.provider
 import explode.dataprovider.model.database.*
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassNum
+import explode.dataprovider.util.applyIf
 
 interface IBlowAccessor : IBlowReadOnly {
 
@@ -12,22 +13,12 @@ interface IBlowAccessor : IBlowReadOnly {
 
 	fun registerUser(username: String, password: String): MongoUser
 
-	/**
-	 * Get Chart Sets
-	 *
-	 * Priority: showHidden > showReview > showOfficial > showRanked,
-	 * which means if showHidden is true, it will ignore all other filters.
-	 */
 	fun getSets(
 		limit: Int,
 		skip: Int,
-		searchedName: String,
-		onlyRanked: Boolean,
-		onlyOfficial: Boolean,
-		onlyReview: Boolean,
-		onlyHidden: Boolean,
-		playCountOrder: Boolean,
-		publishTimeOrder: Boolean
+		filterName: String,
+		filterCategory: SetStatus,
+		filterSort: StoreSort
 	): List<MongoSet>
 
 	fun getSets(limit: Int? = null, skip: Int? = null): Iterable<MongoSet>
@@ -64,10 +55,16 @@ interface IBlowAccessor : IBlowReadOnly {
 		composerName: String,
 		noterId: String?,
 		charts: List<MongoChart>,
-		id: String? = null,
+		defaultId: String? = null,
 		introduction: String? = null,
 		status: SetStatus = SetStatus.NEED_REVIEW,
-		price: Int = 0
+		price: Int = 0,
+		displayNoterName: String? = null,
+
+		musicContent: ByteArray? = null,
+		previewMusicContent: ByteArray? = null,
+		setCoverContent: ByteArray? = null,
+		storePreviewContent: ByteArray? = null
 	): MongoSet
 
 	/**
@@ -75,9 +72,14 @@ interface IBlowAccessor : IBlowReadOnly {
 	 *
 	 * @param difficultyClass The difficulty class, from 1 to 6 referring from CASUAL to TERA.
 	 * @param difficultyValue The numeric value of difficulty.
+	 * @param content the actual chart file. Stores to the specified directory if present.
 	 */
 	fun createChart(
-		difficultyClass: Int, difficultyValue: Int, id: String? = null, D: Double? = null
+		difficultyClass: Int,
+		difficultyValue: Int,
+		defaultId: String? = null,
+		D: Double? = null,
+		content: ByteArray? = null
 	): MongoChart
 
 	/**
@@ -89,15 +91,33 @@ interface IBlowAccessor : IBlowReadOnly {
 	fun buildChartSet(
 		setTitle: String,
 		composerName: String,
-		noterUser: MongoUser,
-		isRanked: Boolean,
+		noterUser: MongoUser?,
 		coinPrice: Int,
 		introduction: String = "",
 		needReview: Boolean = true,
 		defaultId: String? = null,
+		expectStatus: SetStatus = SetStatus.UNRANKED,
+
+		musicContent: ByteArray? = null,
+		previewMusicContent: ByteArray? = null,
+		setCoverContent: ByteArray? = null,
+		storePreviewContent: ByteArray? = null,
+
 		block: ChartSetBuilder.() -> Unit
 	) = ChartSetBuilder(
-		this, setTitle, composerName, noterUser, isRanked, coinPrice, introduction, needReview, defaultId
+		this,
+		setTitle,
+		composerName,
+		noterUser,
+		coinPrice,
+		introduction,
+		needReview,
+		expectStatus,
+		defaultId,
+		musicContent,
+		previewMusicContent,
+		setCoverContent,
+		storePreviewContent
 	).apply(block).buildSet()
 
 	/**
@@ -108,32 +128,45 @@ interface IBlowAccessor : IBlowReadOnly {
 
 		private val musicName: String,
 		private val composerName: String,
-		private val noterUser: MongoUser,
-		private val isRanked: Boolean,
+		private val noterUser: MongoUser?,
 		private val price: Int,
 		private val introduction: String = "",
 		private val needReview: Boolean = true,
-		private val defaultId: String? = null
+		private val expectStatus: SetStatus = SetStatus.UNRANKED,
+		private val defaultId: String? = null,
+
+		private val musicContent: ByteArray? = null,
+		private val previewMusicContent: ByteArray? = null,
+		private val setCoverContent: ByteArray? = null,
+		private val storePreviewContent: ByteArray? = null
 	) {
 
 		private val charts = mutableMapOf<Int, MongoChart>()
 
 		fun addChart(
-			difficultyClass: String, difficultyValue: Int, D: Double? = null, defaultId: String? = null
-		): MongoChart = addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D, defaultId)
+			difficultyClass: String,
+			difficultyValue: Int,
+			D: Double? = null,
+			defaultId: String? = null,
+			content: ByteArray? = null
+		): MongoChart = addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D, defaultId, content)
 
 		fun addChart(
-			difficultyClass: Int, difficultyValue: Int, D: Double? = null, defaultId: String? = null
+			difficultyClass: Int,
+			difficultyValue: Int,
+			D: Double? = null,
+			defaultId: String? = null,
+			content: ByteArray? = null
 		): MongoChart {
 			// Unranked charts should have no D value
-			val d = if(isRanked) D else null
+			val d = if(expectStatus.isRanked) D else null
 
 			// Check difficulty duplication
 			if(difficultyClass in charts.keys) {
 				error("Duplicated Difficulty Class: $difficultyClass")
 			}
 
-			return accessor.createChart(difficultyClass, difficultyValue, defaultId, d).apply {
+			return accessor.createChart(difficultyClass, difficultyValue, defaultId, d, content).apply {
 				charts[difficultyClass] = this
 			}
 		}
@@ -141,15 +174,22 @@ interface IBlowAccessor : IBlowReadOnly {
 		fun buildSet(): MongoSet {
 			if(charts.isEmpty()) error("Must include at least one chart.")
 			return accessor.createSet(
-				musicName = musicName,
-				composerName = composerName,
-				noterId = noterUser.id,
+				musicName,
+				composerName,
+				noterId = noterUser?.id,
 				charts = charts.values.toList(),
-				id = defaultId,
-				introduction = introduction,
-				status = SetStatus.NEED_REVIEW,
-				price = price
-			)
+				defaultId,
+				introduction,
+				status = expectStatus,
+				price,
+				displayNoterName = null,
+				musicContent,
+				previewMusicContent,
+				setCoverContent,
+				storePreviewContent
+			).applyIf(needReview) {
+				with(accessor) { startReview(expectStatus) }
+			}
 		}
 	}
 
@@ -183,6 +223,7 @@ interface IBlowAccessor : IBlowReadOnly {
 	fun MongoUser.canAffordDiamond(diamond: Int): Boolean {
 		return this.diamond >= diamond
 	}
+
 	fun MongoUser.payCoin(coin: Int): Boolean
 	fun MongoUser.payDiamond(diamond: Int): Boolean
 }

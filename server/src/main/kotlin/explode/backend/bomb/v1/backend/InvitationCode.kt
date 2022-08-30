@@ -1,4 +1,4 @@
-package explode.backend.bomb.v1
+package explode.backend.bomb.v1.backend
 
 import explode.dataprovider.model.newUUID
 import kotlinx.serialization.decodeFromString

@@ -3,10 +3,13 @@ package explode.blow.impl
 import explode.backend.graphql.NNInt
 import explode.blow.*
 import explode.blow.BlowUtils.soudayo
+import explode.dataprovider.model.database.SetStatus
+import explode.dataprovider.model.database.StoreSort
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.fail
 import graphql.schema.DataFetchingEnvironment
+import kotlin.properties.Delegates
 
 class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 
@@ -17,7 +20,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		return "You've been waiting, \"${env.soudayo}\"."
 	}
 
-	override suspend fun gameSetting(env: DataFetchingEnvironment, ): GameSettingModel {
+	override suspend fun gameSetting(env: DataFetchingEnvironment): GameSettingModel {
 		return p.gameSetting
 	}
 
@@ -40,17 +43,43 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		// 请求了数据还不用，请求体里面还没任何参数。无语。
 		if(isOfficial == null) return listOf()
 
-		return p.getSets(
-			limit!!.value,
-			skip!!.value,
-			musicTitle!!,
-			isRanked == 1,
-			isOfficial == 1,
-			false,
-			isHidden == 1,
-			playCountOrder == -1,
-			publishTimeOrder == -1
-		).map { it.tunerize }
+		var category: SetStatus? by Delegates.observable(null) { _, old, new ->
+			if(old != null) {
+				error("Failed to serialize the request, the category has been decided $old, but received a new value $new.")
+			}
+		}
+
+		if(isHidden == 1) category = SetStatus.HIDDEN
+		if(isOfficial == 1) category = SetStatus.OFFICIAL
+		if(isRanked == 1) category = SetStatus.RANKED
+		if(isRanked == -1) category = SetStatus.UNRANKED
+
+		if(category == null) error("Failed to serailze the request, the category is undefined.")
+
+		var sort: StoreSort? by Delegates.observable(null) { _, old, new ->
+			if(old != null) {
+				error("Failed to serialize the request, the sort has been decided $old, but received a new value $new.")
+			}
+		}
+
+		if(playCountOrder == 1) sort = StoreSort.PLAY_COUNT
+		if(publishTimeOrder == 1) sort = StoreSort.PUBLISH_TIME
+
+		if(sort == null) error("Failed to serialize the request, the sort is undefined.")
+
+//		return p.getSets(
+//			limit!!.value,
+//			skip!!.value,
+//			musicTitle!!,
+//			isRanked == 1,
+//			isOfficial == 1,
+//			false,
+//			isHidden == 1,
+//			playCountOrder == -1,
+//			publishTimeOrder == -1
+//		).map { it.tunerize }
+
+		return p.getSets(limit!!.value, skip!!.value, musicTitle!!, category!!, sort!!).map { it.tunerize }
 	}
 
 	override suspend fun self(env: DataFetchingEnvironment): BlowSelfService {

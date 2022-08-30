@@ -1,8 +1,6 @@
 package explode.dataprovider.provider
 
 import explode.dataprovider.model.database.MongoChart
-import explode.dataprovider.model.database.MongoRecord
-import kotlin.reflect.KProperty
 
 private val DifficultyStringIntMapping = mapOf(
 	"casual" to 1,
@@ -19,11 +17,6 @@ private val DifficultyIntStringMapping = DifficultyStringIntMapping.map { (k, v)
 object DifficultyUtils {
 	fun String.toDifficultyClassNum() = DifficultyStringIntMapping.getOrElse(this.lowercase()) { 0 }
 	fun Int.toDifficultyClassStr() = DifficultyIntStringMapping.getOrElse(this) { "unknown" }
-}
-
-enum class RecordSort(val prop: KProperty<*>) {
-	TIME(MongoRecord::uploadedTime),
-	SCORE(MongoRecord::score);
 }
 
 fun compareCharts(c1s: Collection<MongoChart>, c2s: Collection<MongoChart>): Boolean {

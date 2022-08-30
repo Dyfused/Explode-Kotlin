@@ -1,10 +1,13 @@
-package explode.backend.bomb.v1
+package explode.backend.bomb.v1.backend
 
-import explode.backend.bomb.v0.respondJson
+import explode.backend.bomb.v1.backend.model.UploadSetRequest
+import explode.backend.respondJson
 import explode.dataprovider.model.database.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoProvider
+import explode.globalJson
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
@@ -13,11 +16,13 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
+import io.ktor.utils.io.core.*
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
+import org.slf4j.LoggerFactory
 import java.io.File
-import explode.backend.bomb.v1.BombConfiguration as Conf
+import explode.backend.bomb.v1.backend.BombConfiguration as Conf
 
 typealias TheCall = PipelineContext<Unit, ApplicationCall>
 
@@ -28,6 +33,8 @@ private val callouts = listOf(
 	"Darkness", "Drink", "Earth", "Enter", "Fleet", "Give", "Grieve", "Guardian", "Hive", "Kill", "Knowledge",
 	"Light", "Love", "Pyramid", "Savathûn", "Scorn", "Stop", "Tower", "Traveller", "Witness", "Worm", "Worship"
 )
+
+private val logger = LoggerFactory.getLogger("BombApiV1")
 
 class Bomb(private val omni: IBlowOmni) {
 
@@ -75,7 +82,17 @@ class Bomb(private val omni: IBlowOmni) {
 				call.respondJson(
 					buildMap {
 						this["error"] = cause.message ?: cause.javaClass.simpleName
-						this["trace"] = cause.stackTraceToString()
+						this["trace"] = cause.stackTraceToString().split("\r\n")
+					},
+					HttpStatusCode.BadRequest
+				)
+			}
+
+			exception<IllegalStateException> { call, cause ->
+				call.respondJson(
+					buildMap {
+						this["error"] = cause.message.orEmpty()
+						this["trace"] = cause.stackTraceToString().split("\r\n")
 					},
 					HttpStatusCode.InternalServerError
 				)
@@ -210,6 +227,67 @@ class Bomb(private val omni: IBlowOmni) {
 									respOk(chart)
 								}
 							}
+						}
+
+						// post [/management/upload] - return the full created set data
+						post("upload") {
+							val user = getAuthUser()
+
+							lateinit var request: UploadSetRequest
+
+							val uploadedData = mutableMapOf<String, ByteArray>()
+
+							call.receiveMultipart().forEachPart { part ->
+								val partName = part.name ?: fail("Missing name of the multipart.")
+								when(part) {
+									is PartData.FileItem -> {
+										uploadedData[partName] = part.provider().readBytes()
+									}
+
+									is PartData.FormItem -> {
+										if(partName == "chart-data") {
+											request = globalJson.decodeFromString(part.value)
+										}
+									}
+
+									else -> {}
+								}
+							}
+
+							// check for existance
+							if(request.musicFileName !in uploadedData.keys) fail("Missing music content bytes, expected in multipart ${request.musicFileName}")
+							request.chartMeta.forEach { if(it.chartFileName !in uploadedData.keys) fail("Missing chart content bytes, expected in multipart ${it.chartFileName}") }
+
+							// create and store to the database
+							logger.info("Adding new set ${request.title} composed by ${request.composerName} and charted by ${user.username}[override=${request.noterDisplayOverride}] pricing ${request.coinPrice} with default ID ${request.defaultId}.")
+							val s = omni.buildChartSet(
+								setTitle = request.title,
+								composerName = request.composerName,
+								noterUser = user,
+								coinPrice = request.coinPrice ?: 0,
+								introduction = request.introduction.orEmpty(),
+								needReview = request.startReview ?: false,
+								defaultId = request.defaultId,
+								expectStatus = request.expectedStatus ?: SetStatus.UNRANKED,
+
+								musicContent = uploadedData[request.musicFileName],
+								previewMusicContent = uploadedData[request.previewFileName],
+								setCoverContent = uploadedData[request.coverFileName],
+								storePreviewContent = uploadedData[request.storePreviewFileName],
+							) {
+								request.chartMeta.forEach { (uploadedName, diffClass, diffValue, D, defaultId) ->
+									logger.info("Adding new chart for ${request.title} [$diffClass/$diffValue] with D $D and defaultId $defaultId.")
+									addChart(
+										difficultyClass = diffClass,
+										difficultyValue = diffValue,
+										D = D,
+										defaultId = defaultId,
+										content = uploadedData[uploadedName]
+									)
+								}
+							}
+
+							respOk(s)
 						}
 					}
 				}
@@ -472,15 +550,6 @@ class Bomb(private val omni: IBlowOmni) {
 
 	private suspend fun TheCall.respAuthenticate() {
 		call.respondJson<Any?>(null, HttpStatusCode.Unauthorized)
-	}
-
-	// region: util
-	private suspend fun <T> T.doEither(onNotNull: suspend T.() -> Unit, onNull: suspend () -> Unit): T? = apply {
-		if(this == null) {
-			onNull()
-		} else {
-			onNotNull(this)
-		}
 	}
 
 	/**

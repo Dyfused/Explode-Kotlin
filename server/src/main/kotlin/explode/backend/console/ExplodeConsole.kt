@@ -85,10 +85,8 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val username = sp.getOrNull(1) ?: return "Missing parameter: username"
 		val u = acc.getUserByName(username) ?: return "Cannot find the user named $username"
 		val p = sp.getOrNull(2) ?: List(8) { (('A'..'z') + ('0'..'9')).random() }.joinToString()
-		with(acc) {
-			u.password = p
-			return "New password: $p"
-		}
+		u.password = p
+		return "New password: $p"
 	}
 
 	@SubCommand(desc = "(/listRanking <ChartId> [limit=15] [skip=0]) List the play records of the given chart.")

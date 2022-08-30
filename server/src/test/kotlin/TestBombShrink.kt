@@ -1,4 +1,4 @@
-import explode.backend.bomb.v1.bombify
+import explode.backend.bomb.v1.backend.bombify
 import explode.dataprovider.model.database.*
 import explode.dataprovider.model.newUUID
 import explode.dataprovider.provider.mongo.randomId

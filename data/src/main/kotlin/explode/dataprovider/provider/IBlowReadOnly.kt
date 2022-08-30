@@ -8,6 +8,8 @@ interface IBlowReadOnly {
 
 	val serverUser: MongoUser
 
+	val unencrypted: Boolean
+
 	// getters
 	fun getUser(userId: String): MongoUser?
 	fun getSet(setId: String): MongoSet?

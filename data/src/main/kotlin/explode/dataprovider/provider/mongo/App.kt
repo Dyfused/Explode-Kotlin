@@ -74,25 +74,20 @@ private fun import() {
 				setTitle = set.musicName,
 				composerName = set.composerName,
 				noterUser = mp.getUserByName(set.noterName) ?: mp.serverUser,
-				isRanked = false,
 				coinPrice = 0,
 				introduction = set.introduction ?: "",
 				needReview = false,
-				defaultId = set.id
+				defaultId = set.id,
+				expectStatus = SetStatus.UNRANKED,
+				musicContent = packFolder.resolve(set.musicPath).readBytes(),
+				previewMusicContent = packFolder.resolve(set.previewMusicPath).readBytes(),
+				setCoverContent = packFolder.resolve(set.coverPicturePath).readBytes(),
+				storePreviewContent = set.storePreviewPicturePath?.let { packFolder.resolve(it).readBytes() }
 			) {
 				set.charts.forEach { chart ->
-					addChart(chart.difficultyClass, chart.difficultyValue, chart.DValue, chart.id).apply {
-						mp.addChartResource(id, packFolder.resolve(chart.chartPath).readBytes())
-					}
+					addChart(chart.difficultyClass, chart.difficultyValue, chart.DValue, chart.id, packFolder.resolve(chart.chartPath).readBytes())
 					chartCount++
 				}
-			}.apply {
-				mp.addMusicResource(id, packFolder.resolve(set.musicPath).readBytes())
-				mp.addPreviewResource(id, packFolder.resolve(set.previewMusicPath).readBytes())
-				mp.addSetCoverResource(id, packFolder.resolve(set.coverPicturePath).readBytes())
-				set.storePreviewPicturePath?.let { mp.addStorePreviewResource(id, packFolder.resolve(it).readBytes()) }
-
-				println(id)
 			}
 			setCount++
 		}.onFailure {

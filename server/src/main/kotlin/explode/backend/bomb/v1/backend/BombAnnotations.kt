@@ -1,4 +1,4 @@
-package explode.backend.bomb.v1
+package explode.backend.bomb.v1.backend
 
 /**
  * For internal use only with no garantee on stablility.
