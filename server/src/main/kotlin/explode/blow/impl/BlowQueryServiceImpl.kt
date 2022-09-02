@@ -65,7 +65,8 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		if(playCountOrder == 1) sort = StoreSort.PLAY_COUNT
 		if(publishTimeOrder == 1) sort = StoreSort.PUBLISH_TIME
 
-		if(sort == null) error("Failed to serialize the request, the sort is undefined.")
+		// default: PlayCount
+		sort = sort ?: StoreSort.PLAY_COUNT
 
 //		return p.getSets(
 //			limit!!.value,
