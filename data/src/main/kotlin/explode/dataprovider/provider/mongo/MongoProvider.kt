@@ -12,11 +12,11 @@ import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassStr
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
+import explode.dataprovider.util.explodeLogger
 import kotlinx.serialization.*
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -32,7 +32,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	constructor() : this(Configuration(File("./provider.cfg")).explode().toMongo())
 
-	private val logger = LoggerFactory.getLogger("Mongo")
+	private val logger = explodeLogger
 	private val mongo = (KMongo.createClient(config.connectionString))
 	private val db = mongo.getDatabase(config.databaseName)
 
@@ -425,14 +425,21 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		limit: Int,
 		skip: Int,
 		filterName: String,
-		filterCategory: SetStatus,
+		filterCategory: StoreCategory,
 		filterSort: StoreSort
 	): List<MongoSet> {
 		var filters = arrayOf<Bson>()
 		if(filterName.isNotEmpty()) {
 			filters += MongoSet::musicName.regex(filterName, "i")
 		}
-		filters += MongoSet::status eq filterCategory
+		when(filterCategory) {
+			StoreCategory.OFFICIAL -> filters += MongoSet::status eq SetStatus.OFFICIAL
+			StoreCategory.RANKED -> filters += or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL)
+			StoreCategory.UNRANKED -> filters += MongoSet::status eq SetStatus.UNRANKED
+			StoreCategory.NEED_REVIEW -> filters += MongoSet::status eq SetStatus.NEED_REVIEW
+			StoreCategory.HIDDEN -> filters += MongoSet::status eq SetStatus.HIDDEN
+			else -> {}
+		}
 		return chartSetC.find(*filters).limit(limit).skip(skip).toList()
 	}
 
@@ -931,9 +938,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			isOfficial = status == SetStatus.OFFICIAL,
 			needReview = status == SetStatus.NEED_REVIEW
 		)
-
-	val UserModel.asPlayer: PlayerModel
-		get() = PlayerModel(_id, username, highestGoldenMedal ?: 0, RThisMonth ?: 0)
 
 	private fun DetailedChartModel.minimal(): ChartModel {
 		return ChartModel(_id, difficultyBase, difficultyValue)

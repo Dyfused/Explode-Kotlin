@@ -17,7 +17,7 @@ interface IBlowAccessor : IBlowReadOnly {
 		limit: Int,
 		skip: Int,
 		filterName: String,
-		filterCategory: SetStatus,
+		filterCategory: StoreCategory,
 		filterSort: StoreSort
 	): List<MongoSet>
 

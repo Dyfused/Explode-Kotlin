@@ -3,7 +3,7 @@ package explode.blow.impl
 import explode.blow.BlowReviewerService
 import explode.blow.BlowSelfService
 import explode.blow.BlowUtils.soudayo
-import explode.dataprovider.model.database.SetStatus
+import explode.dataprovider.model.database.StoreCategory
 import explode.dataprovider.model.database.StoreSort
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.IBlowAccessor
@@ -48,7 +48,7 @@ class ProviderReviewerService(private val p: IBlowAccessor) : BlowReviewerServic
 				limit!!,
 				skip!!,
 				searchStr!!,
-				filterCategory = SetStatus.NEED_REVIEW,
+				filterCategory = StoreCategory.NEED_REVIEW,
 				filterSort = StoreSort.PUBLISH_TIME
 			).map {
 				ReviewRequestModel(it.tunerize, !it.status.isRanked)

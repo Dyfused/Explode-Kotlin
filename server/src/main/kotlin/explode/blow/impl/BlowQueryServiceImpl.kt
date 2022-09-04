@@ -3,7 +3,7 @@ package explode.blow.impl
 import explode.backend.graphql.NNInt
 import explode.blow.*
 import explode.blow.BlowUtils.soudayo
-import explode.dataprovider.model.database.SetStatus
+import explode.dataprovider.model.database.StoreCategory
 import explode.dataprovider.model.database.StoreSort
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.IBlowAccessor
@@ -43,18 +43,19 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		// 请求了数据还不用，请求体里面还没任何参数。无语。
 		if(isOfficial == null) return listOf()
 
-		var category: SetStatus? by Delegates.observable(null) { _, old, new ->
+		var category: StoreCategory? by Delegates.observable(null) { _, old, new ->
 			if(old != null) {
 				error("Failed to serialize the request, the category has been decided $old, but received a new value $new.")
 			}
 		}
 
-		if(isHidden == 1) category = SetStatus.HIDDEN
-		if(isOfficial == 1) category = SetStatus.OFFICIAL
-		if(isRanked == 1) category = SetStatus.RANKED
-		if(isRanked == -1) category = SetStatus.UNRANKED
+		if(isHidden == 1) category = StoreCategory.HIDDEN
+		if(isOfficial == 1) category = StoreCategory.OFFICIAL
+		if(isRanked == 1) category = StoreCategory.RANKED
+		if(isRanked == -1) category = StoreCategory.UNRANKED
 
-		if(category == null) error("Failed to serailze the request, the category is undefined.")
+		// default/unset: All
+		if(category == null) category = StoreCategory.ALL
 
 		var sort: StoreSort? by Delegates.observable(null) { _, old, new ->
 			if(old != null) {
@@ -62,23 +63,11 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 			}
 		}
 
-		if(playCountOrder == 1) sort = StoreSort.PLAY_COUNT
-		if(publishTimeOrder == 1) sort = StoreSort.PUBLISH_TIME
+		if(playCountOrder == -1) sort = StoreSort.PLAY_COUNT
+		if(publishTimeOrder == -1) sort = StoreSort.PUBLISH_TIME
 
 		// default: PlayCount
-		sort = sort ?: StoreSort.PLAY_COUNT
-
-//		return p.getSets(
-//			limit!!.value,
-//			skip!!.value,
-//			musicTitle!!,
-//			isRanked == 1,
-//			isOfficial == 1,
-//			false,
-//			isHidden == 1,
-//			playCountOrder == -1,
-//			publishTimeOrder == -1
-//		).map { it.tunerize }
+		if(sort == null) sort = StoreSort.PUBLISH_TIME
 
 		return p.getSets(limit!!.value, skip!!.value, musicTitle!!, category!!, sort!!).map { it.tunerize }
 	}
@@ -91,11 +80,20 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		return p.getUserByToken(env.soudayo)?.ownedCharts?.mapNotNull(p::getChart)?.map { it.tunerize } ?: listOf()
 	}
 
-	override suspend fun charts(env: DataFetchingEnvironment, limit: Int?, skip: Int?, ranked: Int?): List<DetailedChartModel> = with(p) {
+	override suspend fun charts(
+		env: DataFetchingEnvironment,
+		limit: Int?,
+		skip: Int?,
+		ranked: Int?
+	): List<DetailedChartModel> = with(p) {
 		return p.getUserByToken(env.soudayo)?.ownedSets?.mapNotNull(p::getChart)?.map { it.tunerize } ?: listOf()
 	}
 
-	override suspend fun assessmentGroup(env: DataFetchingEnvironment, limit: Int?, skip: Int?): List<AssessmentGroupModel> {
+	override suspend fun assessmentGroup(
+		env: DataFetchingEnvironment,
+		limit: Int?,
+		skip: Int?
+	): List<AssessmentGroupModel> {
 		return with(p) { p.getUserByToken(env.soudayo)?.getAssessmentGroups(limit!!, skip!!) ?: listOf() }
 	}
 
@@ -117,13 +115,27 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		return p.getUserByName(username!!)?.tunerize
 	}
 
-	override suspend fun playRank(env: DataFetchingEnvironment, chartId: String?, skip: NNInt?, limit: NNInt?): List<PlayRecordWithRank> {
+	override suspend fun playRank(
+		env: DataFetchingEnvironment,
+		chartId: String?,
+		skip: NNInt?,
+		limit: NNInt?
+	): List<PlayRecordWithRank> {
 		return p.getPlayRank(chartId!!, limit!!.value, skip!!.value)
 	}
 
-	override suspend fun refreshSet(env: DataFetchingEnvironment, setVersion: List<ChartSetAndVersion>): List<ClassifiedModels.Set> = with(p) {
+	override suspend fun refreshSet(
+		env: DataFetchingEnvironment,
+		setVersion: List<ChartSetAndVersion>
+	): List<ClassifiedModels.Set> = with(p) {
 		return setVersion.mapNotNull { getSet(it.setId) }.map {
-			ClassifiedModels.Set(it.id, it.status.isRanked, it.introduction ?: "", getUser(it.noterId)?.username ?: "unknown", it.musicName)
+			ClassifiedModels.Set(
+				it.id,
+				it.status.isRanked,
+				it.introduction ?: "",
+				getUser(it.noterId)?.username ?: "unknown",
+				it.musicName
+			)
 		}
 	}
 }
