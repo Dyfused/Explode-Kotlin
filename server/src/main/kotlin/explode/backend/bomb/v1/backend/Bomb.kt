@@ -5,6 +5,7 @@ import explode.backend.respondJson
 import explode.dataprovider.model.database.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.mongo.MongoProvider
+import explode.explodeConfig
 import explode.globalJson
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -41,9 +42,21 @@ class Bomb(private val omni: IBlowOmni) {
 	fun Application.bombModule() = with(omni) {
 
 		install(CORS) {
-			anyHost()
+			val origins = explodeConfig.allowCORSHosts
+			if(origins.isEmpty()) {
+				anyHost()
+			} else {
+				origins.forEach {
+					allowHost(it, listOf("http", "https"))
+				}
+			}
+
 			allowHeader(HttpHeaders.AccessControlAllowOrigin)
+			allowHeader(HttpHeaders.AccessControlAllowCredentials)
 			allowHeader(HttpHeaders.Authorization)
+			allowHeader(HttpHeaders.ContentType)
+
+			allowCredentials = true
 		}
 
 		install(Authentication) {
@@ -59,72 +72,64 @@ class Bomb(private val omni: IBlowOmni) {
 		}
 
 		install(StatusPages) {
+			fun Throwable.generateResponseJsonText(withStackTrace: Boolean = true): JsonElement =
+				buildJsonObject {
+					put("error", message ?: javaClass.simpleName)
+					if(withStackTrace) {
+						putJsonArray("trace") {
+							stackTraceToString().split("\r\n").forEach { add(it) }
+						}
+					}
+				}
+
 			exception<BlowException> { call, cause ->
 				call.respondJson(
-					buildMap {
-						this["error"] = cause.message ?: cause.javaClass.simpleName
-						// no stack-trace for BlowException, because it's just a Fast-Fail but not actual error.
-					},
+					cause.generateResponseJsonText(false),
 					HttpStatusCode.InternalServerError
 				)
 			}
 
 			exception<UnauthorizedException> { call, cause ->
 				call.respondJson(
-					buildMap {
-						this["error"] = cause.message
-					},
+					cause.generateResponseJsonText(false),
 					HttpStatusCode.Unauthorized
 				)
 			}
 
 			exception<SerializationException> { call, cause ->
 				call.respondJson(
-					buildMap {
-						this["error"] = cause.message ?: cause.javaClass.simpleName
-						this["trace"] = cause.stackTraceToString().split("\r\n")
-					},
+					cause.generateResponseJsonText(),
 					HttpStatusCode.BadRequest
 				)
 			}
 
 			exception<IllegalStateException> { call, cause ->
 				call.respondJson(
-					buildMap {
-						this["error"] = cause.message.orEmpty()
-						this["trace"] = cause.stackTraceToString().split("\r\n")
-					},
+					cause.generateResponseJsonText(),
 					HttpStatusCode.InternalServerError
 				)
 			}
 
 			exception<BadRequestException> { call, cause ->
 				call.respondJson(
-					buildMap {
-						this["error"] = cause.message.orEmpty()
-					},
+					cause.generateResponseJsonText(false),
 					HttpStatusCode.BadRequest
 				)
 			}
 
 			exception<NotFoundException> { call, cause ->
 				call.respondJson(
-					buildMap {
-						this["error"] = cause.message.orEmpty()
-					},
+					cause.generateResponseJsonText(false),
 					HttpStatusCode.BadRequest
 				)
 			}
 
-//			exception<Throwable> { call, cause ->
-//				call.respondJson(
-//					buildMap {
-//						this["error"] = cause.message ?: cause.javaClass.simpleName
-//						this["trace"] = cause.stackTraceToString()
-//					},
-//					HttpStatusCode.InternalServerError
-//				)
-//			}
+			exception<Throwable> { call, cause ->
+				call.respondJson(
+					cause.generateResponseJsonText(),
+					HttpStatusCode.InternalServerError
+				)
+			}
 		}
 
 		routing {

@@ -206,7 +206,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		price,
 		status,
 		charts = charts.map { it.id }.toMutableList(),
-		noterDisplayOverride = displayNoterName
+		noterDisplayOverride = displayNoterName,
+		uploadedTime = OffsetDateTime.now()
 	).apply(::updateSet).apply {
 		musicContent?.let { addMusicResource(id, it) }
 		previewMusicContent?.let { addPreviewResource(id, it) }
@@ -214,7 +215,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		storePreviewContent?.let { addStorePreviewResource(id, it) }
 	}
 
-	override fun createChart(difficultyClass: Int, difficultyValue: Int, defaultId: String?, D: Double?, content: ByteArray?): MongoChart =
+	override fun createChart(
+		difficultyClass: Int,
+		difficultyValue: Int,
+		defaultId: String?,
+		D: Double?,
+		content: ByteArray?
+	): MongoChart =
 		MongoChart(
 			id = defaultId ?: genNewChartId(),
 			difficultyClass = difficultyClass,
@@ -372,10 +379,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 		return assessmentRecordC.aggregate<MongoAssessmentRecordRanked>(
 			match(MongoAssessmentRecordRanked::assessmentId eq ass.id),
-			sort(descending(MongoAssessmentRecordRanked::playerId, MongoAssessmentRecordRanked::accuracy)),
+			sort(descending(MongoAssessmentRecordRanked::accuracy, MongoAssessmentRecordRanked::playerId)),
 			aggregateGroup,
 			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
-			aggregateRanking,
+			aggregateAssessmentRanking,
 			skip(skip),
 			limit(limit)
 		).map {
@@ -428,19 +435,35 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		filterCategory: StoreCategory,
 		filterSort: StoreSort
 	): List<MongoSet> {
-		var filters = arrayOf<Bson>()
-		if(filterName.isNotEmpty()) {
-			filters += MongoSet::musicName.regex(filterName, "i")
+		val filters = buildList {
+
+			if(filterName.isNotEmpty()) {
+				this += (MongoSet::musicName.regex(filterName, "i"))
+			}
+
+			when(filterCategory) {
+				StoreCategory.OFFICIAL -> this += (MongoSet::status eq SetStatus.OFFICIAL)
+				StoreCategory.RANKED -> this += (or(
+					MongoSet::status eq SetStatus.RANKED,
+					MongoSet::status eq SetStatus.OFFICIAL
+				))
+				StoreCategory.UNRANKED -> this += (MongoSet::status eq SetStatus.UNRANKED)
+				StoreCategory.NEED_REVIEW -> this += (MongoSet::status eq SetStatus.NEED_REVIEW)
+				StoreCategory.HIDDEN -> this += (MongoSet::status eq SetStatus.HIDDEN)
+				else -> {}
+			}
 		}
-		when(filterCategory) {
-			StoreCategory.OFFICIAL -> filters += MongoSet::status eq SetStatus.OFFICIAL
-			StoreCategory.RANKED -> filters += or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL)
-			StoreCategory.UNRANKED -> filters += MongoSet::status eq SetStatus.UNRANKED
-			StoreCategory.NEED_REVIEW -> filters += MongoSet::status eq SetStatus.NEED_REVIEW
-			StoreCategory.HIDDEN -> filters += MongoSet::status eq SetStatus.HIDDEN
-			else -> {}
-		}
-		return chartSetC.find(*filters).limit(limit).skip(skip).toList()
+
+		return chartSetC
+			.find(*filters.toTypedArray())
+			.run { // sort
+				when(filterSort) {
+					StoreSort.PUBLISH_TIME -> sort(descending(MongoSet::uploadedTime, MongoSet::id))
+					StoreSort.PLAY_COUNT -> this // won't support for now
+				}
+			}
+			.limit(limit)
+			.skip(skip).toList()
 	}
 
 	fun getAllSets(): FindIterable<MongoSet> = chartSetC.find()
@@ -483,6 +506,9 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	private val aggregateRanking =
 		Aggregates.setWindowFields(null, MongoRecordRanked::score eq -1, WindowedComputations.rank("ranking"))
+
+	private val aggregateAssessmentRanking =
+		Aggregates.setWindowFields(null, descending(MongoAssessmentRecordRanked::accuracy), WindowedComputations.rank("ranking"))
 
 	private val aggregateGroup = Aggregates.group(MongoRecord::playerId, Accumulators.first("data", ThisDocument))
 

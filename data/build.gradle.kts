@@ -10,7 +10,7 @@ version = "1.4.0"
 val logbackVersion: String by project
 
 dependencies {
-    implementation(project(":pack"))
+    api(project(":pack"))
 
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.2")
     implementation("ch.qos.logback", "logback-classic", logbackVersion)

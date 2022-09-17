@@ -10,6 +10,7 @@ import explode.backend.graphql.graphQLModule
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.IBlowOmni
 import explode.dataprovider.provider.mongo.MongoProvider
+import explode.dataprovider.serializers.AnySerializer
 import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.utils.Config
 import io.ktor.server.engine.*
@@ -78,7 +79,7 @@ private fun disableGraphQLLogging() {
 }
 
 private fun startKtorServer(omni: IBlowOmni) {
-	mainLogger.info("Backend Port: ${explodeConfig.port}")
+	mainLogger.info("Backend Port: ${explodeConfig.serverPort}")
 	mainLogger.info("GraphQl PlayGround: ${explodeConfig.enablePlayground}")
 	mainLogger.info("Done! (${Duration.between(theVeryBeginningTime, LocalDateTime.now()).toMillis()}ms)")
 
@@ -94,7 +95,7 @@ private fun startKtorServer(omni: IBlowOmni) {
 			}
 
 			connector {
-				port = explodeConfig.port
+				port = explodeConfig.serverPort
 			}
 		}
 	).start(true)
@@ -104,6 +105,7 @@ val globalJson = Json {
 	ignoreUnknownKeys = true
 	serializersModule = SerializersModule {
 		contextual(OffsetDateTimeSerializer)
+		contextual(AnySerializer)
 	}
 }
 

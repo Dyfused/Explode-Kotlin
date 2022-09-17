@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "taskeren.explode"
-version = "1.4.0"
+version = "1.4.1"
 
 val ktorVersion: String by project
 val logbackVersion: String by project
@@ -79,6 +79,10 @@ tasks.processResources {
     filesMatching("**/explode.json") {
         expand("version" to gitHash)
     }
+}
+
+tasks.shadowJar {
+    mergeServiceFiles()
 }
 
 publishing {

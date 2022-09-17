@@ -2,11 +2,15 @@
 
 package explode.backend.console
 
+import explode.backend.importExplodePack
 import explode.dataprovider.model.database.MongoReviewResult
 import explode.dataprovider.model.database.SetStatus
+import explode.dataprovider.model.game.PlayModInput
+import explode.dataprovider.model.game.PlayRecordInput
 import explode.dataprovider.provider.BlowException
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.mongo.MongoProvider
+import java.io.File
 import kotlin.concurrent.thread
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
@@ -26,7 +30,6 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 	private val commandDescs = mutableMapOf<String, String>()
 
 	private val mp = acc as? MongoProvider
-	private val mpd = mp?.dz
 
 	init {
 		ExplodeConsole::class.declaredFunctions.forEach { func ->
@@ -177,12 +180,53 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 	fun startReview(sp: List<String>): Any {
 		val setId = sp.getOrNull(1) ?: return "Missing parameter: setId"
 		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
-		val status = sp.getOrNull(2)?.run { SetStatus.values().firstOrNull { it.name.lowercase() == this.lowercase() } } ?: return "Invalid parameter: expectStatus"
+		val status = sp.getOrNull(2)?.run { SetStatus.values().firstOrNull { it.name.lowercase() == this.lowercase() } }
+			?: return "Invalid parameter: expectStatus"
 
 		with(mp) {
 			set.startReview(status)
 		}
 
+		return "Done"
+	}
+
+	@SubCommand(desc = "(/generateFakeRecords <chartId> [count]) Generate fake records for the chart.")
+	fun generateFakeRecords(sp: List<String>): Any {
+		val chartId = sp.getOrNull(1) ?: return "Missing parameter: chartId"
+		val chart = mp?.getChart(chartId) ?: return "Invalid parameter: chartId"
+		val count = sp.getOrNull(2)?.toIntOrNull() ?: 20
+
+		repeat(count) {
+			with(mp) {
+				serverUser.buySet(chart.getParentSet().id)
+
+				val rid = serverUser.submitBeforePlay(chartId, 0, "").playingRecord.randomId
+				serverUser.submitAfterPlay(
+					PlayRecordInput(
+						PlayModInput(1.0, 1.0, isBleed = true, isMirror = false),
+						true,
+						(0..1000000).random(),
+						(0..255).random(),
+						(0..255).random(),
+						(0..255).random()
+					),
+					rid
+				)
+			}
+		}
+
+		return "Done"
+	}
+
+	@SubCommand(desc = "(/importPack <path>) Import a set of charts by Explode Pack Meta file.")
+	fun importPack(sp: List<String>): Any {
+		val path = sp.getOrNull(1) ?: return "Missing parameter: path"
+		try {
+			mp?.importExplodePack(File(path))
+		} catch(ex: Exception) {
+			ex.printStackTrace()
+			return ex.message.orEmpty()
+		}
 		return "Done"
 	}
 
