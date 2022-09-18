@@ -52,6 +52,24 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	companion object {
 		const val InvalidSubmissionRandomId = "Invalid"
+
+		private var providerSingleton: Pair<Boolean, MongoProvider?> = false to null
+
+		private fun MongoProvider.initSingleton() {
+			providerSingleton = if(!providerSingleton.first) { // put value if not initialized yet
+				true to this
+			} else {
+				logger.error("Unable to initialize Singleton Mode with multiple instance, disabled.")
+				logger.error("Notice that some features depends on Singleton Mode is disabled as well.")
+				true to null
+			}
+		}
+
+		fun letSingleton(block: (MongoProvider) -> Unit) = providerSingleton.second?.let(block)
+	}
+
+	init {
+		initSingleton()
 	}
 
 	// ACTUAL DATA ACCESSING
@@ -452,15 +470,23 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 				}
 			}
 
+			@Suppress("DEPRECATION")
 			when(filterCategory) {
 				StoreCategory.OFFICIAL -> this += (MongoSet::status eq SetStatus.OFFICIAL)
 				StoreCategory.RANKED -> this += (or(
 					MongoSet::status eq SetStatus.RANKED,
 					MongoSet::status eq SetStatus.OFFICIAL
 				))
+
 				StoreCategory.UNRANKED -> this += (MongoSet::status eq SetStatus.UNRANKED)
-				StoreCategory.NEED_REVIEW -> this += (MongoSet::status eq SetStatus.NEED_REVIEW)
-				StoreCategory.HIDDEN -> this += (MongoSet::status eq SetStatus.HIDDEN)
+				// usage of deprecated enum values below is for compatiblity with older model
+				// will be removed in 1.5.x maybe
+				StoreCategory.NEED_REVIEW -> this += or(
+					MongoSet::isReviewing eq true,
+					MongoSet::status eq SetStatus.NEED_REVIEW
+				)
+
+				StoreCategory.HIDDEN -> this += or(MongoSet::isHidden eq true, MongoSet::status eq SetStatus.HIDDEN)
 				else -> {}
 			}
 		}
@@ -519,7 +545,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		Aggregates.setWindowFields(null, MongoRecordRanked::score eq -1, WindowedComputations.rank("ranking"))
 
 	private val aggregateAssessmentRanking =
-		Aggregates.setWindowFields(null, descending(MongoAssessmentRecordRanked::accuracy), WindowedComputations.rank("ranking"))
+		Aggregates.setWindowFields(
+			null,
+			descending(MongoAssessmentRecordRanked::accuracy),
+			WindowedComputations.rank("ranking")
+		)
 
 	private val aggregateGroup = Aggregates.group(MongoRecord::playerId, Accumulators.first("data", ThisDocument))
 
