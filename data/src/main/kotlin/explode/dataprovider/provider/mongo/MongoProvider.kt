@@ -92,8 +92,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun getSetsByName(name: String): FindIterable<MongoSet> =
 		chartSetC.find(MongoSet::musicName eq name)
 
-	fun getSetListByName(name: String): List<MongoSet> = getSetsByName(name).toList()
-
 	override fun getUserByName(username: String) = userC.findOne(MongoUser::username eq username)
 	override fun getUserByToken(token: String) = userC.findOne(MongoUser::token eq token)
 	override fun getUserRecord(userId: String, limit: Int, skip: Int, sort: RecordSort): FindIterable<MongoRecord> =
@@ -350,9 +348,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			)
 		}.toList()
 	}
-
-	private fun MongoAssessmentGroup.getAssessments() =
-		assessments.mapNotNull { assessmentC.findOneById(it.value) }
 
 	private fun getTunerizedAssessment(assessmentGroupId: String, medalLevel: Int, userId: String): AssessmentModel {
 		val usr = getUser(userId) ?: fail("Invalid user: $userId")
@@ -754,33 +749,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		)
 	}
 
-	@Deprecated("Use addReview instead")
-	override fun MongoSet.addReviewResult(review: MongoReviewResult) {
-		// check before insertion
-
-		// user must be existent and with reviewer permission
-		val u = getUser(review.reviewerId) ?: fail("Invalid Reviewer ID: ${review.reviewerId}")
-		if(!u.permission.review) fail("Not Reviewer: ${u.username}")
-
-		// set must be existent and with NEED_REVIEW status
-		if(status != SetStatus.NEED_REVIEW) fail("Invalid Reviewed Set: No Need Reviewing")
-
-		// evaluation message must not be empty on Reject
-		if(!review.status && review.evaluation.isEmpty()) fail("Must provide evaluation on Reject")
-
-		// no duplicated review
-		if(reviewC.findOne(MongoReview::reviews elemMatch (MongoReviewResult::reviewerId eq review.reviewerId)) != null)
-			fail("Duplicated Review")
-
-		val r = getReview() ?: fail("Set Review Data Lost: $id")
-		r.reviews += review
-		r.upsert(reviewC)
-
-		// reviewC.updateOneById(r.id, push(MongoReview::reviews, review))
-
-		checkAutoEndReview(r) // auto check
-	}
-
 	override fun MongoReview.addReview(userId: String, status: Boolean, evaluation: String) {
 		reviews += MongoReviewResult(userId, status, evaluation)
 		upsert(reviewC)
@@ -790,16 +758,22 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return reviewC.findOne(MongoReview::reviewedSet eq id)
 	}
 
-	override fun MongoSet.startReview(expectStatus: SetStatus) {
-		// update status to Need Review
-		status = SetStatus.NEED_REVIEW
+	override fun MongoSet.startReview() {
+		isReviewing = true
 		updateSet(this)
 
-		// create and insert the review data
-		val r = MongoReview(id, expectStatus)
+		val r = MongoReview(id)
 		r.upsert(reviewC)
 
-		logger.info("Started a Review on Set($id).")
+		logger.info("Started a Review on Set($id)")
+	}
+
+	@Deprecated("ExpectStatus is no longer required. Status will not be NEED_REVIEW any more.")
+	override fun MongoSet.startReview(expectStatus: SetStatus) {
+		// set status to the expectedStatus like newer model
+		// and set reviewing mode on
+		status = expectStatus
+		startReview()
 	}
 
 	override fun MongoSet.endReview(pass: Boolean) {
@@ -807,11 +781,20 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val r = getReview() ?: fail("Set Review Data Lost: $id")
 
 		// update status
-		status = if(pass) {
-			r.expectStatus
-		} else {
-			SetStatus.HIDDEN
+		// if the status is not NEED_REVIEW, then it is the exactly what we wanted,
+		// or try to put it with ExpectStatus like older model.
+		// if both of them is missing, just throw the exception.
+		@Suppress("DEPRECATION")
+		if(status == SetStatus.NEED_REVIEW) {
+			val expected = r.expectStatus
+			if(expected == null) {
+				error("You need either define status in Set or expectedStatus in ReviewC")
+			} else {
+				status = expected
+			}
 		}
+		// hide if not pass
+		isHidden = pass
 		updateSet(this)
 
 		// remove review data
@@ -827,26 +810,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			acceptPercentage >= config.autoEndReviewAcceptPercentage
 		} else {
 			false
-		}
-	}
-
-	private fun MongoSet.checkAutoEndReview(review: MongoReview) {
-		if(!config.autoEndReview) return
-
-		if(review.peekAutoReviewResult()) {
-			endReview(true)
-
-			logger.info("Auto ACCEPTED a review on Set<$musicName>($id).")
-		} else {
-			endReview(false)
-
-			// dump reject messages
-			val rejectReviews = review.reviews.filter { !it.status }
-			val rejectMessages = rejectReviews.joinToString(separator = "\n") { it.evaluation }
-			introduction += "\n[Rejected Charts]\n$rejectMessages"
-			updateSet(this)
-
-			logger.info("Auto REJECTED a review on Set<$musicName>($id).")
 		}
 	}
 
@@ -894,39 +857,6 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 				D Value:          $D
 				DifficultyClass:  ${difficultyClass.toDifficultyClassStr()}(${difficultyClass})
 				DifficultyNumber: $difficultyValue
-		""".trimIndent()
-
-	private fun MongoSet.dump() =
-		"""
-			[SetDetails]
-				ID: $id
-				MusicName: $musicName
-				MusicAuthor(ComposerName): $composerName
-				NoterId: $noterId
-				&Noter:
-					${getUser(noterId)?.dump() ?: "~ERROR: Cannot find the author~"}
-				Introduction: $introduction
-				PriceCoin: $price
-				Status: ${status.humanizedName}
-				Charts: $charts
-				&Charts:
-					${charts.mapNotNull(::getChart).joinToString(separator = "\n") { it.dump() }}
-		""".trimIndent()
-
-	private fun MongoUser.dump() =
-		"""
-			[UserDetails]
-				ID:   $id
-				Name: $username
-				OwnedSets:   $ownedSets
-				OwnedCharts: $ownedCharts
-				Coin:    $coin
-				Diamond: $diamond
-				PPTime:  $ppTime
-				Token:   $token
-				R: $R
-				Permission:
-					Review: ${permission.review}
 		""".trimIndent()
 
 	// DATA FIXINGS
@@ -1003,28 +933,15 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			isGot = false,
 			isRanked = status == SetStatus.RANKED || status == SetStatus.OFFICIAL,
 			isOfficial = status == SetStatus.OFFICIAL,
-			needReview = status == SetStatus.NEED_REVIEW
+			needReview = isReviewing
 		)
-
-	private fun DetailedChartModel.minimal(): ChartModel {
-		return ChartModel(_id, difficultyBase, difficultyValue)
-	}
 
 	val MongoUser.shrink: PlayerModel
 		get() = PlayerModel(id, username, highestGoldenMedal ?: 0, R)
 
-	fun MongoSet.getCharts(): List<MongoChart> {
-		return this.charts.mapNotNull {
-			getChart(it).apply {
-				if(this == null) {
-					logger.warn("Cannot find Chart($it), which is bound to Set(${this@getCharts.id}), removing from the set.")
-				}
-			}
-		}
-	}
-
 	val dz by lazy { DangerZone() }
 
+	@Suppress("unused")
 	inner class DangerZone internal constructor() {
 
 		/**

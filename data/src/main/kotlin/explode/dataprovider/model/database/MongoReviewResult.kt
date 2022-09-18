@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MongoReview(
 	val reviewedSet: String,
-	val expectStatus: SetStatus,
+	val expectStatus: SetStatus? = null,
 
 	val reviews: MutableList<MongoReviewResult> = mutableListOf(),
 

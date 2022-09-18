@@ -2,7 +2,6 @@ package explode.dataprovider.provider
 
 import explode.dataprovider.model.database.*
 import explode.dataprovider.model.game.*
-import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassNum
 import explode.dataprovider.util.applyIf
 
 interface IBlowAccessor : IBlowReadOnly {
@@ -57,7 +56,7 @@ interface IBlowAccessor : IBlowReadOnly {
 		charts: List<MongoChart>,
 		defaultId: String? = null,
 		introduction: String? = null,
-		status: SetStatus = SetStatus.NEED_REVIEW,
+		status: SetStatus = SetStatus.UNRANKED,
 		price: Int = 0,
 		displayNoterName: String? = null,
 
@@ -132,7 +131,7 @@ interface IBlowAccessor : IBlowReadOnly {
 		private val price: Int,
 		private val introduction: String = "",
 		private val needReview: Boolean = true,
-		private val expectStatus: SetStatus = SetStatus.UNRANKED,
+		private val status: SetStatus = SetStatus.UNRANKED,
 		private val defaultId: String? = null,
 
 		private val musicContent: ByteArray? = null,
@@ -144,14 +143,6 @@ interface IBlowAccessor : IBlowReadOnly {
 		private val charts = mutableMapOf<Int, MongoChart>()
 
 		fun addChart(
-			difficultyClass: String,
-			difficultyValue: Int,
-			D: Double? = null,
-			defaultId: String? = null,
-			content: ByteArray? = null
-		): MongoChart = addChart(difficultyClass.toDifficultyClassNum(), difficultyValue, D, defaultId, content)
-
-		fun addChart(
 			difficultyClass: Int,
 			difficultyValue: Int,
 			D: Double? = null,
@@ -159,7 +150,7 @@ interface IBlowAccessor : IBlowReadOnly {
 			content: ByteArray? = null
 		): MongoChart {
 			// Unranked charts should have no D value
-			val d = if(expectStatus.isRanked) D else null
+			val d = if(status.isRanked) D else null
 
 			// Check difficulty duplication
 			if(difficultyClass in charts.keys) {
@@ -180,7 +171,7 @@ interface IBlowAccessor : IBlowReadOnly {
 				charts = charts.values.toList(),
 				defaultId,
 				introduction,
-				status = expectStatus,
+				status,
 				price,
 				displayNoterName = null,
 				musicContent,
@@ -188,7 +179,7 @@ interface IBlowAccessor : IBlowReadOnly {
 				setCoverContent,
 				storePreviewContent
 			).applyIf(needReview) {
-				with(accessor) { startReview(expectStatus) }
+				with(accessor) { startReview() }
 			}
 		}
 	}
@@ -203,10 +194,11 @@ interface IBlowAccessor : IBlowReadOnly {
 
 	fun MongoUser.submitAfterPlay(record: PlayRecordInput, randomId: String): AfterPlaySubmitModel
 
-	fun MongoSet.addReviewResult(review: MongoReviewResult)
-
 	fun MongoSet.getReview(): MongoReview?
 
+	fun MongoSet.startReview()
+
+	@Deprecated("ExpectStatus is no longer required. Status will not be NEED_REVIEW any more.")
 	fun MongoSet.startReview(expectStatus: SetStatus)
 
 	fun MongoReview.addReview(userId: String, status: Boolean, evaluation: String)
