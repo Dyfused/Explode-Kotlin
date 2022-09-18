@@ -409,7 +409,8 @@ class Bomb(private val omni: IBlowOmni) {
 									val expectedStatus =
 										data.getOrConversionException("status") { SetStatus.valueOf(it) }
 
-									set.startReview(expectedStatus)
+									set.status = expectedStatus
+									set.startReview()
 
 									respOk(set.getReview())
 								}

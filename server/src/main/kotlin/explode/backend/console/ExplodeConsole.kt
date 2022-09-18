@@ -3,8 +3,6 @@
 package explode.backend.console
 
 import explode.backend.importExplodePack
-import explode.dataprovider.model.database.MongoReviewResult
-import explode.dataprovider.model.database.SetStatus
 import explode.dataprovider.model.game.PlayModInput
 import explode.dataprovider.model.game.PlayRecordInput
 import explode.dataprovider.provider.BlowException
@@ -137,7 +135,7 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
 
 		with(mp) {
-			set.addReviewResult(MongoReviewResult(serverUser.id, status, message))
+			set.getReview()?.addReview(serverUser.id, status, message)
 		}
 
 		return "Done"
@@ -176,15 +174,13 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		return ""
 	}
 
-	@SubCommand(desc = "(/startReview <setId> [expectStatus: RANKED/UNRANKED/OFFICIAL]) Start a review on a NEED_REVIEW set.")
+	@SubCommand(desc = "(/startReview <setId>) Start a review on a NEED_REVIEW set.")
 	fun startReview(sp: List<String>): Any {
 		val setId = sp.getOrNull(1) ?: return "Missing parameter: setId"
 		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
-		val status = sp.getOrNull(2)?.run { SetStatus.values().firstOrNull { it.name.lowercase() == this.lowercase() } }
-			?: return "Invalid parameter: expectStatus"
 
 		with(mp) {
-			set.startReview(status)
+			set.startReview()
 		}
 
 		return "Done"

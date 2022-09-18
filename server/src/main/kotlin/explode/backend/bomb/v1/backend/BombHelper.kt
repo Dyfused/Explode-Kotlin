@@ -17,6 +17,7 @@ These functions should be named by `bombify`.
 // from: https://stackoverflow.com/questions/60010298/how-can-i-convert-a-camel-case-string-to-snake-case-and-back-in-idiomatic-kotlin
 private val camelRegex = "(?<=[a-zA-Z])[A-Z]".toRegex()
 // convert camel cases to snake case like 'chartId' to 'chart-id'
+@Suppress("unused")
 private fun String.camelCaseToSnakeCase() = camelRegex.replace(this) { "-${it.value}" }.lowercase()
 
 fun MongoUser.bombify() =
@@ -81,7 +82,7 @@ fun MongoReview.bombify() =
 	buildJsonObject {
 		put("id", id)
 		put("set-id", reviewedSet)
-		put("expect-status", expectStatus.name)
+		put("expect-status", expectStatus?.name)
 		putJsonArray("reviews") {
 			reviews.forEach {
 				add(buildJsonObject {

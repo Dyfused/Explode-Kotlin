@@ -96,7 +96,7 @@ object MongoV0ToV1DataFixer : VersionedDataFixer {
 				noterId = users.findOne(MongoUser::username eq s.noter.username)?.id ?: "f6fe9c4d-98e6-450a-937c-d64848eacc40",
 				introduction = s.introduction,
 				price = s.coinPrice,
-				status = if(s.isOfficial) SetStatus.OFFICIAL else if(s.isRanked) SetStatus.RANKED else if(s.needReview) SetStatus.NEED_REVIEW else SetStatus.UNRANKED,
+				status = if(s.isOfficial) SetStatus.OFFICIAL else if(s.isRanked) SetStatus.RANKED else SetStatus.UNRANKED,
 				charts = s.chart.map { it._id }.toMutableList()
 			)
 
