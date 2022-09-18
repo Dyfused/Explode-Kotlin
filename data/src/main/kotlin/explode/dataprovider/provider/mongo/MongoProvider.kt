@@ -438,7 +438,18 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val filters = buildList {
 
 			if(filterName.isNotEmpty()) {
-				this += (MongoSet::musicName.regex(filterName, "i"))
+				if(filterName.startsWith('#')) {
+					val diffLevel = filterName.substring(1).toIntOrNull() ?: 99
+					this += MongoSet::charts elemMatch (MongoChart::difficultyValue eq diffLevel)
+				} else if(filterName.startsWith('@')) {
+					val noterNameOrId = filterName.substring(1)
+					this += or(MongoSet::noterDisplayOverride eq noterNameOrId, MongoSet::noterId eq noterNameOrId)
+				} else if(filterName.startsWith('&')) {
+					val composerName = filterName.substring(1)
+					this += MongoSet::composerName eq composerName
+				} else {
+					this += (MongoSet::musicName.regex(filterName, "i"))
+				}
 			}
 
 			when(filterCategory) {
