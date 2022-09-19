@@ -117,7 +117,7 @@ document.getElementById("upload_btn").addEventListener("click", (ev) => {
 		}
 
 		let c = {
-			file: document.getElementById(`chart_file_${index}`).files[0],
+			file: "undefined-str",
 			clazz: parseInt(clazz.value),
 			value: parseInt(value.value),
 			d: null,
@@ -128,38 +128,21 @@ document.getElementById("upload_btn").addEventListener("click", (ev) => {
 		charts.push(c);
 	}
 
-	console.log(
-		document.getElementById("music_name").value,
-		document.getElementById("composer_name").value,
-		0,
-		null,
-		"Introduction here",
-		true,
-		"UNRANKED",
-		null,
-		charts,
-		document.getElementById("music_file").files[0],
-		document.getElementById("cover_file").files[0],
-		document.getElementById("preview_music_file").files[0],
-		document.getElementById("store_preview_file").files[0]
-	);
+	let noterDisp = document.getElementById("noter_display_override").value
+	if(noterDisp == "") noterDisp = undefined
 
 	return Bomb("http://localhost:10443/v1")
 		.Management("Taskeren", "123456")
 		.upload(
 			document.getElementById("music_name").value,
 			document.getElementById("composer_name").value,
-			0,
+			document.getElementById("coin").value,
 			null,
-			"Introduction here",
+			document.getElementById("introduction").value,
 			true,
 			"UNRANKED",
-			null,
-			charts,
-			document.getElementById("music_file").files[0],
-			document.getElementById("cover_file").files[0],
-			document.getElementById("preview_music_file").files[0],
-			document.getElementById("store_preview_file").files[0]
+			noterDisp,
+			charts
 		);
 });
 
@@ -180,10 +163,6 @@ document.getElementById("add_chart_btn").addEventListener("click", (ev) => {
             <label>
                 <span>Chart Difficulty Value</span>
                 <input type="number" value="0" name="chart_diff_value_${chart_count}" id="chart_diff_value_${chart_count}">
-            </label>
-            <label>
-                <span>Chart File</span>
-                <input type="file" name="chart_file_${chart_count}" id="chart_file_${chart_count}" />
             </label>
         </fieldset>
     </div>

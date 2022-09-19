@@ -51,7 +51,7 @@ class ProviderReviewerService(private val p: IBlowAccessor) : BlowReviewerServic
 				filterCategory = StoreCategory.NEED_REVIEW,
 				filterSort = StoreSort.PUBLISH_TIME
 			).map {
-				ReviewRequestModel(it.tunerize, !it.status.isRanked)
+				ReviewRequestModel(it.tunerize(u), !it.status.isRanked)
 			}
 		}
 	}

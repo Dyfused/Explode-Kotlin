@@ -9,6 +9,7 @@ import explode.dataprovider.model.database.*
 import explode.dataprovider.provider.compareCharts
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
 import explode.pack.v0.*
+import explode.pack.v0.MetaReader.asExplodePack
 import org.litote.kmongo.*
 import java.io.File
 import javax.swing.JOptionPane
@@ -40,23 +41,17 @@ private fun import() {
 
 	val mp = MongoProvider()
 
-	val metaPath = JOptionPane.showInputDialog("Pack Meta Path: ")
-	if(metaPath == null) {
+	val packPath = JOptionPane.showInputDialog("Pack Meta Path: ")
+	if(packPath == null) {
 		JOptionPane.showMessageDialog(null, "We cannot help you if you don't give us the PackMeta.")
 		return
 	}
-	val metaFile = File(metaPath)
-	if(!metaFile.exists() || !metaFile.isFile) {
-		JOptionPane.showMessageDialog(null, "Invalid PackMeta file as it can be non-regular file or just missing.")
-		return
-	}
-
-	val packMeta = runCatching { MetaReader.readPackMetaJson(metaFile) }.onFailure {
-		JOptionPane.showMessageDialog(
-			null, "Error occurred when parsing PackMeta file: ${it.message}"
-		)
+	val packFile = File(packPath)
+	val packMeta = runCatching { packFile.asExplodePack() }.onFailure {
+		JOptionPane.showMessageDialog(null, "Error occurred when parsing PackMeta file: ${it.message}")
 	}.getOrThrow()
-	val packFolder = metaFile.parentFile.resolve(packMeta.relativeFolderPath)
+
+	val packFolder = packFile.parentFile.resolve(packMeta.relativeFolderPath)
 	val validation = MetaUtil.validateFiles(packMeta, packFolder)
 	if(validation.isNotEmpty()) {
 		val message = "Multiple invalid dependent files are missing or corrupted: \n" + validation.joinToString(
@@ -78,7 +73,7 @@ private fun import() {
 				introduction = set.introduction ?: "",
 				needReview = false,
 				defaultId = set.id,
-				expectStatus = SetStatus.UNRANKED,
+				status = SetStatus.UNRANKED,
 				musicContent = packFolder.resolve(set.musicPath).readBytes(),
 				previewMusicContent = packFolder.resolve(set.previewMusicPath).readBytes(),
 				setCoverContent = packFolder.resolve(set.coverPicturePath).readBytes(),
@@ -184,7 +179,7 @@ private fun inspect() {
 		return
 	}
 
-	val packMeta = MetaReader.readPackMetaJson(metaFile)
+	val packMeta = metaFile.asExplodePack() //MetaReader.readPackMetaJson(metaFile)
 	val packFolder = metaFile.parentFile.resolve(packMeta.relativeFolderPath)
 	val validation = MetaUtil.validateFiles(packMeta, packFolder)
 	val validationMessage = if(validation.isEmpty()) "Pass" else {
@@ -226,7 +221,7 @@ private fun renewId() {
 		return
 	}
 
-	val packMeta = runCatching { MetaReader.readPackMetaJson(metaFile) }.onFailure {
+	val packMeta = runCatching { metaFile.asExplodePack() }.onFailure {
 		JOptionPane.showMessageDialog(
 			null, "Error occurred when parsing PackMeta file: ${it.message}"
 		)

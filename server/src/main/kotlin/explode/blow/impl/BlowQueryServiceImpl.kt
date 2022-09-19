@@ -43,6 +43,8 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		// 请求了数据还不用，请求体里面还没任何参数。无语。
 		if(isOfficial == null) return listOf()
 
+		val u = p.getUserByToken(env.soudayo)
+
 		var category: StoreCategory? by Delegates.observable(null) { _, old, new ->
 			if(old != null) {
 				error("Failed to serialize the request, the category has been decided $old, but received a new value $new.")
@@ -69,7 +71,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 		// default: PlayCount
 		if(sort == null) sort = StoreSort.PUBLISH_TIME
 
-		return p.getSets(limit!!.value, skip!!.value, musicTitle!!, category!!, sort!!).map { it.tunerize }
+		return p.getSets(limit!!.value, skip!!.value, musicTitle!!, category!!, sort!!).map { it.tunerize(u) }
 	}
 
 	override suspend fun self(env: DataFetchingEnvironment): BlowSelfService {

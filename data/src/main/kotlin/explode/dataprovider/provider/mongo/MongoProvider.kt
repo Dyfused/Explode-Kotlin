@@ -53,6 +53,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	companion object {
 		const val InvalidSubmissionRandomId = "Invalid"
 
+		// Pair<is initialized, MongoProvider instance>
 		private var providerSingleton: Pair<Boolean, MongoProvider?> = false to null
 
 		private fun MongoProvider.initSingleton() {
@@ -935,6 +936,26 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			isOfficial = status == SetStatus.OFFICIAL,
 			needReview = isReviewing
 		)
+
+	override fun MongoSet.tunerize(owner: MongoUser?): SetModel =
+		if(owner == null) {
+			tunerize
+		} else {
+			SetModel(
+				_id = id,
+				introduction = introduction ?: "",
+				coinPrice = price,
+				noter = NoterModel(noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown"),
+				musicTitle = musicName,
+				composerName = composerName,
+				playCount = 0,
+				chart = charts.mapNotNull { getChart(it)?.tunerize?.minify },
+				isGot = id in owner.ownedSets,
+				isRanked = status == SetStatus.RANKED || status == SetStatus.OFFICIAL,
+				isOfficial = status == SetStatus.OFFICIAL,
+				needReview = isReviewing
+			)
+		}
 
 	val MongoUser.shrink: PlayerModel
 		get() = PlayerModel(id, username, highestGoldenMedal ?: 0, R)

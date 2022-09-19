@@ -83,6 +83,10 @@ interface IBlowAccessor : IBlowReadOnly {
 
 	/**
 	 * Build a set with charts with [ChartSetBuilder].
+	 * Contents are optional, if not null, then call the addResource methods.
+	 *
+	 * @param needReview `true` to enable Review after creation
+	 * @param defaultId use the given ID instead of new one if not null
 	 *
 	 * @see createSet
 	 * @see createChart
@@ -95,7 +99,7 @@ interface IBlowAccessor : IBlowReadOnly {
 		introduction: String = "",
 		needReview: Boolean = true,
 		defaultId: String? = null,
-		expectStatus: SetStatus = SetStatus.UNRANKED,
+		status: SetStatus = SetStatus.UNRANKED,
 
 		musicContent: ByteArray? = null,
 		previewMusicContent: ByteArray? = null,
@@ -111,7 +115,7 @@ interface IBlowAccessor : IBlowReadOnly {
 		coinPrice,
 		introduction,
 		needReview,
-		expectStatus,
+		status,
 		defaultId,
 		musicContent,
 		previewMusicContent,

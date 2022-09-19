@@ -1,6 +1,7 @@
 package explode.backend.bomb.v1.backend
 
 import explode.backend.bomb.v1.backend.model.UploadSetRequest
+import explode.backend.payload
 import explode.backend.respondJson
 import explode.dataprovider.model.database.*
 import explode.dataprovider.provider.*
@@ -35,7 +36,7 @@ private val callouts = listOf(
 	"Light", "Love", "Pyramid", "Savathûn", "Scorn", "Stop", "Tower", "Traveller", "Witness", "Worm", "Worship"
 )
 
-private val logger = LoggerFactory.getLogger("BombApiV1")
+internal val bombLogger = LoggerFactory.getLogger("BombApiV1")
 
 class Bomb(private val omni: IBlowOmni) {
 
@@ -234,8 +235,41 @@ class Bomb(private val omni: IBlowOmni) {
 							}
 						}
 
-						// post [/management/upload] - return the full created set data
+						// post [/management/upload-with-file] - return the full created set data without actual contents
+						// notice that all the filename fields must not be null or undefined!!
 						post("upload") {
+							val user = getAuthUser()
+
+							val request = payload<UploadSetRequest>()
+
+							// create and store to the database
+							bombLogger.info("Adding new set ${request.title} composed by ${request.composerName} and charted by ${user.username}[override=${request.noterDisplayOverride}] pricing ${request.coinPrice} with default ID ${request.defaultId}.")
+							val s = omni.buildChartSet(
+								setTitle = request.title,
+								composerName = request.composerName,
+								noterUser = user,
+								coinPrice = request.coinPrice ?: 0,
+								introduction = request.introduction.orEmpty(),
+								needReview = request.startReview ?: false,
+								defaultId = request.defaultId,
+								status = request.expectedStatus ?: SetStatus.UNRANKED,
+							) {
+								request.chartMeta.forEach { (_, diffClass, diffValue, D, defaultId) ->
+									bombLogger.info("Adding new chart for ${request.title} [$diffClass/$diffValue] with D $D and defaultId $defaultId.")
+									addChart(
+										difficultyClass = diffClass,
+										difficultyValue = diffValue,
+										D = D,
+										defaultId = defaultId
+									)
+								}
+							}
+
+							respOk(s)
+						}
+
+						// post [/management/upload-with-file] - return the full created set data
+						post("upload-with-file") {
 							val user = getAuthUser()
 
 							lateinit var request: UploadSetRequest
@@ -264,7 +298,7 @@ class Bomb(private val omni: IBlowOmni) {
 							request.chartMeta.forEach { if(it.chartFileName !in uploadedData.keys) fail("Missing chart content bytes, expected in multipart ${it.chartFileName}") }
 
 							// create and store to the database
-							logger.info("Adding new set ${request.title} composed by ${request.composerName} and charted by ${user.username}[override=${request.noterDisplayOverride}] pricing ${request.coinPrice} with default ID ${request.defaultId}.")
+							bombLogger.info("Adding new set ${request.title} composed by ${request.composerName} and charted by ${user.username}[override=${request.noterDisplayOverride}] pricing ${request.coinPrice} with default ID ${request.defaultId}.")
 							val s = omni.buildChartSet(
 								setTitle = request.title,
 								composerName = request.composerName,
@@ -273,7 +307,7 @@ class Bomb(private val omni: IBlowOmni) {
 								introduction = request.introduction.orEmpty(),
 								needReview = request.startReview ?: false,
 								defaultId = request.defaultId,
-								expectStatus = request.expectedStatus ?: SetStatus.UNRANKED,
+								status = request.expectedStatus ?: SetStatus.UNRANKED,
 
 								musicContent = uploadedData[request.musicFileName],
 								previewMusicContent = uploadedData[request.previewFileName],
@@ -281,7 +315,7 @@ class Bomb(private val omni: IBlowOmni) {
 								storePreviewContent = uploadedData[request.storePreviewFileName],
 							) {
 								request.chartMeta.forEach { (uploadedName, diffClass, diffValue, D, defaultId) ->
-									logger.info("Adding new chart for ${request.title} [$diffClass/$diffValue] with D $D and defaultId $defaultId.")
+									bombLogger.info("Adding new chart for ${request.title} [$diffClass/$diffValue] with D $D and defaultId $defaultId.")
 									addChart(
 										difficultyClass = diffClass,
 										difficultyValue = diffValue,

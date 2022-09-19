@@ -71,6 +71,48 @@ const Bomb = function (url) {
 					startReview,
 					expectedStatus,
 					noterDisplayOverride,
+					chart
+				) {
+					let chartMeta = chart.map((c, index) => {
+						return {
+							chartFileName: "undefined-str",
+							chartDifficultyClass: c.clazz,
+							chartDifficultyValue: c.value,
+							D: c.d,
+							defaultId: c.defaultId,
+						};
+					});
+					let data = JSON.stringify({
+						title: title,
+						composerName: composer,
+						chartMeta: chartMeta,
+						musicFileName: "music-file",
+						coverFileName: "cover-file",
+						previewFileName: "preview-file",
+						storePreviewFileName: "store-preview-file",
+						coinPrice: price,
+						defaultId: defaultId,
+						introduction: introduction,
+						startReview: startReview,
+						expectedStatus: expectedStatus,
+						noterDisplayOverride: noterDisplayOverride,
+					})
+					console.log(data)
+					return fetch(`${url}/management/upload`, {
+						method: "post",
+						headers: { Authorization: authHeader },
+						data: data,
+					});
+				},
+				uploadWithFile: async function (
+					title,
+					composer,
+					price,
+					defaultId,
+					introduction,
+					startReview,
+					expectedStatus,
+					noterDisplayOverride,
 					chart,
 					musicFile,
 					coverFile,
@@ -117,7 +159,7 @@ const Bomb = function (url) {
 						})
 					);
 
-					return fetch(`${url}/management/upload`, {
+					return fetch(`${url}/management/upload-with-file`, {
 						method: "post",
 						credentials: "include",
 						data: form,

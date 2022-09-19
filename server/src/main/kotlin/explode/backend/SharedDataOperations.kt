@@ -2,15 +2,13 @@ package explode.backend
 
 import explode.dataprovider.model.database.SetStatus
 import explode.dataprovider.provider.IBlowAccessor
-import explode.pack.v0.MetaReader
+import explode.pack.v0.MetaReader.asExplodePack
 import explode.pack.v0.MetaUtil
 import java.io.File
 import javax.swing.JOptionPane
 
 internal fun IBlowAccessor.importExplodePack(packMetaFile: File): Result<Nothing?> {
-	check(packMetaFile.isFile) { "$packMetaFile is not a file" }
-
-	val packMeta = MetaReader.readPackMetaJson(packMetaFile)
+	val packMeta = packMetaFile.asExplodePack()
 	val packFolder = packMetaFile.parentFile.resolve(packMeta.relativeFolderPath)
 
 	val validation = MetaUtil.validateFiles(packMeta, packFolder)
@@ -28,7 +26,7 @@ internal fun IBlowAccessor.importExplodePack(packMetaFile: File): Result<Nothing
 				introduction = set.introduction ?: "",
 				needReview = false,
 				defaultId = set.id,
-				expectStatus = SetStatus.UNRANKED,
+				status = SetStatus.UNRANKED,
 				musicContent = packFolder.resolve(set.musicPath).readBytes(),
 				previewMusicContent = packFolder.resolve(set.previewMusicPath).readBytes(),
 				setCoverContent = packFolder.resolve(set.coverPicturePath).readBytes(),

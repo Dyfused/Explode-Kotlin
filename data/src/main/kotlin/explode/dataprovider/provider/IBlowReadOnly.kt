@@ -49,4 +49,6 @@ interface IBlowReadOnly {
 	val MongoUser.tunerize: UserModel
 	val MongoChart.tunerize: DetailedChartModel
 	val MongoSet.tunerize: SetModel
+
+	fun MongoSet.tunerize(owner: MongoUser?): SetModel = tunerize
 }

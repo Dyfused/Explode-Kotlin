@@ -1,6 +1,6 @@
 package explode.backend
 
-import explode.dataprovider.provider.fail
+import explode.backend.bomb.v1.backend.bombLogger
 import explode.globalJson
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -14,17 +14,11 @@ suspend inline fun <reified T> ApplicationCall.respondJson(data: T, status: Http
 	this.respondText(contentType = ContentType.Application.Json, status) { globalJson.encodeToString(data) }
 }
 
-suspend inline fun <reified T> PipelineContext<Unit, ApplicationCall>.payload(): T {
+internal suspend inline fun <reified T> PipelineContext<Unit, ApplicationCall>.payload(): T {
+	val text = call.receiveText()
 	return runCatching {
-		globalJson.decodeFromString<T>(call.receiveText())
-	}.onFailure { // response before throw
-		call.respondJson(
-			buildMap {
-				this["error"] = it.message.orEmpty()
-			},
-			HttpStatusCode.BadRequest
-		)
-	}.getOrElse { // throw a console-friendly exception
-		fail(it.message)
-	}
+		globalJson.decodeFromString<T>(text)
+	}.onFailure {
+		bombLogger.error("Unable to parse text into JSON: \n$text")
+	}.getOrThrow()
 }
