@@ -51,4 +51,7 @@ interface IBlowReadOnly {
 	val MongoSet.tunerize: SetModel
 
 	fun MongoSet.tunerize(owner: MongoUser?): SetModel = tunerize
+
+	val MongoSet.displayNoterName: String
+		get() = this.noterDisplayOverride ?: getUser(this.noterId)?.username ?: serverUser.username
 }

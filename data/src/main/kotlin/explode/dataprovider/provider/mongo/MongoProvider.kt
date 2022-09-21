@@ -911,7 +911,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			val s = getParentSet()
 			return DetailedChartModel(
 				_id = id,
-				charter = UserWithUserNameModel(s.noterDisplayOverride ?: getUser(s.noterId)?.username ?: "unknown"),
+				charter = UserWithUserNameModel(s.displayNoterName),
 				chartName = "${s.musicName}_${difficultyClass}",
 				gcPrice = 0,
 				music = MusicModel(s.musicName, MusicianModel(s.composerName)),
@@ -926,7 +926,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			_id = id,
 			introduction = introduction ?: "",
 			coinPrice = price,
-			noter = NoterModel(noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown"),
+			noter = NoterModel(displayNoterName),
 			musicTitle = musicName,
 			composerName = composerName,
 			playCount = 0,
@@ -945,7 +945,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 				_id = id,
 				introduction = introduction ?: "",
 				coinPrice = price,
-				noter = NoterModel(noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown"),
+				noter = NoterModel(displayNoterName),
 				musicTitle = musicName,
 				composerName = composerName,
 				playCount = 0,

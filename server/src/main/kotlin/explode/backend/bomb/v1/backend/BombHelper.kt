@@ -39,7 +39,7 @@ fun MongoSet.bombify() =
 		put("introduction", introduction)
 		put("price", price)
 		put("status", status.name)
-		put("noter-name", noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown")
+		put("noter-name", displayNoterName)
 		putJsonArray("charts") {
 			charts.forEach {
 				add(it)

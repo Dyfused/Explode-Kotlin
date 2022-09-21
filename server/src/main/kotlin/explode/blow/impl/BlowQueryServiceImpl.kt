@@ -135,7 +135,7 @@ class BlowQueryServiceImpl(private val p: IBlowAccessor) : BlowQueryService {
 				it.id,
 				it.status.isRanked,
 				it.introduction ?: "",
-				getUser(it.noterId)?.username ?: "unknown",
+				it.displayNoterName,
 				it.musicName
 			)
 		}
