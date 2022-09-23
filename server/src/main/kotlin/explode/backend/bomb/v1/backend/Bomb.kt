@@ -1,5 +1,6 @@
 package explode.backend.bomb.v1.backend
 
+import explode.backend.bomb.v1.asBomb
 import explode.backend.bomb.v1.backend.model.UploadSetRequest
 import explode.backend.payload
 import explode.backend.respondJson
@@ -346,18 +347,18 @@ class Bomb(private val omni: IBlowOmni) {
 							if(!result) throw BadRequestException("Invitation code is invalid")
 						}
 
-						respOk(omni.registerUser(username, password).bombify())
+						respOk(omni.registerUser(username, password).asBomb())
 					}
 
 					// get [/user/by-name/{name}] - return the summary user data
 					post("by-name") {
-						respOk(omni.getUserByName(receive())?.bombify() ?: throw NotFoundException())
+						respOk(omni.getUserByName(receive())?.asBomb() ?: throw NotFoundException())
 					}
 
 					route("{id}") {
 						// get [/user/{id}] - return the summary user data
 						get {
-							respOk(getParamUser().bombify())
+							respOk(getParamUser().asBomb())
 						}
 
 						// post [/user/{id}/buy-invitation] - return an invitation code if the user can afford
@@ -381,13 +382,13 @@ class Bomb(private val omni: IBlowOmni) {
 							// get [/user/{id}/best20/s] - return the list of the best records in score descending
 							get("s") {
 								respOk(
-									getParamUser().getBestPlayRecords(20, 0).toList().map(MongoRecordRanked::bombify)
+									getParamUser().getBestPlayRecords(20, 0).toList().map(MongoRecordRanked::asBomb)
 								)
 							}
 
 							// get [/user/{id}/best20/r] - return the list of the best records in R value descending
 							get("r") {
-								respOk(getParamUser().getBestPlayRecordsR(20, 0).toList().map(MongoRecord::bombify))
+								respOk(getParamUser().getBestPlayRecordsR(20, 0).toList().map(MongoRecord::asBomb))
 							}
 						}
 					}
@@ -408,7 +409,7 @@ class Bomb(private val omni: IBlowOmni) {
 					route("{id}") {
 						// get [/set/{id}] - return the summary set data
 						get {
-							respOk(getParamSet().bombify())
+							respOk(getParamSet().asBomb())
 						}
 
 						authenticate { // authentication for reviewer permission
@@ -416,7 +417,7 @@ class Bomb(private val omni: IBlowOmni) {
 								// get [/set/{id}/review] - return the full review data
 								get {
 									checkReviewer()
-									respOk(getParamReview().bombify())
+									respOk(getParamReview().asBomb())
 								}
 
 								// post [/set/{id}/review] - add a new review; return the full review data
@@ -478,7 +479,7 @@ class Bomb(private val omni: IBlowOmni) {
 						// get [/set/reviews] - return the list of reviews
 						get("reviews") {
 							checkReviewer()
-							respOk(getReviewList().toList().map(MongoReview::bombify))
+							respOk(getReviewList().toList().map(MongoReview::asBomb))
 						}
 					}
 				}
@@ -487,7 +488,7 @@ class Bomb(private val omni: IBlowOmni) {
 					route("{id}") {
 						// get [/chart/{id}] - return the summary chart data
 						get {
-							respOk(getParamChart().bombify())
+							respOk(getParamChart().asBomb())
 						}
 					}
 				}
@@ -498,10 +499,7 @@ class Bomb(private val omni: IBlowOmni) {
 
 	// region: anthentication validation
 
-	class UnauthorizedException : BadRequestException {
-		constructor() : super("Request permission is not granted")
-		constructor(message: String) : super(message)
-	}
+	class UnauthorizedException(message: String) : BadRequestException(message)
 
 	private fun TheCall.getAuthUserOrNull(): MongoUser? {
 		val token = call.authentication.principal<UserIdPrincipal>()?.name
@@ -563,33 +561,8 @@ class Bomb(private val omni: IBlowOmni) {
 		call.respondJson(data, HttpStatusCode.OK)
 	}
 
-	private suspend fun TheCall.respBadRequest(data: Any?) {
-		call.respondJson(data, HttpStatusCode.BadRequest)
-	}
-
 	private suspend fun TheCall.respBadRequest(message: String) {
 		call.respondJson(mapOf("error" to message), HttpStatusCode.BadRequest)
-	}
-
-	private suspend fun TheCall.respNotFound(data: Any?) {
-		call.respondJson(data, HttpStatusCode.NotFound)
-	}
-
-	private suspend fun TheCall.respNotFound(message: String) {
-		call.respondJson(mapOf("error" to message), HttpStatusCode.NotFound)
-	}
-
-	private suspend fun TheCall.respInternalError(message: String, data: Any? = null, exception: Throwable? = null) {
-		val r = buildMap {
-			this["message"] to message
-			data?.let { this["data"] to it }
-			exception?.let { this["stacktrace"] to it.stackTraceToString() }
-		}
-		call.respondJson(r, HttpStatusCode.InternalServerError)
-	}
-
-	private suspend fun TheCall.respAuthenticate() {
-		call.respondJson<Any?>(null, HttpStatusCode.Unauthorized)
 	}
 
 	/**
