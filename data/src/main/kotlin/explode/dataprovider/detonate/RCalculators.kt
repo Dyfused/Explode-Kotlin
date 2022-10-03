@@ -1,6 +1,7 @@
 package explode.dataprovider.detonate
 
 import thirdparty.crazy_bull.CrazyBullRCalculator
+import kotlin.math.pow
 
 enum class RCalculators : RCalculator {
 	Simple {
@@ -21,6 +22,12 @@ enum class RCalculators : RCalculator {
 		override fun calculateRScore(D: Double, perfect: Int, good: Int, miss: Int): Double {
 			val acc = (perfect + (good.toDouble() / 2)) / (perfect + good + miss)
 			return CrazyBullRCalculator.eval(D, acc).takeIf { it >= 50 } ?: 0.0
+		}
+	},
+	UnknownGoodMan {
+		override fun calculateRScore(D: Double, perfect: Int, good: Int, miss: Int): Double {
+			val acc = (perfect + (good / 2.0)) / (perfect + good + miss)
+			return maxOf(acc * 50.0, acc.pow(8) * D.pow(3) - D.pow(2.8))
 		}
 	}
 }
