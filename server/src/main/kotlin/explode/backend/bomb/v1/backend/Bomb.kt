@@ -236,8 +236,7 @@ class Bomb(private val omni: IBlowOmni) {
 							}
 						}
 
-						// post [/management/upload-with-file] - return the full created set data without actual contents
-						// notice that all the filename fields must not be null or undefined!!
+						// post [/management/upload] - return the full created set data without actual contents
 						post("upload") {
 							val user = getAuthUser()
 
@@ -390,6 +389,11 @@ class Bomb(private val omni: IBlowOmni) {
 							get("r") {
 								respOk(getParamUser().getBestPlayRecordsR(20, 0).toList().map(MongoRecord::asBomb))
 							}
+						}
+
+						// get [/user/{id}/last20] - return the list of the lastest records
+						get("last20") {
+							respOk(getParamUser().getLastPlayRecords(20, 0).toList().map(MongoRecordRanked::asBomb))
 						}
 					}
 				}
