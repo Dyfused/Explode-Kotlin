@@ -1,12 +1,12 @@
 package explode.dataprovider.model.database
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import java.time.OffsetDateTime
 
 @Serializable
 data class MongoUser(
-	val _id: String,
+	@SerialName("_id")
+	val id: String,
 	var username: String,
 	var password: String,
 	val ownedSets: MutableList<String>,

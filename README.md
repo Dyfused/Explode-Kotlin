@@ -5,6 +5,8 @@
 [![GitHub](https://img.shields.io/github/license/Dyfused/Explode-Kotlin)](https://github.com/Dyfused/Explode-Kotlin/blob/master/LICENSE)
 [![Create Explosion](https://github.com/Dyfused/Explode-Kotlin/actions/workflows/build.yml/badge.svg)](https://github.com/Dyfused/Explode-Kotlin/actions/workflows/build.yml)
 
+![](/docs/icon.gif)
+
 Explode（爆炸）是已经歇逼的音游 Dynamite（炸药） 的私服计划。因为本人开发技术力有限，进度正在缓慢向上攀爬。
 
 ## 使用

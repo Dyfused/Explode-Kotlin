@@ -8,7 +8,11 @@ data class PackMeta(
 	val author: String?,
 	val sets: List<SetMeta>,
 	val relativeFolderPath: String
-)
+) {
+	companion object {
+		val EMPTY = PackMeta(null, null, emptyList(), "Charts")
+	}
+}
 
 @Serializable
 data class SetMeta(

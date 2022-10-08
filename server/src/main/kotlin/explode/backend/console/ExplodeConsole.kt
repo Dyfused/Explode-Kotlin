@@ -2,11 +2,13 @@
 
 package explode.backend.console
 
-import explode.dataprovider.model.database.MongoReviewResult
-import explode.dataprovider.model.database.SetStatus
+import explode.backend.importExplodePack
+import explode.dataprovider.model.game.PlayModInput
+import explode.dataprovider.model.game.PlayRecordInput
 import explode.dataprovider.provider.BlowException
 import explode.dataprovider.provider.IBlowAccessor
 import explode.dataprovider.provider.mongo.MongoProvider
+import java.io.File
 import kotlin.concurrent.thread
 import kotlin.reflect.KFunction
 import kotlin.reflect.full.declaredFunctions
@@ -26,7 +28,6 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 	private val commandDescs = mutableMapOf<String, String>()
 
 	private val mp = acc as? MongoProvider
-	private val mpd = mp?.dz
 
 	init {
 		ExplodeConsole::class.declaredFunctions.forEach { func ->
@@ -85,10 +86,8 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val username = sp.getOrNull(1) ?: return "Missing parameter: username"
 		val u = acc.getUserByName(username) ?: return "Cannot find the user named $username"
 		val p = sp.getOrNull(2) ?: List(8) { (('A'..'z') + ('0'..'9')).random() }.joinToString()
-		with(acc) {
-			u.password = p
-			return "New password: $p"
-		}
+		u.password = p
+		return "New password: $p"
 	}
 
 	@SubCommand(desc = "(/listRanking <ChartId> [limit=15] [skip=0]) List the play records of the given chart.")
@@ -108,12 +107,12 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 	@SubCommand(desc = "(/findSet <setName>) List the set in specified name.")
 	fun findSet(sp: List<String>): Any {
 		val setName = sp.toMutableList().apply { removeAt(0) }.joinToString(" ")
-		val sets = mp?.getSetByName(setName) ?: return "Invalid parameter: setName"
+		val sets = mp?.getSetsByName(setName) ?: return "Invalid parameter: setName"
 
 		sets.forEach { set ->
-			println("<${set.musicName}> ${set._id}")
+			println("<${set.musicName}> ${set.id}")
 			set.charts.mapNotNull(mp::getChart).forEach { chart ->
-				println("- <${chart._id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
+				println("- <${chart.id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
 			}
 		}
 		return ""
@@ -124,7 +123,7 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val chartId = sp.getOrNull(1) ?: return "Missing parameter: chartId"
 		val chart = mp?.getChart(chartId) ?: return "Invalid parameter: chartId"
 
-		println("- <${chart._id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
+		println("- <${chart.id}> [${chart.difficultyClass}] ${chart.difficultyValue}")
 		return ""
 	}
 
@@ -136,7 +135,7 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
 
 		with(mp) {
-			set.addReviewResult(MongoReviewResult(serverUser._id, status, message))
+			set.getReview()?.addReview(serverUser.id, status, message)
 		}
 
 		return "Done"
@@ -168,23 +167,62 @@ class ExplodeConsole(private val acc: IBlowAccessor) {
 		val status = sp.getOrNull(2)?.toBooleanStrictOrNull() ?: true
 
 		with(mp) {
-			set.getReview() ?: return "No ongoing review for <${set.musicName}>(${set._id})"
+			set.getReview() ?: return "No ongoing review for <${set.musicName}>(${set.id})"
 			set.endReview(status)
 		}
 
 		return ""
 	}
 
-	@SubCommand(desc = "(/startReview <setId> [expectStatus: RANKED/UNRANKED/OFFICIAL]) Start a review on a NEED_REVIEW set.")
+	@SubCommand(desc = "(/startReview <setId>) Start a review on a NEED_REVIEW set.")
 	fun startReview(sp: List<String>): Any {
 		val setId = sp.getOrNull(1) ?: return "Missing parameter: setId"
 		val set = mp?.getSet(setId) ?: return "Invalid parameter: setId"
-		val status = sp.getOrNull(2)?.run { SetStatus.values().firstOrNull { it.name.lowercase() == this.lowercase() } } ?: return "Invalid parameter: expectStatus"
 
 		with(mp) {
-			set.startReview(status)
+			set.startReview()
 		}
 
+		return "Done"
+	}
+
+	@SubCommand(desc = "(/generateFakeRecords <chartId> [count]) Generate fake records for the chart.")
+	fun generateFakeRecords(sp: List<String>): Any {
+		val chartId = sp.getOrNull(1) ?: return "Missing parameter: chartId"
+		val chart = mp?.getChart(chartId) ?: return "Invalid parameter: chartId"
+		val count = sp.getOrNull(2)?.toIntOrNull() ?: 20
+
+		repeat(count) {
+			with(mp) {
+				serverUser.buySet(chart.getParentSet().id)
+
+				val rid = serverUser.submitBeforePlay(chartId, 0, "").playingRecord.randomId
+				serverUser.submitAfterPlay(
+					PlayRecordInput(
+						PlayModInput(1.0, 1.0, isBleed = true, isMirror = false),
+						true,
+						(0..1000000).random(),
+						(0..255).random(),
+						(0..255).random(),
+						(0..255).random()
+					),
+					rid
+				)
+			}
+		}
+
+		return "Done"
+	}
+
+	@SubCommand(desc = "(/importPack <path>) Import a set of charts by Explode Pack Meta file.")
+	fun importPack(sp: List<String>): Any {
+		val path = sp.getOrNull(1) ?: return "Missing parameter: path"
+		try {
+			mp?.importExplodePack(File(path))
+		} catch(ex: Exception) {
+			ex.printStackTrace()
+			return ex.message.orEmpty()
+		}
 		return "Done"
 	}
 

@@ -1,12 +1,12 @@
 package explode.dataprovider.model.database
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import java.time.OffsetDateTime
 
 @Serializable
 data class MongoRecord(
-	val _id: String,
+	@SerialName("_id")
+	val id: String,
 	val playerId: String,
 	val chartId: String,
 	val score: Int,
@@ -18,7 +18,8 @@ data class MongoRecord(
 
 @Serializable
 data class MongoRecordRanked(
-	val _id: String,
+	@SerialName("_id")
+	val id: String,
 	val playerId: String,
 	val chartId: String,
 	val score: Int,

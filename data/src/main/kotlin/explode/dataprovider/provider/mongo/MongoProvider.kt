@@ -12,11 +12,11 @@ import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.*
 import explode.dataprovider.provider.DifficultyUtils.toDifficultyClassStr
 import explode.dataprovider.provider.mongo.MongoExplodeConfig.Companion.toMongo
+import explode.dataprovider.util.explodeLogger
 import kotlinx.serialization.*
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -32,9 +32,12 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	constructor() : this(Configuration(File("./provider.cfg")).explode().toMongo())
 
-	private val logger = LoggerFactory.getLogger("Mongo")
+	private val logger = explodeLogger
 	private val mongo = (KMongo.createClient(config.connectionString))
 	private val db = mongo.getDatabase(config.databaseName)
+
+	override val unencrypted: Boolean
+		get() = config.applyUnencryptedFixes
 
 	init {
 		logger.info("Database: ${config.databaseName} at ${config.connectionString}")
@@ -49,6 +52,25 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	companion object {
 		const val InvalidSubmissionRandomId = "Invalid"
+
+		// Pair<is initialized, MongoProvider instance>
+		private var providerSingleton: Pair<Boolean, MongoProvider?> = false to null
+
+		private fun MongoProvider.initSingleton() {
+			providerSingleton = if(!providerSingleton.first) { // put value if not initialized yet
+				true to this
+			} else {
+				logger.error("Unable to initialize Singleton Mode with multiple instance, disabled.")
+				logger.error("Notice that some features depends on Singleton Mode is disabled as well.")
+				true to null
+			}
+		}
+
+		fun letSingleton(block: (MongoProvider) -> Unit) = providerSingleton.second?.let(block)
+	}
+
+	init {
+		initSingleton()
 	}
 
 	// ACTUAL DATA ACCESSING
@@ -68,10 +90,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun getSetByChartId(chartId: String) =
 		chartSetC.findOne(MongoSet::charts contains chartId)
 
-	fun getSetByName(name: String): FindIterable<MongoSet> =
+	override fun getSetsByName(name: String): FindIterable<MongoSet> =
 		chartSetC.find(MongoSet::musicName eq name)
-
-	fun getSetByNameList(name: String): List<MongoSet> = getSetByName(name).toList()
 
 	override fun getUserByName(username: String) = userC.findOne(MongoUser::username eq username)
 	override fun getUserByToken(token: String) = userC.findOne(MongoUser::token eq token)
@@ -126,7 +146,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun updateSet(mongoSet: MongoSet): MongoSet = mongoSet.upsert(chartSetC)
 
 	// non-null getters
-	override fun MongoChart.getParentSet(): MongoSet = getSetByChartId(_id) ?: run {
+	override fun MongoChart.getParentSet(): MongoSet = getSetByChartId(id) ?: run {
 		fixHeadlessChart(this)
 		fail("Unable to get the Set of a Headless Chart.")
 	}
@@ -142,7 +162,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	 * The default user of the server.
 	 */
 	override val serverUser: MongoUser = MongoUser(
-		_id = "f6fe9c4d-98e6-450a-937c-d64848eacc40",
+		id = "f6fe9c4d-98e6-450a-937c-d64848eacc40",
 		"official",
 		"",
 		mutableListOf(),
@@ -163,7 +183,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun createUser(username: String, password: String): MongoUser {
 		logger.info("Creating user with parameters [username=$username, password=$password]")
 		return MongoUser(
-			_id = UUID.randomUUID().toString(),
+			id = UUID.randomUUID().toString(),
 			username = username,
 			password = password,
 			ownedSets = mutableListOf(),
@@ -184,77 +204,49 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		composerName: String,
 		noterId: String?,
 		charts: List<MongoChart>,
-		id: String?,
+		defaultId: String?,
 		introduction: String?,
 		status: SetStatus,
-		price: Int
-	): MongoSet = MongoSet(
-		_id = id ?: randomId(),
-		musicName = musicName,
-		composerName = composerName,
-		noterId = noterId ?: serverUser._id,
-		introduction = introduction,
-		price = price,
-		status = status,
-		charts = charts.map { it._id }.toMutableList()
-	).apply(::updateSet)
+		price: Int,
+		displayNoterName: String?,
 
-	override fun createChart(difficultyClass: Int, difficultyValue: Int, id: String?, D: Double?): MongoChart =
+		musicContent: ByteArray?,
+		previewMusicContent: ByteArray?,
+		setCoverContent: ByteArray?,
+		storePreviewContent: ByteArray?,
+	): MongoSet = MongoSet(
+		id = defaultId ?: randomId(),
+		musicName,
+		composerName,
+		noterId = noterId ?: serverUser.id,
+		introduction,
+		price,
+		status,
+		charts = charts.map { it.id }.toMutableList(),
+		noterDisplayOverride = displayNoterName,
+		uploadedTime = OffsetDateTime.now()
+	).apply(::updateSet).apply {
+		musicContent?.let { addMusicResource(id, it) }
+		previewMusicContent?.let { addPreviewResource(id, it) }
+		setCoverContent?.let { addSetCoverResource(id, it) }
+		storePreviewContent?.let { addStorePreviewResource(id, it) }
+	}
+
+	override fun createChart(
+		difficultyClass: Int,
+		difficultyValue: Int,
+		defaultId: String?,
+		D: Double?,
+		content: ByteArray?
+	): MongoChart =
 		MongoChart(
-			_id = id ?: genNewChartId(),
+			id = defaultId ?: genNewChartId(),
 			difficultyClass = difficultyClass,
 			difficultyValue = difficultyValue,
 			D = D
-		).apply(::updateChart)
-
-	private fun getSetStoreList(
-		limit: Int,
-		skip: Int,
-		searchedName: String,
-		showHidden: Boolean,
-		showOfficial: Boolean,
-		showRanked: Boolean,
-		showUnranked: Boolean,
-		showReview: Boolean
-	): List<MongoSet> {
-		var filters = arrayOf<Bson>()
-		if(searchedName.isNotEmpty()) {
-			filters += (MongoSet::musicName).regex(searchedName, "i")
+		).apply(::updateChart).apply {
+			content?.let { addChartResource(id, it) }
 		}
-		if(showHidden) {
-			filters += MongoSet::status eq SetStatus.HIDDEN
-		} else if(showReview) {
-			filters += MongoSet::status eq SetStatus.NEED_REVIEW
-		} else if(showOfficial) {
-			filters += MongoSet::status eq SetStatus.OFFICIAL
-		} else if(showRanked) {
-			filters += or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL)
-		} else if(showUnranked) {
-			filters += MongoSet::status eq SetStatus.UNRANKED
-		}
-		chartSetC.find(MongoSet::status eq SetStatus.UNRANKED, MongoSet::status eq SetStatus.HIDDEN)
-
-		return chartSetC.find(*filters).limit(limit).skip(skip).toList()
-	}
-
-	fun getSetList(
-		limit: Int,
-		skip: Int,
-		searchedName: String? = null,
-		isHidden: Boolean? = null,
-		isOfficial: Boolean? = null,
-		isRanked: Boolean? = null,
-		isNeedReview: Boolean? = null
-	): List<MongoSet> {
-		val filter = buildList {
-			if(searchedName != null) add(MongoSet::musicName eq searchedName)
-			if(isHidden != null) if(isHidden) add(MongoSet::price eq -1) else add(MongoSet::price ne -1)
-			if(isOfficial != null) add(MongoSet::status eq SetStatus.OFFICIAL)
-			if(isRanked != null) add(or(MongoSet::status eq SetStatus.RANKED, MongoSet::status eq SetStatus.OFFICIAL))
-			if(isNeedReview != null) add(MongoSet::status eq SetStatus.NEED_REVIEW)
-		}.let(::and)
-		return chartSetC.find(filter).limit(limit).skip(skip).toList()
-	}
 
 	override fun getSets(limit: Int?, skip: Int?): Iterable<MongoSet> {
 		return chartSetC.find().apply {
@@ -313,8 +305,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 
 		val new = MongoRecord(
-			_id = randomId(),
-			playerId = _id,
+			id = randomId(),
+			playerId = id,
 			chartId = chartId,
 			score = record.score!!,
 			scoreDetail = ScoreDetail(record.perfect!!, record.good!!, record.miss!!),
@@ -326,18 +318,20 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return new
 	}
 
-	fun getUserBestR20(userId: String) =
-		playRecordC.aggregate<MongoRecord>(
-			match(MongoRecord::playerId eq userId),
+	override fun MongoUser.getBestPlayRecordsR(limit: Int, skip: Int): Iterable<MongoRecord> {
+		return playRecordC.aggregate(
+			match(MongoRecord::playerId eq id),
 			sort(descending(MongoRecord::RScore)),
 			group(MongoRecord::chartId, Accumulators.first("data", ThisDocument)),
 			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
 			sort(descending(MongoRecord::RScore)),
-			limit(20)
+			limit(limit),
+			skip(skip)
 		)
+	}
 
 	fun MongoUser.updatePlayerRValue() = apply {
-		R = getUserBestR20(_id).sumByDouble { it.RScore ?: 0.0 }.roundToInt()
+		R = getBestPlayRecordsR(20, 0).sumOf { it.RScore ?: 0.0 }.roundToInt()
 
 		updateUser(this)
 	}
@@ -351,13 +345,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			AssessmentGroupModel(
 				group.id,
 				group.name,
-				group.assessments.mapNotNull { (medalLevel, _) -> getTunerizedAssessment(group.id, medalLevel, _id) }
+				group.assessments.mapNotNull { (medalLevel, _) -> getTunerizedAssessment(group.id, medalLevel, id) }
 			)
 		}.toList()
 	}
-
-	private fun MongoAssessmentGroup.getAssessments() =
-		assessments.mapNotNull { assessmentC.findOneById(it.value) }
 
 	private fun getTunerizedAssessment(assessmentGroupId: String, medalLevel: Int, userId: String): AssessmentModel {
 		val usr = getUser(userId) ?: fail("Invalid user: $userId")
@@ -386,7 +377,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	private fun MongoAssessment.getAssessmentCharts() =
 		charts.mapNotNull { getChart(it) }.associateWith { it.getParentSet() }.map { (chart, set) ->
-			AssessmentChartModel(chart._id, set.tunerize)
+			AssessmentChartModel(chart.id, set.tunerize)
 		}
 
 	fun getAssessmentByGroupAndMedal(assessmentGroupId: String, medalLevel: Int): MongoAssessment? {
@@ -402,10 +393,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 		return assessmentRecordC.aggregate<MongoAssessmentRecordRanked>(
 			match(MongoAssessmentRecordRanked::assessmentId eq ass.id),
-			sort(descending(MongoAssessmentRecordRanked::playerId, MongoAssessmentRecordRanked::accuracy)),
+			sort(descending(MongoAssessmentRecordRanked::accuracy, MongoAssessmentRecordRanked::playerId)),
 			aggregateGroup,
 			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
-			aggregateRanking,
+			aggregateAssessmentRanking,
 			skip(skip),
 			limit(limit)
 		).map {
@@ -418,7 +409,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		return assessmentRecordC.find(
 			and(
 				MongoAssessmentRecord::assessmentId eq assessmentId,
-				MongoAssessmentRecord::playerId eq _id
+				MongoAssessmentRecord::playerId eq id
 			)
 		)
 	}
@@ -454,24 +445,58 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun getSets(
 		limit: Int,
 		skip: Int,
-		searchedName: String,
-		onlyRanked: Boolean,
-		onlyOfficial: Boolean,
-		onlyReview: Boolean,
-		onlyHidden: Boolean,
-		playCountOrder: Boolean,
-		publishTimeOrder: Boolean
+		filterName: String,
+		filterCategory: StoreCategory,
+		filterSort: StoreSort
 	): List<MongoSet> {
-		//return getSetStoreList(limit, skip, searchedName, onlyRanked, onlyOfficial, onlyReview, onlyHidden)
-		return getSetStoreList(
-			limit, skip,
-			searchedName,
-			onlyHidden,
-			onlyOfficial,
-			onlyRanked,
-			!onlyRanked,
-			onlyReview
-		)
+		val filters = buildList {
+
+			if(filterName.isNotEmpty()) {
+				if(filterName.startsWith('#')) {
+					val diffLevel = filterName.substring(1).toIntOrNull() ?: 99
+					this += MongoSet::charts elemMatch (MongoChart::difficultyValue eq diffLevel)
+				} else if(filterName.startsWith('@')) {
+					val noterNameOrId = filterName.substring(1)
+					this += or(MongoSet::noterDisplayOverride eq noterNameOrId, MongoSet::noterId eq noterNameOrId)
+				} else if(filterName.startsWith('&')) {
+					val composerName = filterName.substring(1)
+					this += MongoSet::composerName eq composerName
+				} else {
+					this += (MongoSet::musicName.regex(filterName, "i"))
+				}
+			}
+
+			@Suppress("DEPRECATION")
+			when(filterCategory) {
+				StoreCategory.OFFICIAL -> this += (MongoSet::status eq SetStatus.OFFICIAL)
+				StoreCategory.RANKED -> this += (or(
+					MongoSet::status eq SetStatus.RANKED,
+					MongoSet::status eq SetStatus.OFFICIAL
+				))
+
+				StoreCategory.UNRANKED -> this += (MongoSet::status eq SetStatus.UNRANKED)
+				// usage of deprecated enum values below is for compatiblity with older model
+				// will be removed in 1.5.x maybe
+				StoreCategory.NEED_REVIEW -> this += or(
+					MongoSet::isReviewing eq true,
+					MongoSet::status eq SetStatus.NEED_REVIEW
+				)
+
+				StoreCategory.HIDDEN -> this += or(MongoSet::isHidden eq true, MongoSet::status eq SetStatus.HIDDEN)
+				else -> {}
+			}
+		}
+
+		return chartSetC
+			.find(*filters.toTypedArray())
+			.run { // sort
+				when(filterSort) {
+					StoreSort.PUBLISH_TIME -> sort(descending(MongoSet::uploadedTime, MongoSet::id))
+					StoreSort.PLAY_COUNT -> this // won't support for now
+				}
+			}
+			.limit(limit)
+			.skip(skip).toList()
 	}
 
 	fun getAllSets(): FindIterable<MongoSet> = chartSetC.find()
@@ -485,10 +510,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val coinRemain = this.coin - s.price
 		if(coinRemain >= 0) {
 			coin = coinRemain
-			ownedSets += s._id
+			ownedSets += s.id
 			ownedCharts += s.charts
 			updateUser(this)
-			logger.info("User[${this.username}] bought ChartSet[${s.musicName}](${s._id}) cost ${s.price} remaining ${coin}.")
+			logger.info("User[${this.username}] bought ChartSet[${s.musicName}](${s.id}) cost ${s.price} remaining ${coin}.")
 			return ExchangeSetModel(this.coin)
 		} else {
 			fail("You lack of money!")
@@ -506,7 +531,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			aggregateGroup,
 			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
 			aggregateRanking,
-			match(MongoAssessmentRecordRanked::playerId eq _id)
+			match(MongoAssessmentRecordRanked::playerId eq id)
 		).map { (_, _, result, _, _, _, accuracy, time, _, ranking) ->
 			AssessmentRecordWithRankModel(this.shrink, ranking, accuracy, result, time)
 		}.firstOrNull()
@@ -514,6 +539,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	private val aggregateRanking =
 		Aggregates.setWindowFields(null, MongoRecordRanked::score eq -1, WindowedComputations.rank("ranking"))
+
+	private val aggregateAssessmentRanking =
+		Aggregates.setWindowFields(
+			null,
+			descending(MongoAssessmentRecordRanked::accuracy),
+			WindowedComputations.rank("ranking")
+		)
 
 	private val aggregateGroup = Aggregates.group(MongoRecord::playerId, Accumulators.first("data", ThisDocument))
 
@@ -530,7 +562,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			aggregateGroup,
 			replaceWith(PlayRecordGroupingAggregationMiddleObject::data),
 			aggregateRanking,
-			match(MongoRecordRanked::playerId eq _id)
+			match(MongoRecordRanked::playerId eq id)
 		).map { (_, _, _, score, detail, time, _, ranking) ->
 			val (perfect, good, miss) = detail
 			PlayRecordWithRank(this.shrink, PlayMod.Default, ranking, score, perfect, good, miss, time)
@@ -556,7 +588,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked> {
 		return playRecordC.aggregate(
 			aggregateRanking,
-			match(MongoRecordRanked::playerId eq _id),
+			match(MongoRecordRanked::playerId eq id),
 			sort(descending(MongoRecordRanked::uploadedTime)),
 			limit(limit),
 			skip(skip)
@@ -567,7 +599,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	override fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked> {
 		return playRecordC.aggregate(
 			aggregateRanking,
-			match(MongoRecordRanked::playerId eq _id),
+			match(MongoRecordRanked::playerId eq id),
 			sort(descending(MongoRecordRanked::score)),
 			limit(limit),
 			skip(skip)
@@ -626,15 +658,8 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		val ass = getAssessmentByGroupAndMedal(data.assessmentId, medal)
 			?: fail("Invalid assessment: Medal $medal of Group ${data.assessmentId}")
 
-		data class SafePlayRecordInput(
-			val score: Int,
-			val perf: Int,
-			val good: Int,
-			val miss: Int
-		)
-
 		fun calcAccuracy(perf: Int, good: Int, total: Int): Double {
-			val acc =  ((perf * 100000L + good * 50000L) / total) / 1000.0
+			val acc = ((perf * 100000L + good * 50000L) / total) / 1000.0
 			return decimalFormat.format(acc).toDouble()
 		}
 
@@ -647,7 +672,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			MongoAssessmentRecordEntry(
 				it.score!!,
 				ScoreDetail(it.perfect, it.good, it.miss),
-				calcAccuracy(perf, good, perf+good+miss)
+				calcAccuracy(perf, good, perf + good + miss)
 			)
 		}.toList()
 
@@ -670,7 +695,7 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		}
 
 		val r = MongoAssessmentRecord(
-			_id,
+			id,
 			ass.id,
 			result,
 			recs,
@@ -725,91 +750,91 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		)
 	}
 
-	override fun MongoSet.addReviewResult(review: MongoReviewResult) {
-		// check before insertion
-
-		// user must be existent and with reviewer permission
-		val u = getUser(review.reviewerId) ?: fail("Invalid Reviewer ID: ${review.reviewerId}")
-		if(!u.permission.review) fail("Not Reviewer: ${u.username}")
-
-		// set must be existent and with NEED_REVIEW status
-		if(status != SetStatus.NEED_REVIEW) fail("Invalid Reviewed Set: No Need Reviewing")
-
-		// evaluation message must not be empty on Reject
-		if(!review.status && review.evaluation.isEmpty()) fail("Must provide evaluation on Reject")
-
-		// no duplicated review
-		if(reviewC.findOne(MongoReview::reviews elemMatch (MongoReviewResult::reviewerId eq review.reviewerId)) != null)
-			fail("Duplicated Review")
-
-		val r = getReview() ?: fail("Set Review Data Lost: $_id")
-		r.reviews += review
-		r.upsert(reviewC)
-
-		// reviewC.updateOneById(r.id, push(MongoReview::reviews, review))
-
-		checkAutoEndReview(r) // auto check
+	override fun MongoReview.addReview(userId: String, status: Boolean, evaluation: String) {
+		reviews += MongoReviewResult(userId, status, evaluation)
+		upsert(reviewC)
 	}
 
 	override fun MongoSet.getReview(): MongoReview? {
-		return reviewC.findOne(MongoReview::reviewedSet eq _id)
+		return reviewC.findOne(MongoReview::reviewedSet eq id)
 	}
 
-	override fun MongoSet.startReview(expectStatus: SetStatus) {
-		// update status to Need Review
-		status = SetStatus.NEED_REVIEW
+	override fun MongoSet.startReview() {
+		isReviewing = true
 		updateSet(this)
 
-		// create and insert the review data
-		val r = MongoReview(_id, expectStatus)
+		val r = MongoReview(id)
 		r.upsert(reviewC)
 
-		logger.info("Started a Review on Set($_id).")
+		logger.info("Started a Review on Set($id)")
+	}
+
+	@Deprecated("ExpectStatus is no longer required. Status will not be NEED_REVIEW any more.")
+	override fun MongoSet.startReview(expectStatus: SetStatus) {
+		// set status to the expectedStatus like newer model
+		// and set reviewing mode on
+		status = expectStatus
+		startReview()
 	}
 
 	override fun MongoSet.endReview(pass: Boolean) {
 		// get the review data
-		val r = getReview() ?: fail("Set Review Data Lost: $_id")
+		val r = getReview() ?: fail("Set Review Data Lost: $id")
 
 		// update status
-		status = if(pass) {
-			r.expectStatus
-		} else {
-			SetStatus.HIDDEN
+		// if the status is not NEED_REVIEW, then it is the exactly what we wanted,
+		// or try to put it with ExpectStatus like older model.
+		// if both of them is missing, just throw the exception.
+		@Suppress("DEPRECATION")
+		if(status == SetStatus.NEED_REVIEW) {
+			val expected = r.expectStatus
+			if(expected == null) {
+				error("You need either define status in Set or expectedStatus in ReviewC")
+			} else {
+				status = expected
+			}
 		}
+		// hide if not pass
+		isHidden = pass
 		updateSet(this)
 
 		// remove review data
 		reviewC.deleteOneById(r.id)
 
-		logger.info("Ended a Review on Set($musicName, #$_id), new status is $status.")
+		logger.info("Ended a Review on Set($musicName, #$id), new status is $status.")
 	}
 
-	private fun MongoSet.checkAutoEndReview(review: MongoReview) {
-		if(!config.autoEndReview) return
-
-		// pass the reviewer count
-		if(review.reviews.size >= config.autoEndReviewCountReviewer) {
-			val rejectReviews = review.reviews.filter { !it.status }
-			val acceptPercentage = (review.reviews.size - rejectReviews.size).toDouble() / review.reviews.size
-			if(acceptPercentage >= config.autoEndReviewAcceptPercentage) { // pass
-				endReview(true)
-
-				logger.info("Auto ACCEPTED a review on Set<$musicName>($_id).")
-			} else {
-				endReview(false)
-
-				// dump reject messages
-				val rejectMessages = rejectReviews.joinToString(separator = "\n") { it.evaluation }
-				introduction += "\n[Rejected Charts]\n$rejectMessages"
-				updateSet(this)
-
-				logger.info("Auto REJECTED a review on Set<$musicName>($_id).")
-			}
+	fun MongoReview.peekAutoReviewResult(): Boolean {
+		return if(reviews.size >= config.autoEndReviewCountReviewer) {
+			val rejectReviews = reviews.filter { !it.status }
+			val acceptPercentage = (reviews.size - rejectReviews.size).toDouble() / reviews.size
+			acceptPercentage >= config.autoEndReviewAcceptPercentage
+		} else {
+			false
 		}
 	}
 
 	override fun getReviewList(): FindIterable<MongoReview> = reviewC.find()
+
+	override fun MongoUser.payCoin(coin: Int): Boolean {
+		return if(canAffordCoin(coin)) {
+			this.coin -= coin
+			updateUser(this)
+			true
+		} else {
+			false
+		}
+	}
+
+	override fun MongoUser.payDiamond(diamond: Int): Boolean {
+		return if(canAffordDiamond(diamond)) {
+			this.diamond -= diamond
+			updateUser(this)
+			true
+		} else {
+			false
+		}
+	}
 
 	enum class ErrorHandlingStrategy {
 		/**
@@ -829,43 +854,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	private fun MongoChart.dump() =
 		"""
 			[ChartDetails]
-				ID:               $_id
+				ID:               $id
 				D Value:          $D
 				DifficultyClass:  ${difficultyClass.toDifficultyClassStr()}(${difficultyClass})
 				DifficultyNumber: $difficultyValue
-		""".trimIndent()
-
-	private fun MongoSet.dump() =
-		"""
-			[SetDetails]
-				ID: $_id
-				MusicName: $musicName
-				MusicAuthor(ComposerName): $composerName
-				NoterId: $noterId
-				&Noter:
-					${getUser(noterId)?.dump() ?: "~ERROR: Cannot find the author~"}
-				Introduction: $introduction
-				PriceCoin: $price
-				Status: ${status.humanizedName}
-				Charts: $charts
-				&Charts:
-					${charts.mapNotNull(::getChart).joinToString(separator = "\n") { it.dump() }}
-		""".trimIndent()
-
-	private fun MongoUser.dump() =
-		"""
-			[UserDetails]
-				ID:   $_id
-				Name: $username
-				OwnedSets:   $ownedSets
-				OwnedCharts: $ownedCharts
-				Coin:    $coin
-				Diamond: $diamond
-				PPTime:  $ppTime
-				Token:   $token
-				R: $R
-				Permission:
-					Review: ${permission.review}
 		""".trimIndent()
 
 	// DATA FIXINGS
@@ -879,13 +871,13 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 	private fun fixHeadlessChart(chart: MongoChart) {
 		when(errorHandlingStrategy) {
 			ErrorHandlingStrategy.Coward -> {
-				logger.error("[Headless Chart Alert] Chart(${chart._id}) has no existent parent set. This log only warns the administrator but do nothing.")
+				logger.error("[Headless Chart Alert] Chart(${chart.id}) has no existent parent set. This log only warns the administrator but do nothing.")
 			}
 
 			ErrorHandlingStrategy.Destructive -> {
-				dz.deleteChartById(chart._id)
+				dz.deleteChartById(chart.id)
 				println(chart.dump())
-				logger.error("[Headless Chart Alert] Chart(${chart._id}) has no existent parent set. The broken chart has been deleted, and details are dumped above.")
+				logger.error("[Headless Chart Alert] Chart(${chart.id}) has no existent parent set. The broken chart has been deleted, and details are dumped above.")
 			}
 		}
 	}
@@ -894,12 +886,12 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	fun MongoUser.isOwned(chart: MongoChart): Boolean {
 		val set = chart.getParentSet()
-		return set._id in ownedSets && chart._id in ownedCharts
+		return set.id in ownedSets && chart.id in ownedCharts
 	}
 
 	override val MongoUser.tunerize: UserModel
 		get() = UserModel(
-			_id = _id,
+			_id = id,
 			username = username,
 			ownChart = ownedCharts,
 			coworkChart = mutableListOf(),
@@ -918,11 +910,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		get() {
 			val s = getParentSet()
 			return DetailedChartModel(
-				_id = _id,
-				charter = (getUser(s.noterId) ?: serverUser).tunerize,
+				_id = id,
+				charter = UserWithUserNameModel(s.displayNoterName),
 				chartName = "${s.musicName}_${difficultyClass}",
 				gcPrice = 0,
-				music = MusicModel(s.composerName),
+				music = MusicModel(s.musicName, MusicianModel(s.composerName)),
 				difficultyBase = difficultyClass,
 				difficultyValue = difficultyValue,
 				D = D
@@ -931,10 +923,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 
 	override val MongoSet.tunerize: SetModel
 		get() = SetModel(
-			_id = _id,
+			_id = id,
 			introduction = introduction ?: "",
 			coinPrice = price,
-			noter = NoterModel(noterDisplayOverride ?: getUser(noterId)?.username ?: "unknown"),
+			noter = NoterModel(displayNoterName),
 			musicTitle = musicName,
 			composerName = composerName,
 			playCount = 0,
@@ -942,32 +934,35 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			isGot = false,
 			isRanked = status == SetStatus.RANKED || status == SetStatus.OFFICIAL,
 			isOfficial = status == SetStatus.OFFICIAL,
-			OverridePriceStr = "",
-			needReview = status == SetStatus.NEED_REVIEW
+			needReview = isReviewing
 		)
 
-	val UserModel.asPlayer: PlayerModel
-		get() = PlayerModel(_id, username, highestGoldenMedal ?: 0, RThisMonth ?: 0)
-
-	private fun DetailedChartModel.minimal(): ChartModel {
-		return ChartModel(_id, difficultyBase, difficultyValue)
-	}
+	override fun MongoSet.tunerize(owner: MongoUser?): SetModel =
+		if(owner == null) {
+			tunerize
+		} else {
+			SetModel(
+				_id = id,
+				introduction = introduction ?: "",
+				coinPrice = price,
+				noter = NoterModel(displayNoterName),
+				musicTitle = musicName,
+				composerName = composerName,
+				playCount = 0,
+				chart = charts.mapNotNull { getChart(it)?.tunerize?.minify },
+				isGot = id in owner.ownedSets,
+				isRanked = status == SetStatus.RANKED || status == SetStatus.OFFICIAL,
+				isOfficial = status == SetStatus.OFFICIAL,
+				needReview = isReviewing
+			)
+		}
 
 	val MongoUser.shrink: PlayerModel
-		get() = PlayerModel(_id, username, highestGoldenMedal ?: 0, R)
-
-	fun MongoSet.getCharts(): List<MongoChart> {
-		return this.charts.mapNotNull {
-			getChart(it).apply {
-				if(this == null) {
-					logger.warn("Cannot find Chart($it), which is bound to Set(${this@getCharts._id}), removing from the set.")
-				}
-			}
-		}
-	}
+		get() = PlayerModel(id, username, highestGoldenMedal ?: 0, R)
 
 	val dz by lazy { DangerZone() }
 
+	@Suppress("unused")
 	inner class DangerZone internal constructor() {
 
 		/**
@@ -978,10 +973,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 			// delete charts
 			set.charts.forEach(::deleteChartById)
 			// remove the set from user
-			userC.updateMany(Document(), pull(MongoUser::ownedSets, set._id))
+			userC.updateMany(Document(), pull(MongoUser::ownedSets, set.id))
 			// remove the set
-			chartSetC.deleteOneById(set._id)
-			logger.info("Deleted Set(${set._id}): $set")
+			chartSetC.deleteOneById(set.id)
+			logger.info("Deleted Set(${set.id}): $set")
 		}
 
 		/**
@@ -990,11 +985,11 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		fun deleteChartById(id: String) {
 			val chart = getChart(id) ?: return logger.warn("Unable to delete a non-existent chart.")
 			// remove playing records
-			playRecordC.deleteMany(MongoRecord::chartId eq chart._id)
+			playRecordC.deleteMany(MongoRecord::chartId eq chart.id)
 			// remove the chart from user
-			userC.updateMany(Document(), pull(MongoUser::ownedCharts, chart._id))
+			userC.updateMany(Document(), pull(MongoUser::ownedCharts, chart.id))
 			// remove the chart
-			chartC.deleteOneById(chart._id)
+			chartC.deleteOneById(chart.id)
 			logger.info("Deleted Chart(${id}): $chart")
 		}
 
@@ -1004,10 +999,10 @@ class MongoProvider(private val config: MongoExplodeConfig, val detonate: Detona
 		fun deleteUserById(id: String) {
 			val user = getUser(id) ?: return logger.warn("Unable to delete a non-existent user.")
 			// replace the noterId to the default user.
-			chartSetC.updateMany(MongoSet::noterId eq user._id, MongoSet::noterId setTo serverUser._id)
+			chartSetC.updateMany(MongoSet::noterId eq user.id, MongoSet::noterId setTo serverUser.id)
 			// remove user
-			userC.deleteOneById(user._id)
-			logger.info("Deleted User(${user._id}): $user")
+			userC.deleteOneById(user.id)
+			logger.info("Deleted User(${user.id}): $user")
 		}
 
 	}

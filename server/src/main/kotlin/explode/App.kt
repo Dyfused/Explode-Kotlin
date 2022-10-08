@@ -2,12 +2,15 @@ package explode
 
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
-import explode.backend.bomb.bombModule
+import explode.backend.bomb.v1.backend.Bomb
+import explode.backend.bomb.v1.frontend.bombFrontendModule
 import explode.backend.console.ExplodeConsole
 import explode.backend.graphql.dynamiteResourceModule
 import explode.backend.graphql.graphQLModule
-import explode.dataprovider.provider.*
+import explode.dataprovider.provider.IBlowAccessor
+import explode.dataprovider.provider.IBlowOmni
 import explode.dataprovider.provider.mongo.MongoProvider
+import explode.dataprovider.serializers.AnySerializer
 import explode.dataprovider.serializers.OffsetDateTimeSerializer
 import explode.utils.Config
 import io.ktor.server.engine.*
@@ -37,14 +40,9 @@ fun main() {
 	mainLogger.info("Exploded.")
 }
 
-fun bootstrap(omni: IBlowOmni) = bootstrap(omni, omni)
-
-fun bootstrap(
-	acc: IBlowAccessor,
-	res: IBlowResourceProvider
-) {
-	startServer(acc, res)
-	startConsole(acc)
+fun bootstrap(omni: IBlowOmni) {
+	startServer(omni)
+	startConsole(omni)
 }
 
 private fun configureLogger() {
@@ -59,8 +57,8 @@ private fun configureLogger() {
 	}
 }
 
-fun startServer(acc: IBlowAccessor, res: IBlowResourceProvider) {
-	startKtorServer(acc, res)
+fun startServer(omni: IBlowOmni) {
+	startKtorServer(omni)
 }
 
 fun startConsole(acc: IBlowAccessor) {
@@ -80,8 +78,8 @@ private fun disableGraphQLLogging() {
 		Level.ERROR
 }
 
-private fun startKtorServer(dataProvider: IBlowAccessor, resourceProvider: IBlowResourceProvider) {
-	mainLogger.info("Backend Port: ${explodeConfig.port}")
+private fun startKtorServer(omni: IBlowOmni) {
+	mainLogger.info("Backend Port: ${explodeConfig.serverPort}")
 	mainLogger.info("GraphQl PlayGround: ${explodeConfig.enablePlayground}")
 	mainLogger.info("Done! (${Duration.between(theVeryBeginningTime, LocalDateTime.now()).toMillis()}ms)")
 
@@ -89,13 +87,15 @@ private fun startKtorServer(dataProvider: IBlowAccessor, resourceProvider: IBlow
 		Netty,
 		environment = applicationEngineEnvironment {
 			module {
-				graphQLModule(dataProvider, explodeConfig.enablePlayground)
-				dynamiteResourceModule(resourceProvider)
-				bombModule(dataProvider, resourceProvider)
+				graphQLModule(omni, explodeConfig.enablePlayground)
+				dynamiteResourceModule(omni)
+				// bombModule(omni, omni)
+				with(Bomb(omni)) { bombModule() }
+				bombFrontendModule()
 			}
 
 			connector {
-				port = explodeConfig.port
+				port = explodeConfig.serverPort
 			}
 		}
 	).start(true)
@@ -105,6 +105,7 @@ val globalJson = Json {
 	ignoreUnknownKeys = true
 	serializersModule = SerializersModule {
 		contextual(OffsetDateTimeSerializer)
+		contextual(AnySerializer)
 	}
 }
 

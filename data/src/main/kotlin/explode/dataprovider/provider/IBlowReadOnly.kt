@@ -8,6 +8,8 @@ interface IBlowReadOnly {
 
 	val serverUser: MongoUser
 
+	val unencrypted: Boolean
+
 	// getters
 	fun getUser(userId: String): MongoUser?
 	fun getSet(setId: String): MongoSet?
@@ -16,14 +18,15 @@ interface IBlowReadOnly {
 
 	// advanced getters
 	fun getSetByChartId(chartId: String): MongoSet?
+	fun getSetsByName(name: String): Iterable<MongoSet>
 	fun getUserByName(username: String): MongoUser?
 	fun getUserByToken(token: String): MongoUser?
 	fun getUserRecord(userId: String, limit: Int, skip: Int, sort: RecordSort): Iterable<MongoRecord>
 	fun getChartRecord(chartId: String, limit: Int, skip: Int, sort: RecordSort): Iterable<MongoRecord>
+
 	fun getUserChartRecord(userId: String, chartId: String, limit: Int, skip: Int, sort: RecordSort, duplicate: Boolean = false): Iterable<MongoRecord>
 
 	fun MongoChart.getParentSet(): MongoSet
-
 	fun MongoUser.getAssessmentGroups(limit: Int, skip: Int): List<AssessmentGroupModel>
 	fun getAssessmentRank(
 		assessmentGroupId: String,
@@ -37,13 +40,18 @@ interface IBlowReadOnly {
 		medalLevel: Int
 	): AssessmentRecordWithRankModel?
 	fun MongoUser.getPlayRankSelf(chartId: String): PlayRecordWithRank?
-	fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked>
 	fun MongoUser.getBestPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked>
+	fun MongoUser.getLastPlayRecords(limit: Int, skip: Int): Iterable<MongoRecordRanked>
+	fun MongoUser.getBestPlayRecordsR(limit: Int, skip: Int): Iterable<MongoRecord>
 
 	fun getReviewList(): FindIterable<MongoReview>
-
 	// transformers
 	val MongoUser.tunerize: UserModel
 	val MongoChart.tunerize: DetailedChartModel
 	val MongoSet.tunerize: SetModel
+
+	fun MongoSet.tunerize(owner: MongoUser?): SetModel = tunerize
+
+	val MongoSet.displayNoterName: String
+		get() = this.noterDisplayOverride ?: getUser(this.noterId)?.username ?: serverUser.username
 }

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <![endif]-->
+<html lang="zh">
+	<head>
+		<meta charset="utf-8" />
+		<title>Bomb of Explode</title>
+		<meta name="description" content="" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="css/app.css" />
+		<link rel="stylesheet" href="css/kico.css" />
+		<!-- <script src="js/jquery-3.6.0.js"></script> -->
+		<script src="js/kico.js"></script>
+		<script src="js/bomb.v1.js"></script>
+	</head>
+	<body class="wrap">
+		<!--[if lt IE 7]>
+			<p class="browsehappy">
+				You are using an <strong>outdated</strong> browser. Please
+				<a href="#">upgrade your browser</a> to improve your experience.
+			</p>
+		<![endif]-->
+		<h1>Upload New Chart</h1>
+		<div id="upload">
+			<form
+				class="ks-form"
+				action="http://localhost:10443/bomb/upload"
+				method="post"
+				enctype="multipart/form-data"
+				id="upload_form"
+			>
+				<fieldset class="inline">
+					<label>
+						<span>Music Name</span>
+						<input type="text" name="music_name" id="music_name" />
+					</label>
+					<label>
+						<span>Music Composer Name</span>
+						<input type="text" name="composer_name" id="composer_name" />
+					</label>
+					<label>
+						<span>Coin</span>
+						<input type="number" name="coin" id="coin" min="0" max="9999" value="0" />
+					</label>
+					<label>
+						<span>Chater Display Override</span>
+						<input type="text" name="noter_display_override" id="noter_display_override" />
+					</label>
+				</fieldset>
+				<fieldset>
+					<label>
+						<span>Introduction</span>
+						<textarea name="introduction" id="introduction" cols="15" rows="5"></textarea>
+					</label>
+				</fieldset>
+				<div id="charts"></div>
+				<a class="btn green small" id="add_chart_btn">Add chart</a>
+				<a class="btn red small" type="submit" id="upload_btn">Submit</a>
+			</form>
+		</div>
+
+		<script src="js/upload.js" async defer></script>
+	</body>
+	<script></script>
+</html>

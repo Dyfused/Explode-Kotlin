@@ -33,14 +33,13 @@ data class SetModel(
 	var isGot: Boolean,
 	var isRanked: Boolean,
 	var isOfficial: Boolean,
-	var OverridePriceStr: String, // DON'T FIX: Capital 'O' is defined in the game not Explode's fault.
 	var needReview: Boolean
 )
 
 @Serializable
 data class DetailedChartModel(
 	val _id: String,
-	val charter: UserModel,
+	val charter: UserWithUserNameModel,
 	val chartName: String,
 	val gcPrice: Int,
 	val music: MusicModel,
@@ -51,7 +50,18 @@ data class DetailedChartModel(
 
 @Serializable
 data class MusicModel(
+	val musicName: String,
+	val musician: MusicianModel
+)
+
+@Serializable
+data class MusicianModel(
 	val musicianName: String
+)
+
+@Serializable
+data class UserWithUserNameModel(
+	val username: String
 )
 
 val DetailedChartModel.minify: ChartModel get() = ChartModel(_id, difficultyBase, difficultyValue)

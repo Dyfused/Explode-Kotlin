@@ -3,6 +3,8 @@ package explode.blow.impl
 import explode.blow.BlowReviewerService
 import explode.blow.BlowSelfService
 import explode.blow.BlowUtils.soudayo
+import explode.dataprovider.model.database.StoreCategory
+import explode.dataprovider.model.database.StoreSort
 import explode.dataprovider.model.game.*
 import explode.dataprovider.provider.IBlowAccessor
 import graphql.schema.DataFetchingEnvironment
@@ -45,15 +47,11 @@ class ProviderReviewerService(private val p: IBlowAccessor) : BlowReviewerServic
 			p.getSets(
 				limit!!,
 				skip!!,
-				searchStr ?: "",
-				onlyRanked = false,
-				onlyOfficial = false,
-				onlyReview = true,
-				onlyHidden = false,
-				playCountOrder = false,
-				publishTimeOrder = false
+				searchStr!!,
+				filterCategory = StoreCategory.NEED_REVIEW,
+				filterSort = StoreSort.PUBLISH_TIME
 			).map {
-				ReviewRequestModel(it.tunerize, !it.status.isRanked)
+				ReviewRequestModel(it.tunerize(u), !it.status.isRanked)
 			}
 		}
 	}

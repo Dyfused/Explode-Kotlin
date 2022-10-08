@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Test</title>
+		<link rel="stylesheet" href="css/kico.css" />
+		<script src="js/bomb.v1.js"></script>
+		<style>
+			.btns {
+				-webkit-user-select: none;
+				user-select: none;
+			}
+			.btns > div {
+				margin: 1em 0;
+			}
+			#response {
+				max-height: 45vh;
+				overflow: scroll;
+			}
+		</style>
+	</head>
+	<body class="wrap">
+		<h1>Bomb Application Interface V1</h1>
+		<p id="response"><i>Response should be rendered here.</i></p>
+		<div class="btns">
+			<div>
+				<span class="btn red" id="btn-clear">Cleanse</span>
+				<span class="btn green" id="btn-ping">Ping</span>
+				<span class="btn green" id="btn-me">Me</span>
+			</div>
+			<div>
+				<label>
+					<span>User Identifier</span>
+					<input type="text" id="text-user-id" />
+				</label>
+				<span class="btn green" id="btn-get-user">Get User</span>
+			</div>
+			<div>
+				<label>
+					<span>Username</span>
+					<input type="text" id="text-username" />
+				</label>
+				<label>
+					<span>Password</span>
+					<input type="text" id="text-password" />
+				</label>
+				<span class="btn green" id="btn-register-user">Register User</span>
+			</div>
+			<div>
+				<label>
+					<span>Set Identifier</span>
+					<input type="text" id="text-set-id" />
+				</label>
+				<span class="btn green" id="btn-get-set">Get Set</span>
+			</div>
+            <div>
+				<label>
+					<span>Chart Identifier</span>
+					<input type="text" id="text-chart-id" />
+				</label>
+				<span class="btn green" id="btn-get-chart">Get Chart</span>
+			</div>
+		</div>
+
+		<script>
+			var bomb = Bomb("http://localhost:10443/v1");
+			var management = bomb.Management("Taskeren", "123456");
+
+			function render(...elements) {
+				document.getElementById("response").innerHTML = "";
+				for (el of elements) {
+					document.getElementById("response").innerHTML += `<div>${el}</div>`;
+				}
+			}
+
+			function renderJson(json) {
+				let el = "<div class='ks-table'><table class='fill'><thead><th>Property</th><th>Value</th></thead><tbody>";
+				for (let key in json) {
+					let value = json[key];
+					if (value instanceof Object) {
+						value = JSON.stringify(value);
+					}
+					el += `<tr><td>${key}</td><td>${value}</td></tr>`;
+				}
+				el += "</tbody></table></div>";
+				document.getElementById("response").innerHTML = el;
+			}
+
+			document.getElementById("btn-clear").addEventListener("click", (ev) => {
+				render("<i>Erased response content.</i>");
+			});
+
+			document.getElementById("btn-ping").addEventListener("click", (ev) => {
+				bomb
+					.ping()
+					.then((response) => {
+						return response.json();
+					})
+					.then((json) => {
+						render(json);
+					});
+			});
+
+			document.getElementById("btn-me").addEventListener("click", (ev) => {
+				management
+					.me()
+					.then((response) => {
+						return response.json();
+					})
+					.then((json) => {
+						console.log(json);
+						// render(JSON.stringify(json))
+						renderJson(json);
+					});
+			});
+
+			document
+				.getElementById("btn-get-user")
+				.addEventListener("click", (ev) => {
+					management
+						.getUser(document.querySelector("#text-user-id").value)
+						.then((response) => {
+							return response.json();
+						})
+						.then((json) => {
+							console.log(json);
+							renderJson(json);
+						});
+				});
+
+			document
+				.getElementById("btn-register-user")
+				.addEventListener("click", (ev) => {
+					management
+						.registerUser(
+							document.querySelector("#text-username").value,
+							document.querySelector("#text-password").value
+						)
+						.then((response) => {
+							return response.json();
+						})
+						.then((json) => {
+							console.log(json);
+							renderJson(json);
+						});
+				});
+
+			document.getElementById("btn-get-set").addEventListener("click", (ev) => {
+				management
+					.getSet(document.querySelector("#text-set-id").value)
+					.then((response) => {
+						return response.json();
+					})
+					.then((json) => {
+						console.log(json);
+						renderJson(json);
+					});
+			});
+            document.getElementById("btn-get-chart").addEventListener("click", (ev) => {
+				management
+					.getChart(document.querySelector("#text-chart-id").value)
+					.then((response) => {
+						return response.json();
+					})
+					.then((json) => {
+						console.log(json);
+						renderJson(json);
+					});
+			});
+		</script>
+	</body>
+</html>

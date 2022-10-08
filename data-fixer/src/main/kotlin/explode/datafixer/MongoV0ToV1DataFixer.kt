@@ -53,7 +53,7 @@ object MongoV0ToV1DataFixer : VersionedDataFixer {
 			println("Fix User $id")
 
 			val new = MongoUser(
-				_id = it._id,
+				id = it._id,
 				username = it.username,
 				password = password,
 				ownedSets = it.ownSet,
@@ -90,13 +90,13 @@ object MongoV0ToV1DataFixer : VersionedDataFixer {
 			println("Fix Set $id")
 
 			val new = MongoSet(
-				_id = s._id,
+				id = s._id,
 				musicName = s.musicTitle,
 				composerName = s.composerName,
-				noterId = users.findOne(MongoUser::username eq s.noter.username)?._id ?: "f6fe9c4d-98e6-450a-937c-d64848eacc40",
+				noterId = users.findOne(MongoUser::username eq s.noter.username)?.id ?: "f6fe9c4d-98e6-450a-937c-d64848eacc40",
 				introduction = s.introduction,
 				price = s.coinPrice,
-				status = if(s.isOfficial) SetStatus.OFFICIAL else if(s.isRanked) SetStatus.RANKED else if(s.needReview) SetStatus.NEED_REVIEW else SetStatus.UNRANKED,
+				status = if(s.isOfficial) SetStatus.OFFICIAL else if(s.isRanked) SetStatus.RANKED else SetStatus.UNRANKED,
 				charts = s.chart.map { it._id }.toMutableList()
 			)
 
@@ -110,7 +110,7 @@ object MongoV0ToV1DataFixer : VersionedDataFixer {
 			println("Fix Chart $id")
 
 			val new = MongoChart(
-				_id = it._id,
+				id = it._id,
 				difficultyClass = it.difficultyBase,
 				difficultyValue = it.difficultyValue,
 				D = it.D
@@ -144,7 +144,7 @@ object MongoV0ToV1DataFixer : VersionedDataFixer {
 			println("Fix PlayRecord $id")
 
 			val new = MongoRecord(
-				_id = it._id,
+				id = it._id,
 				playerId = it.playerId,
 				chartId = it.playedChartId,
 				score = it.score,
